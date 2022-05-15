@@ -55,12 +55,10 @@ def updatefr(obj):
     for wid in obj.winfo_children():
         wid.destroy()
 
-
 def splitToMono():
     first = AudioSegment.from_file(direc)
     sound = first.set_channels(1)
     sound.export(out_f="./audio/secpmd.wav", format="wav")
-
 
 # read the audio file
 def readfile():
@@ -76,7 +74,6 @@ def readfile():
         print("Stereo File Converting To Mono")
         # sys.exit(0)
     return Time, data
-
 
 # plot the audio data
 def plott(time, raw, place):
@@ -302,9 +299,9 @@ wvLB = tk.Label(
 wvLB.pack(ipadx=10, ipady=10)
 wvLB.place(x=37, y=200)
 
-wvFr = tk.Frame(root, height=190, width=770, bg="#D9DFE8")
+wvFr = tk.Frame(root, height=190, width=770)
 wvFr.place(x=37, y=240)
-wvFrMod = tk.Frame(root, height=190, width=770, bg="#D9DFE8")
+wvFrMod = tk.Frame(root, height=190, width=770)
 wvFrMod.place(x=37, y=470)
 
 # tasks section
@@ -330,11 +327,11 @@ ampLB.place(x=915, y=345)
 
 ampText = tk.StringVar()
 ampValueLB = ttk.Entry(root,
-                       justify="center",
-                       textvariable=ampText,
-                       width=15,
-                       font=("Barlow", 10)
-                       )
+    justify="center",
+    textvariable=ampText,
+    width=15,
+    font=("Barlow", 10)
+)
 ampValueLB.pack()
 ampValueLB.place(x=1015, y=345)
 shiftLB = ttk.Label(
@@ -346,11 +343,11 @@ shiftLB.place(x=915, y=385)
 
 shiftText = tk.StringVar()
 shiftValueLB = ttk.Entry(root,
-                         justify="center",
-                         textvariable=shiftText,
-                         width=15,
-                         font=("Barlow", 10)
-                         )
+    justify="center",
+    textvariable=shiftText,
+    width=15,
+    font=("Barlow", 10)
+)
 shiftValueLB.pack()
 shiftValueLB.place(x=1015, y=385)
 
@@ -363,11 +360,11 @@ speedLB.place(x=915, y=425)
 
 speedText = tk.StringVar()
 speedValueLB = ttk.Entry(root,
-                         justify="center",
-                         textvariable=speedText,
-                         width=15,
-                         font=("Barlow", 10)
-                         )
+    justify="center",
+    textvariable=speedText,
+    width=15,
+    font=("Barlow", 10)
+)
 speedValueLB.pack()
 speedValueLB.place(x=1015, y=425)
 
@@ -487,7 +484,6 @@ def tts(speach):
 
 
 def openNewWindow():
-    # Toplevel object which will
     # be treated as a new window
     newWindow = Toplevel(root)
     # sets the title of the
@@ -511,7 +507,6 @@ def openNewWindow():
 
     def Get_MyInputValue(widg):
         getresult = widg.get()
-        print(getresult)
         tts(str(getresult))
         return
 
