@@ -268,7 +268,7 @@ label5 = tk.Label(
 label5.pack(ipadx=10, ipady=10)
 label5.place(x=75, y=50)
 
-frame4 = tk.Frame(root, height=100, width=215)
+frame4 = tk.Frame(root, height=100, width=218)
 frame4.place(x=716, y=100)
 photo4 = tk.PhotoImage(file='./icons/icon4.png')
 image_label4 = ttk.Label(
