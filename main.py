@@ -414,7 +414,7 @@ applyBtn.place(x=940, y=630)
 
 
 def playAudioMod():
-    audio_file ='./audio/Modified.wav'
+    audio_file = os.path.dirname(__file__) + '/audio/Modified.wav'
     print('Playing Modded Sound')
     playsound(audio_file)
 
