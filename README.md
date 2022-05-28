@@ -15,4 +15,4 @@ The app was tested on the following version of python
 | ------- | ------------------ |
 | 3.10    | :white_check_mark: |
 
-<img src="https://drive.google.com/file/d/1YC09lNmcktnGYEoBhCdc18FVH2DL2VQI/view?usp=sharing" width="1200" height="600">
+<img src="https://drive.google.com/file/d/1YC09lNmcktnGYEoBhCdc18FVH2DL2VQI/view?usp=sharing" width="300" height="200">
