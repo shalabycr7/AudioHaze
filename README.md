@@ -5,6 +5,7 @@ This is a simple GUI application to manipulate audio waves using python
     * Added Support For Stereo Audio Files :heavy_check_mark:
     * Fixed Minor Bugs And Improved Optimizations :heavy_check_mark:
     * Added Convolution For Some Elementary Signals :heavy_check_mark:
+    * Support For Dark Mode :heavy_check_mark:
 * **V 0.1**
     * Initial Release :warning:
 ## Supported Versions

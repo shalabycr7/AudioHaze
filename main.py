@@ -16,6 +16,8 @@ from playsound import playsound
 from pydub import AudioSegment
 from scipy import signal
 from ttkbootstrap import Style
+import matplotlib.pyplot as plt
+
 
 def Directory():
     # Create directory ,it's a directory name which you are going to create.
@@ -30,7 +32,7 @@ def Directory():
 Directory()
 
 # Styling
-style = Style()
+style = Style(theme='cosmo')
 root = style.master
 style.configure('TLabel', font=('Barlow', 12))
 style.configure('TRadiobutton', font=('Barlow', 12))
@@ -42,6 +44,9 @@ import_icon = tk.PhotoImage(file='.//icons//importIcon.png')
 play_icon = tk.PhotoImage(file='.//icons//playIcon.png')
 conv_icon = tk.PhotoImage(file='.//icons//convIcon.png')
 tts_icon = tk.PhotoImage(file='.//icons//ttsIcon.png')
+dark_icon = tk.PhotoImage(file='.//icons//darkIcon.png')
+white_icon=tk.PhotoImage(file='.//icons//whiteIcon.png')
+
 root.title('Signal Manipulation')
 root.iconbitmap('.//icons//picon.ico')
 
@@ -63,7 +68,6 @@ center_y = int(screen_height / 2 - window_height / 2)
 root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 # checks if a file has been imported
 hasImported = False
-
 
 # update the plotting frame
 def updatefr(obj):
@@ -87,14 +91,21 @@ def readfile(file):
     time = np.linspace(0, len(data) / sampleRate, num=len(data))
     return time, data
 
-
+import matplotlib
 # plot the audio data
 def plott(time, raw, place):
+    # Apply dark mod on the plot
+    if darkM==True:
+        matplotlib.style.use('dark_background')
+    else:
+        matplotlib.style.use('default')
+
     # creat another figure to hold the plot of the ave file to display it in GUI
     fig = Figure(figsize=(7, 2), dpi=110)
     a = fig.add_subplot(111)
     # plot the wave
-    a.plot(time, raw, color='blue')
+    # a.plot.style.use('dark_background')
+    a.plot(time, raw, color='blue',)
     a.set_ylabel("Amplitude")
     a.grid()
     # Creating Canvas to show it the Frame
@@ -102,6 +113,7 @@ def plott(time, raw, place):
     canv.draw()
     get_widz = canv.get_tk_widget()
     get_widz.pack()
+
 
 
 # import audio file
@@ -217,11 +229,34 @@ def playAudio(indication):
             play_object = wave_object.play()
             play_object.wait_done()
         else:
-            audio_file = os.path.dirname(__file__) + '//audio//Modified.wav'
+            audio_file = './/audio//Modified.wav' #os.path.dirname(__file__) +
             playsound(audio_file)
     else:
         messagebox.showinfo("Warning", "Please Import Audio File First")
 
+darkM=False
+def darkMod():
+    global darkM
+    if darkM==False:
+        Style(theme='cyborg')
+        style.configure('TLabel', font=('Barlow', 12))
+        style.configure('TRadiobutton', font=('Barlow', 12))
+        style.configure('TButton', width=7, font=("Barlow", 13))
+        style.configure('TMenubutton', font=("Barlow", 13))
+        darkBtn.config(image=white_icon)
+        updatefr(wvFr)
+        updatefr(wvFrMod)
+        darkM=True
+    else:
+        Style(theme='cosmo')
+        style.configure('TLabel', font=('Barlow', 12))
+        style.configure('TRadiobutton', font=('Barlow', 12))
+        style.configure('TButton', width=7, font=("Barlow", 13))
+        style.configure('TMenubutton', font=("Barlow", 13))
+        darkBtn.config(image=dark_icon)
+        updatefr(wvFr)
+        updatefr(wvFrMod)
+        darkM = False
 
 # header buttons
 ttk.Button(
@@ -232,6 +267,16 @@ ttk.Button(
     compound=tk.LEFT,
 ).place(x=1050, y=55)
 
+
+darkBtn=ttk.Button(
+    root,
+    command=darkMod,
+    image=dark_icon,
+    compound=tk.LEFT,
+    width=1,
+    style='Link.TButton'
+)
+darkBtn.place(x=970, y=55)
 # header section
 ttk.Label(root, text='Signal Processing with Python', font=("Barlow", 20)).place(x=37, y=17)
 ttk.Label(root, text='Audio File Overview', font=("Barlow", 17)).place(x=37, y=65)
@@ -417,17 +462,12 @@ def openConvWindow():
             menu.add_radiobutton(label=option, value=option, variable=option_var)
         # associate menu with menubutton
         mb['menu'] = menu
-        ImResLB = ttk.Label(newConvWindow, text="Select Impulse Response")
-        ImResLB.pack()
-        ImResLB.place(x=750, y=230)
-
-        apllyConvBtn = ttk.Button(
+        ttk.Label(newConvWindow, text="Select Impulse Response").place(x=810, y=230)
+        ttk.Button(
             newConvWindow,
             text='Apply',
             command=lambda: ApplyConvolution(option_var.get()),
-        )
-        apllyConvBtn.pack()
-        apllyConvBtn.place(x=900, y=500)
+        ).place(x=910, y=500)
         # plot the original signal based on the imported audio file
         global sig
         sig = data
@@ -435,7 +475,7 @@ def openConvWindow():
         plottCon(sig, OGSginalFr, 'Original Signal')
     else:
         messagebox.showinfo("Warning", "Please Import Audio File First")
-    return
+
 
 
 # convlution button on the main interface
