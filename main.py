@@ -17,6 +17,18 @@ from pydub import AudioSegment
 from scipy import signal
 from ttkbootstrap import Style
 
+def Directory():
+    # Create directory ,it's a directory name which you are going to create.
+    Directory_Name = 'audio'
+    # try and catch block use to handle the exceptions.
+    try:
+        # Create  Directory
+        os.mkdir(Directory_Name)
+    except FileExistsError:
+        return
+
+Directory()
+
 # Styling
 style = Style()
 root = style.master
