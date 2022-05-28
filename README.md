@@ -1,3 +1,4 @@
+![](https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/Features/Cover%20Design.png)
 # Audio-Signal-Processing-App-GUI-in-Python
 This is a simple GUI application to manipulate audio waves using python
 ## Changelogs
