@@ -1,4 +1,3 @@
-<img src="[right-arrow.svg](https://drive.google.com/file/d/1YC09lNmcktnGYEoBhCdc18FVH2DL2VQI/view?usp=sharing)" width="42" height="42">
 # Audio-Signal-Processing-App-GUI-in-Python
 This is a simple GUI application to manipulate audio waves using python
 ## Changelogs
@@ -15,3 +14,5 @@ The app was tested on the following version of python
 | Version | Supported          |
 | ------- | ------------------ |
 | 3.10    | :white_check_mark: |
+
+<img src="https://drive.google.com/file/d/1YC09lNmcktnGYEoBhCdc18FVH2DL2VQI/view?usp=sharing" width="1200" height="600">
