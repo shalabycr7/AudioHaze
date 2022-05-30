@@ -7,6 +7,7 @@ This is a simple GUI application to manipulate audio waves using python
     * Fixed Minor Bugs And Improved Optimizations :heavy_check_mark:
     * Added Convolution For Some Elementary Signals :heavy_check_mark:
     * Support For Dark Mode :heavy_check_mark:
+    * Support For Transfer Function And Zero-Poles For LTI System :heavy_check_mark:
 * **V 0.1**
     * Initial Release :warning:
 ## Supported Versions
