@@ -16,9 +16,11 @@ from playsound import playsound
 from pydub import AudioSegment
 from scipy import signal
 from ttkbootstrap import Style
+import matplotlib
 import matplotlib.pyplot as plt
 
 
+# Make audio directory
 def Directory():
     # Create directory ,it's a directory name which you are going to create.
     Directory_Name = 'audio'
@@ -86,7 +88,7 @@ def readfile(file):
     # get the number of channels in the wave
     global nChannels
     nChannels = file.getnchannels()
-    # w sign it with 16-bit integers since wave files are encoded with 16 bits per sample
+    # sign it with 16-bit integers since wave files are encoded with 16 bits per sample
     global data
     data = np.frombuffer(raw, "int16")
     global sampleRate
@@ -95,26 +97,21 @@ def readfile(file):
     return time, data
 
 
-import matplotlib
-
-
 # plot the audio data
 def plott(time, raw, place):
     # Apply dark mod on the plot
-    if darkM == True:
+    if darkM:
         matplotlib.style.use('dark_background')
     else:
         matplotlib.style.use('default')
-
     # creat another figure to hold the plot of the ave file to display it in GUI
     fig = Figure(figsize=(7, 2), dpi=110)
     a = fig.add_subplot(111)
     # plot the wave
-    # a.plot.style.use('dark_background')
     a.plot(time, raw, color='blue', )
     a.set_ylabel("Amplitude")
     a.grid(alpha=0.4)
-    # Creating Canvas to show it the Frame
+    # Creating Canvas to show it in the Frame
     canv = FigureCanvasTkAgg(fig, master=place)
     canv.draw()
     get_widz = canv.get_tk_widget()
@@ -196,7 +193,7 @@ def operations(AmpAmount, ShiftAmount, SpeedAmount, ReverseState, echoState):
     wav.close()
     obj = wave.open('.\\audio\\Modified.wav', 'rb')  # open
     dataout = obj.readframes(-1)  # get all the frames in data out
-    dataout = np.frombuffer(dataout, "int16")  # set the data to a sumber of two byte form data out
+    dataout = np.frombuffer(dataout, "int16")  # set the data to a number of two byte form data out
     sampleRateOut = obj.getframerate()  # frame rate HZ (number of frames to be reads in seconds)
     Timeout = np.linspace(0, len(dataout) / sampleRateOut, len(dataout))  # time of the output
     plott(Timeout, dataout, wvFrMod)
@@ -208,7 +205,7 @@ def operations(AmpAmount, ShiftAmount, SpeedAmount, ReverseState, echoState):
 
 
 def applyOperations():
-    if hasImported:
+    if hasImported and (ampValueLB.get() != "" and shiftValueLB.get() != "" and speedValueLB.get() != ""):
         ampAmount = float(ampValueLB.get())
         shiftAmount = float(shiftValueLB.get())
         speedAmount = float(speedValueLB.get())
@@ -224,7 +221,7 @@ def applyOperations():
             echoState = False
         operations(ampAmount, shiftAmount, speedAmount, reverseSt, echoState)
     else:
-        messagebox.showinfo("Warning", "Please Import Audio File First")
+        messagebox.showinfo("Warning", "Please Import Audio File First And Set The Values")
 
 
 def playAudio(indication):
@@ -234,41 +231,33 @@ def playAudio(indication):
             play_object = wave_object.play()
             play_object.wait_done()
         else:
-            audio_file = './/audio//Modified.wav'  # os.path.dirname(__file__) +
+            audio_file = os.path.dirname(__file__) + '//audio//Modified.wav'
             playsound(audio_file)
     else:
         messagebox.showinfo("Warning", "Please Import Audio File First")
 
 
+# Apply dark mode
 darkM = False
 
 
 def darkMod():
     global darkM
-    if darkM == False:
+    if not darkM:
         Style(theme='cyborg')
-        style.configure('TLabel', font=('Barlow', 12))
-        style.configure('TRadiobutton', font=('Barlow', 12))
-        style.configure('TButton', width=7, font=("Barlow", 13))
-        style.configure('TMenubutton', font=("Barlow", 13))
-        style.configure('TNotebook.Tab', font=("Barlow", 12))
-
         darkBtn.config(image=white_icon)
-        updatefr(wvFr)
-        updatefr(wvFrMod)
         darkM = True
     else:
         Style(theme='cosmo')
-        style.configure('TLabel', font=('Barlow', 12))
-        style.configure('TRadiobutton', font=('Barlow', 12))
-        style.configure('TButton', width=7, font=("Barlow", 13))
-        style.configure('TMenubutton', font=("Barlow", 13))
-        style.configure('TNotebook.Tab', font=("Barlow", 12))
-
         darkBtn.config(image=dark_icon)
-        updatefr(wvFr)
-        updatefr(wvFrMod)
         darkM = False
+    style.configure('TLabel', font=('Barlow', 12))
+    style.configure('TRadiobutton', font=('Barlow', 12))
+    style.configure('TButton', width=7, font=("Barlow", 13))
+    style.configure('TMenubutton', font=("Barlow", 13))
+    style.configure('TNotebook.Tab', font=("Barlow", 12))
+    updatefr(wvFr)
+    updatefr(wvFrMod)
 
 
 # header buttons
@@ -335,11 +324,9 @@ wvFrMod = tk.Frame(root, height=190, width=770)
 wvFrMod.place(x=37, y=470)
 
 # tasks section
-tasksLB = tk.Label(root, text='Tasks', font=("Barlow", 17)).place(x=900, y=280)
-tasksVB = ttk.Separator(root, orient='vertical', style='info.Vertical.TSeparator')
-tasksVB.place(x=980, y=280)
-tasksFr = ttk.Frame(root, height=300, width=270)
-tasksFr.place(x=900, y=320)
+tk.Label(root, text='Tasks', font=("Barlow", 17)).place(x=900, y=280)
+ttk.Separator(root, orient='vertical', style='info.Vertical.TSeparator').place(x=980, y=280)
+ttk.Frame(root, height=300, width=270).place(x=900, y=320)
 
 # Task labels
 ttk.Label(root, text='Amplitude').place(x=915, y=345)
@@ -412,23 +399,23 @@ ttk.Button(
 
 
 # Plot the convolution signal
-def plottCon(signal, place, title):
+def plottCon(choosenSignal, place, title):
     fig = Figure(figsize=(7, 2), dpi=110)
     a = fig.add_subplot(111)
-    # plot the wave
-    a.plot(signal, color='blue')
+    a.plot(choosenSignal, color='blue')
     a.set_ylabel("Amplitude")
     a.set_title(title)
     a.grid(alpha=0.4)
-    # Creating Canvas to show it the Frame
     canv = FigureCanvasTkAgg(fig, master=place)
     canv.draw()
     get_widz = canv.get_tk_widget()
     get_widz.pack()
 
+
 # Delete the values from the textbox
 def delete_entries(wid):
     wid.delete(0, END)
+
 
 def LTIsys(widg):
     if widg == 1:
@@ -484,157 +471,150 @@ def ApplyConvolution(convVal):
         plottCon(win, ModSginalFr, 'Impulse Response')
         filtered = signal.convolve(sig, win, mode='same') / sum(win)
         plottCon(filtered, ConvSginalFr, 'Filtered Signal')
-    else:
+        mb.config(text="Sine Wave")
+    if convVal == 'Rec Wave':
         win = np.repeat([0., 1., 0.], 50)
         plottCon(win, ModSginalFr, 'Impulse Response')
         filtered = signal.convolve(sig, win, mode='same') / sum(win)
         plottCon(filtered, ConvSginalFr, 'Filtered Signal')
+        mb.config(text="Rec Wave")
+
 
 # disable and enable the desired textbox based on the state of the option radiobutton
 def disableBox(num):
+    delete_entries(zerosValLB)
+    delete_entries(polesValLB)
+    delete_entries(trFuncValueLB)
+    delete_entries(trFuncValueLB2)
     if num == 1:
-        delete_entries(zerosValLB)
-        delete_entries(polesValLB)
-        delete_entries(trFuncValueLB)
-        delete_entries(trFuncValueLB2)
         zerosValLB.config(state="readonly")
         polesValLB.config(state="readonly")
         trFuncValueLB.config(state="normal")
         trFuncValueLB2.config(state="normal")
-
     else:
-        delete_entries(zerosValLB)
-        delete_entries(polesValLB)
-        delete_entries(trFuncValueLB)
-        delete_entries(trFuncValueLB2)
         trFuncValueLB.config(state="readonly")
         trFuncValueLB2.config(state="readonly")
         zerosValLB.config(state="normal")
         polesValLB.config(state="normal")
 
 
-# Covolution PopUp
+# Convolution PopUp
 def openConvWindow():
-    # checking if the user has imported a file or not
-    if hasImported:
-        # be treated as a new window
-        newConvWindow = Toplevel(root)
-        newConvWindow.title("Convolution")
-        newConvWindow.iconbitmap('./icons/picon.ico')
-        newConvWindow.resizable(False, False)
-        newConvWindow.geometry("1200x740")
-        # Three plotting frames
-        global OGSginalFr
-        OGSginalFr = ttk.Frame(newConvWindow, style='TFrame', height=190, width=770)
-        OGSginalFr.place(x=10, y=10)
-        global ModSginalFr
-        ModSginalFr = ttk.Frame(newConvWindow, style='TFrame', height=190, width=770)
-        ModSginalFr.place(x=10, y=250)
-        global ConvSginalFr
-        ConvSginalFr = ttk.Frame(newConvWindow, style='TFrame', height=190, width=770)
-        ConvSginalFr.place(x=10, y=490)
+    # be treated as a new window
+    newConvWindow = Toplevel(root)
+    newConvWindow.title("Convolution")
+    newConvWindow.iconbitmap('./icons/picon.ico')
+    newConvWindow.resizable(False, False)
+    newConvWindow.geometry("1200x740")
+    # Three plotting frames
+    global OGSginalFr
+    OGSginalFr = ttk.Frame(newConvWindow, height=190, width=770)
+    OGSginalFr.place(x=10, y=10)
+    global ModSginalFr
+    ModSginalFr = ttk.Frame(newConvWindow, height=190, width=770)
+    ModSginalFr.place(x=10, y=250)
+    global ConvSginalFr
+    ConvSginalFr = ttk.Frame(newConvWindow, height=190, width=770)
+    ConvSginalFr.place(x=10, y=490)
 
-        tabsFr = ttk.Frame(newConvWindow, height=700, width=350)
-        tabsFr.place(x=800, y=10)
-        notebook = ttk.Notebook(tabsFr)
-        notebook.pack(pady=10, expand=True)
+    tabsFr = ttk.Frame(newConvWindow, height=700, width=350)
+    tabsFr.place(x=800, y=10)
+    notebook = ttk.Notebook(tabsFr)
+    notebook.pack(pady=10, expand=True)
 
-        # create frames
-        frame1 = ttk.Frame(notebook, width=350, height=400)
-        frame2 = ttk.Frame(notebook, width=350, height=400)
-        ttk.Label(frame2, text='Numerator').place(x=10, y=10)
-        trFuncText = tk.StringVar()
-        global trFuncValueLB
-        trFuncValueLB = ttk.Entry(frame2,
-                                  justify="center",
-                                  textvariable=trFuncText,
-                                  width=15,
-                                  font=("Barlow", 10),
-                                  state="disabled"
-                                  )
-        trFuncValueLB.place(x=130, y=10)
-        ttk.Label(frame2, text='Denominator').place(x=10, y=60)
-        trFuncText2 = tk.StringVar()
-        global trFuncValueLB2
-        trFuncValueLB2 = ttk.Entry(frame2,
-                                   justify="center",
-                                   textvariable=trFuncText2,
-                                   width=15,
-                                   font=("Barlow", 10),
-                                   state="disabled"
-                                   )
-        trFuncValueLB2.place(x=130, y=60)
-        sp = ttk.Separator(frame2, orient='horizontal', style='info.horizontal.TSeparator')
-        sp.pack(fill='x')
-        sp.place(x=10, y=115)
-        ttk.Label(frame2, text='Zeros').place(x=10, y=130)
-        zerosText = tk.StringVar()
-        global zerosValLB
-        zerosValLB = ttk.Entry(frame2,
+    # create frames
+    frame1 = ttk.Frame(notebook, width=350, height=400)
+    frame2 = ttk.Frame(notebook, width=350, height=400)
+    ttk.Label(frame2, text='Numerator').place(x=10, y=10)
+    trFuncText = tk.StringVar()
+    global trFuncValueLB
+    trFuncValueLB = ttk.Entry(frame2,
+                              justify="center",
+                              textvariable=trFuncText,
+                              width=15,
+                              font=("Barlow", 10),
+                              state="disabled"
+                              )
+    trFuncValueLB.place(x=130, y=10)
+    ttk.Label(frame2, text='Denominator').place(x=10, y=60)
+    trFuncText2 = tk.StringVar()
+    global trFuncValueLB2
+    trFuncValueLB2 = ttk.Entry(frame2,
                                justify="center",
-                               textvariable=zerosText,
+                               textvariable=trFuncText2,
                                width=15,
                                font=("Barlow", 10),
                                state="disabled"
                                )
-        zerosValLB.place(x=130, y=130)
+    trFuncValueLB2.place(x=130, y=60)
+    ttk.Separator(frame2, orient='horizontal', style='info.horizontal.TSeparator').place(x=10, y=115)
+    ttk.Label(frame2, text='Zeros').place(x=10, y=130)
+    zerosText = tk.StringVar()
+    global zerosValLB
+    zerosValLB = ttk.Entry(frame2,
+                           justify="center",
+                           textvariable=zerosText,
+                           width=15,
+                           font=("Barlow", 10),
+                           state="disabled"
+                           )
+    zerosValLB.place(x=130, y=130)
 
-        ttk.Label(frame2, text='Poles').place(x=10, y=180)
-        polesText = tk.StringVar()
-        global polesValLB
-        polesValLB = ttk.Entry(frame2,
-                               justify="center",
-                               textvariable=polesText,
-                               width=15,
-                               font=("Barlow", 10),
-                               state="disabled"
+    ttk.Label(frame2, text='Poles').place(x=10, y=180)
+    polesText = tk.StringVar()
+    global polesValLB
+    polesValLB = ttk.Entry(frame2,
+                           justify="center",
+                           textvariable=polesText,
+                           width=15,
+                           font=("Barlow", 10),
+                           state="disabled"
 
-                               )
-        polesValLB.place(x=130, y=180)
+                           )
+    polesValLB.place(x=130, y=180)
 
-        ttk.Label(frame2, text='Option', ).place(x=10, y=250)
-        global zpTohsText
-        zpTohsText = tk.StringVar()
-        zpTohsTrueVal = ttk.Radiobutton(frame2, style='primary.TRadiobutton', text="H (s) To Zeros",
-                                        command=lambda: disableBox(1), variable=zpTohsText, value=1)
-        zpTohsTrueVal.place(x=130, y=250)
-        zpTohsFalseVal = ttk.Radiobutton(frame2, style='primary.TRadiobutton', text="Zeros To H (s)",
-                                         command=lambda: disableBox(2), variable=zpTohsText, value=2, )
-        zpTohsFalseVal.place(x=130, y=280)
+    ttk.Label(frame2, text='Option', ).place(x=10, y=250)
+    global zpTohsText
+    zpTohsText = tk.StringVar()
+    zpTohsTrueVal = ttk.Radiobutton(frame2, style='primary.TRadiobutton', text="H (s) To Zeros",
+                                    command=lambda: disableBox(1), variable=zpTohsText, value=1)
+    zpTohsTrueVal.place(x=130, y=250)
+    zpTohsFalseVal = ttk.Radiobutton(frame2, style='primary.TRadiobutton', text="Zeros To H (s)",
+                                     command=lambda: disableBox(2), variable=zpTohsText, value=2, )
+    zpTohsFalseVal.place(x=130, y=280)
 
-        frame1.pack(fill='both', expand=True)
-        frame2.pack(fill='both', expand=True)
+    frame1.pack(fill='both', expand=True)
+    frame2.pack(fill='both', expand=True)
 
-        # add frames to notebook
+    # add frames to notebook
 
-        notebook.add(frame1, text='Wave')
-        notebook.add(frame2, text='Transfer Function')
+    notebook.add(frame1, text='Wave')
+    notebook.add(frame2, text='Transfer Function')
 
-        # menu selection
-        mb = ttk.Menubutton(frame1, text='Select Wave', style='info.Outline.TMenubutton', )
-        mb.pack()
-        mb.place(x=5, y=100)
-        # create menu
-        menu = tk.Menu(mb, font=("Barlow", 13))
-        # add options
-        option_var = tk.StringVar()
-        for option in ['Sine Wave', 'Rec Wave']:
-            menu.add_radiobutton(label=option, value=option, variable=option_var)
-        # associate menu with menubutton
-        mb['menu'] = menu
-        ttk.Label(frame1, text="Select Impulse Response").place(x=10, y=10)
-        ttk.Button(
-            newConvWindow,
-            text='Apply',
-            command=lambda: ApplyConvolution(option_var.get()),
-        ).place(x=940, y=500)
-        # plot the original signal based on the imported audio file
-        global sig
-        sig = np.repeat([0., 1., 0.], 100)
-        # plot the original signal
-        plottCon(sig, OGSginalFr, 'Original Signal')
-    else:
-        messagebox.showinfo("Warning", "Please Import Audio File First")
+    # menu selection
+    global mb
+    mb = ttk.Menubutton(frame1, text='Select Wave', style='info.Outline.TMenubutton', )
+    mb.pack()
+    mb.place(x=10, y=100)
+    # create menu
+    menu = tk.Menu(mb, font=("Barlow", 13))
+    # add options
+    option_var = tk.StringVar()
+    for option in ['Sine Wave', 'Rec Wave']:
+        menu.add_radiobutton(label=option, value=option, variable=option_var)
+    # associate menu with menubutton
+    mb['menu'] = menu
+    ttk.Label(frame1, text="Select Impulse Response").place(x=10, y=10)
+    ttk.Button(
+        newConvWindow,
+        text='Apply',
+        command=lambda: ApplyConvolution(option_var.get()),
+    ).place(x=940, y=500)
+    # plot the original signal based on the imported audio file
+    global sig
+    sig = np.repeat([0., 1., 0.], 100)
+    # plot the original signal
+    plottCon(sig, OGSginalFr, 'Original Signal')
 
 
 # convlution button on the main interface
@@ -653,15 +633,12 @@ ttk.Button(
 def tts(speach):
     engine = pyttsx3.init()  # object creation
     """ RATE"""
-    rate = engine.getProperty('rate')  # getting details of current speaking rate
     engine.setProperty('rate', 220)  # setting up new voice rate
     """VOLUME"""
-    volume = engine.getProperty('volume')  # getting to know current volume level (min=0 and max=1)
     engine.setProperty('volume', 1.0)  # setting up volume level  between 0 and 1
     """VOICE"""
     voices = engine.getProperty('voices')  # getting details of current voice
-    # engine.setProperty('voice', voices[0].id)  #changing index, changes voices. o for male
-    engine.setProperty('voice', voices[1].id)  # changing index, changes voices. 1 for female
+    engine.setProperty('voice', voices[0].id)  # changing index, changes voices. 1 for female
     engine.say(speach)
     engine.runAndWait()
     engine.stop()
