@@ -1,54 +1,61 @@
 import os
 import struct
-import tkinter as tk
 import wave
 from ctypes import windll
-from tkinter import *
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, Toplevel, END
+import matplotlib
 import numpy as np
 import pyttsx3
 import simpleaudio as sa
 import ttkbootstrap as ttk
-from AudioLib.AudioProcessing import AudioProcessing
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
+from matplotlib import style
 from playsound import playsound
 from pydub import AudioSegment
 from scipy import signal
 from ttkbootstrap import Style
-import matplotlib.pyplot as plt
+
+from AudioLib.AudioProcessing import AudioProcessing
+
+file_directory = "/"
+directory_name = "Audio Output"
+current_style = Style(theme='cosmo')
+root = current_style.master
+dark_mode_state = False
+darkBtn = ttk.Button()
+wvFr = ttk.Frame(root, height=190, width=770)
+wvFr.place(x=37, y=240)
+wvFrMod = ttk.Frame(root, height=190, width=770)
+wvFrMod.place(x=37, y=470)
+nChannels = 1
+sampleRate = 1
 
 
-def Directory():
-    # Create directory ,it's a directory name which you are going to create.
-    Directory_Name = 'Audio Output'
-    # try and catch block use to handle the exceptions.
+def make_output_directory():
+    """
+    Create directory ,it's a directory name which you are going to create, try and catch block use to handle the
+    exceptions.
+    """
     try:
         # Create  Directory
-        os.mkdir(Directory_Name)
+        os.mkdir(directory_name)
     except FileExistsError:
         return
 
-Directory()
 
-# Styling
-style = Style(theme='cosmo')
-root = style.master
-style.configure('TLabel', font=('Barlow', 12))
-style.configure('TRadiobutton', font=('Barlow', 12))
-style.configure('TButton', width=7, font=("Barlow", 13))
-style.configure('TMenubutton', font=("Barlow", 13))
+make_output_directory()
 
 # icons
-import_icon = tk.PhotoImage(file='.//icons//importIcon.png')
-play_icon = tk.PhotoImage(file='.//icons//playIcon.png')
-conv_icon = tk.PhotoImage(file='.//icons//convIcon.png')
-tts_icon = tk.PhotoImage(file='.//icons//ttsIcon.png')
-dark_icon = tk.PhotoImage(file='.//icons//darkIcon.png')
-white_icon=tk.PhotoImage(file='.//icons//whiteIcon.png')
+import_icon = ttk.PhotoImage(file='icons/importIcon.png')
+play_icon = ttk.PhotoImage(file='icons/playIcon.png')
+conv_icon = ttk.PhotoImage(file='icons/convIcon.png')
+tts_icon = ttk.PhotoImage(file='icons/ttsIcon.png')
+dark_icon = ttk.PhotoImage(file='icons/darkIcon.png')
+white_icon = ttk.PhotoImage(file='icons/whiteIcon.png')
 
-root.title('Signal Manipulation')
-root.iconbitmap('.//icons//picon.ico')
+root.title(' Audio Signal Manipulation')
+root.iconbitmap('icons/picon.ico')
 
 # make the window not resizable
 root.resizable(False, False)
@@ -69,21 +76,48 @@ root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 # checks if a file has been imported
 hasImported = False
 
+
 # update the plotting frame
-def updatefr(obj):
+def update_frame(obj):
     # clear the frame when we add another plot
     for wid in obj.winfo_children():
         wid.destroy()
 
 
-# read the audio file
-def readfile(file):
-    # minus one here means that all the frames of audio has to be read
+def set_theme():
+    global dark_mode_state
+    global darkBtn
+    global wvFr
+    global wvFrMod
+    if dark_mode_state:
+        Style(theme='cyborg')
+        darkBtn.config(image=white_icon)
+        dark_mode_state = False
+    else:
+        Style(theme='cosmo')
+        darkBtn.config(image=dark_icon)
+        dark_mode_state = True
+
+    current_style.configure('TLabel', font=('Barlow', 12))
+    current_style.configure('TRadiobutton', font=('Barlow', 12))
+    current_style.configure('TButton', width=7, font=("Barlow", 13))
+    current_style.configure('TMenubutton', font=("Barlow", 13))
+    current_style.configure('TNotebook.Tab', font=("Barlow", 12))
+    update_frame(wvFr)
+    update_frame(wvFrMod)
+
+
+set_theme()
+
+
+# read the Audio Output file
+def read_file(file):
+    # minus one here means that all the frames of Audio Output has to be read
     raw = file.readframes(-1)
     # get the number of channels in the wave
     global nChannels
     nChannels = file.getnchannels()
-    # w sign it with 16-bit integers since wave files are encoded with 16 bits per sample
+    # sign it with 16-bit integers since wave files are encoded with 16 bits per sample
     global data
     data = np.frombuffer(raw, "int16")
     global sampleRate
@@ -91,11 +125,11 @@ def readfile(file):
     time = np.linspace(0, len(data) / sampleRate, num=len(data))
     return time, data
 
-import matplotlib
-# plot the audio data
-def plott(time, raw, place):
+
+# plot the Audio Output data
+def plotting(time, raw, place):
     # Apply dark mod on the plot
-    if darkM==True:
+    if not dark_mode_state:
         matplotlib.style.use('dark_background')
     else:
         matplotlib.style.use('default')
@@ -104,42 +138,40 @@ def plott(time, raw, place):
     fig = Figure(figsize=(7, 2), dpi=110)
     a = fig.add_subplot(111)
     # plot the wave
-    # a.plot.style.use('dark_background')
-    a.plot(time, raw, color='blue',)
+    a.plot(time, raw, color='blue', )
     a.set_ylabel("Amplitude")
-    a.grid()
-    # Creating Canvas to show it the Frame
-    canv = FigureCanvasTkAgg(fig, master=place)
-    canv.draw()
-    get_widz = canv.get_tk_widget()
-    get_widz.pack()
+    a.grid(alpha=0.4)
+    # Creating Canvas to show it in the Frame
+    canvas = FigureCanvasTkAgg(fig, master=place)
+    canvas.draw()
+    get_widget = canvas.get_tk_widget()
+    get_widget.pack()
 
 
-
-# import audio file
-def importfunc():
-    updatefr(wvFr)
-    updatefr(wvFrMod)
-    # open window to select the wav file and get the path to the audio dile then save in variable direc
+# import Audio Output file
+def import_file():
+    update_frame(wvFr)
+    update_frame(wvFrMod)
+    # open window to select the wav file and get the path to the Audio Output dile then save in variable directory
     filename = filedialog.askopenfilename(initialdir="\\", title="Select Audio File", filetypes=(("Wav", "*wav"),))
-    global direc
-    direc = str(filename)
-    if direc=='':
+    global file_directory
+    file_directory = str(filename)
+    if file_directory == '':
         messagebox.showinfo("info", "No File Was Selected")
     else:
         global wav
-        wav = wave.open(direc, "rb")
-        result = readfile(wav)
+        wav = wave.open(file_directory, "rb")
+        result = read_file(wav)
         global hasImported
         hasImported = True
         # Update displayed File info
-        wavD = AudioSegment.from_file(file=direc, format="wav")
-        maxAmp = wavD.max
+        wav_d = AudioSegment.from_file(file=file_directory, format="wav")
+        max_amp = wav_d.max
         fileTypeVal.config(text='wav File')
         channelsVal.config(text=nChannels)
         frameRateVal.config(text=sampleRate)
-        ampVal.config(text=maxAmp)
-        plott(result[0], result[1], wvFr)
+        ampVal.config(text=max_amp)
+        plotting(result[0], result[1], wvFr)
         # Set echo options on if the file is stereo
         if nChannels == 2:
             echoTrueVal.config(state='!selected')
@@ -149,408 +181,426 @@ def importfunc():
             echoFalseVal.config(state='disabled')
 
 
-def operations(AmpAmount, ShiftAmount, SpeedAmount, ReverseState, echoState):
-    updatefr(wvFrMod)
-    obj = wave.open('.\\audio\\Modified.wav', 'wb')
+def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state):
+    update_frame(wvFrMod)
+    obj = wave.open(directory_name + '\\Modified.wav', 'wb')
     obj.setnchannels(nChannels)
     obj.setsampwidth(2)
     # speed OP
-    speed_factor = SpeedAmount
+    speed_factor = speed_amount
     speed = sampleRate * speed_factor
     obj.setframerate(speed)
     # Shift OP
-    pov_sheft_in_sec = ShiftAmount
-    for i in range(int(sampleRate * pov_sheft_in_sec)):
-        zeroinbyte = struct.pack('<h', 0)
-        obj.writeframesraw(zeroinbyte)
+    pov_shift_in_sec = shift_amount
+    for i in range(int(sampleRate * pov_shift_in_sec)):
+        zero_in_byte = struct.pack('<h', 0)
+        obj.writeframesraw(zero_in_byte)
     # Amplification OP
-    amp = AmpAmount
+    amp = amp_amount
     n = len(data)
     # Reverse OP
-    reverse = ReverseState
+    reverse = reverse_state
     if reverse:
         for i in range(data.__len__()):
-            twobytesample = data[n - 1 - i] * amp
-            if twobytesample > 32760:
-                twobytesample = 32760
-            if twobytesample < -32760:
-                twobytesample = -32760
-            sample = struct.pack('<h', int(twobytesample))
+            two_byte_sample = data[n - 1 - i] * amp
+            if two_byte_sample > 32760:
+                two_byte_sample = 32760
+            if two_byte_sample < -32760:
+                two_byte_sample = -32760
+            sample = struct.pack('<h', int(two_byte_sample))
             obj.writeframesraw(sample)
     else:
         for i in range(data.__len__()):
-            twobytesampler = data[i] * amp
-            if twobytesampler > 32760:
-                twobytesampler = 32760
-            if twobytesampler < -32760:
-                twobytesampler = -32760
-            sample = struct.pack('<h', int(twobytesampler))
+            two_byte_sampler = data[i] * amp
+            if two_byte_sampler > 32760:
+                two_byte_sampler = 32760
+            if two_byte_sampler < -32760:
+                two_byte_sampler = -32760
+            sample = struct.pack('<h', int(two_byte_sampler))
             obj.writeframesraw(sample)
 
     obj.close()
     wav.close()
-    obj = wave.open('.\\audio\\Modified.wav', 'rb')  # open
-    dataout = obj.readframes(-1)  # get all the frames in data out
-    dataout = np.frombuffer(dataout, "int16")  # set the data to a sumber of two byte form data out
-    sampleRateOut = obj.getframerate()  # frame rate HZ (number of frames to be reads in seconds)
-    Timeout = np.linspace(0, len(dataout) / sampleRateOut, len(dataout))  # time of the output
-    plott(Timeout, dataout, wvFrMod)
+    obj = wave.open(directory_name + '\\Modified.wav', 'rb')  # open
+    data_out = obj.readframes(-1)  # get all the frames in data out
+    data_out = np.frombuffer(data_out, "int16")  # set the data to a number of two byte form data out
+    sample_rate_out = obj.getframerate()  # frame rate HZ (number of frames to be reads in seconds)
+    timeout = np.linspace(0, len(data_out) / sample_rate_out, len(data_out))  # time of the output
+    plotting(timeout, data_out, wvFrMod)
     # set the echo based on state
-    if echoState:
-        sound1 = AudioProcessing('.\\audio\\Modified.wav')
+    if echo_state:
+        sound1 = AudioProcessing(directory_name + '\\Modified.wav')
         sound1.set_echo(0.4)
-        sound1.save_to_file('.\\audio\\Modified.wav')
+        sound1.save_to_file(directory_name + '\\Modified.wav')
 
 
-def applyOperations():
-    if hasImported:
-        ampAmount = float(ampValueLB.get())
-        shiftAmount = float(shiftValueLB.get())
-        speedAmount = float(speedValueLB.get())
-        reverseVal = str(revText.get())
-        echoVal = str(echoText.get())
-        if reverseVal == '1':
-            reverseSt = True
+def apply_operations():
+    if hasImported and (ampValueLB.get() != "" and shiftValueLB.get() != "" and speedValueLB.get() != ""):
+        amp_amount = float(ampValueLB.get())
+        shift_amount = float(shiftValueLB.get())
+        speed_amount = float(speedValueLB.get())
+        reverse_val = str(revText.get())
+        echo_val = str(echoText.get())
+        if reverse_val == '1':
+            reverse_st = True
         else:
-            reverseSt = False
-        if echoVal == '3':
-            echoState = True
+            reverse_st = False
+        if echo_val == '3':
+            echo_state = True
         else:
-            echoState = False
-        operations(ampAmount, shiftAmount, speedAmount, reverseSt, echoState)
+            echo_state = False
+        operations(amp_amount, shift_amount, speed_amount, reverse_st, echo_state)
     else:
-        messagebox.showinfo("Warning", "Please Import Audio File First")
+        messagebox.showinfo("Warning", "Please Import Audio File First And Set The Values")
 
 
-def playAudio(indication):
+def play_audio(indication):
     if hasImported:
         if indication == 'OG':
-            wave_object = sa.WaveObject.from_wave_file(direc)
+            wave_object = sa.WaveObject.from_wave_file(file_directory)
             play_object = wave_object.play()
             play_object.wait_done()
         else:
-            audio_file = './/audio//Modified.wav' #os.path.dirname(__file__) +
+            audio_file = os.path.dirname(__file__) + '//' + directory_name + '//Modified.wav'
             playsound(audio_file)
     else:
         messagebox.showinfo("Warning", "Please Import Audio File First")
 
-darkM=False
-def darkMod():
-    global darkM
-    if darkM==False:
-        Style(theme='cyborg')
-        style.configure('TLabel', font=('Barlow', 12))
-        style.configure('TRadiobutton', font=('Barlow', 12))
-        style.configure('TButton', width=7, font=("Barlow", 13))
-        style.configure('TMenubutton', font=("Barlow", 13))
-        darkBtn.config(image=white_icon)
-        updatefr(wvFr)
-        updatefr(wvFrMod)
-        darkM=True
-    else:
-        Style(theme='cosmo')
-        style.configure('TLabel', font=('Barlow', 12))
-        style.configure('TRadiobutton', font=('Barlow', 12))
-        style.configure('TButton', width=7, font=("Barlow", 13))
-        style.configure('TMenubutton', font=("Barlow", 13))
-        darkBtn.config(image=dark_icon)
-        updatefr(wvFr)
-        updatefr(wvFrMod)
-        darkM = False
 
 # header buttons
-ttk.Button(
-    root,
-    text='  Import',
-    command=importfunc,
-    image=import_icon,
-    compound=tk.LEFT,
-).place(x=1050, y=55)
+ttk.Button(root, text='  Import', command=import_file, image=import_icon, compound=ttk.LEFT, ).place(x=1050, y=55)
 
-
-darkBtn=ttk.Button(
-    root,
-    command=darkMod,
-    image=dark_icon,
-    compound=tk.LEFT,
-    width=1,
-    style='Link.TButton'
-)
+darkBtn = ttk.Button(root, command=set_theme, image=dark_icon, compound=ttk.LEFT, width=1, style='Link.TButton')
 darkBtn.place(x=970, y=55)
+
 # header section
 ttk.Label(root, text='Signal Processing with Python', font=("Barlow", 20)).place(x=37, y=17)
 ttk.Label(root, text='Audio File Overview', font=("Barlow", 17)).place(x=37, y=65)
 
 # file info section
-fileTypeFr = tk.Frame(root, height=100, width=215)
+fileTypeFr = ttk.Frame(root, height=100, width=215)
 fileTypeFr.place(x=37, y=100)
-folderIcon = tk.PhotoImage(file='./icons/icon1.png')
+folderIcon = ttk.PhotoImage(file='./icons/icon1.png')
 ttk.Label(fileTypeFr, image=folderIcon).place(x=0, y=10)
 fileTypeVal = ttk.Label(fileTypeFr, text='Unknown', font=("Abel", 13))
 fileTypeVal.place(x=75, y=20)
 ttk.Label(fileTypeFr, text='Type Of Audio File', font=("Actor", 12)).place(x=75, y=50)
 
-channelFr = tk.Frame(root, height=100, width=215)
+channelFr = ttk.Frame(root, height=100, width=215)
 channelFr.place(x=270, y=100)
-channelsIcon = tk.PhotoImage(file='./icons/icon2.png')
+channelsIcon = ttk.PhotoImage(file='./icons/icon2.png')
 ttk.Label(channelFr, image=channelsIcon).place(x=0, y=10)
 channelsVal = ttk.Label(channelFr, text='0', font=("Abel", 13))
 channelsVal.place(x=75, y=20)
 ttk.Label(channelFr, text='Channels', font=("Actor", 12)).place(x=75, y=50)
 
-frameRateFr = tk.Frame(root, height=100, width=215)
+frameRateFr = ttk.Frame(root, height=100, width=215)
 frameRateFr.place(x=493, y=100)
-frameRateIcon = tk.PhotoImage(file='./icons/icon3.png')
+frameRateIcon = ttk.PhotoImage(file='./icons/icon3.png')
 ttk.Label(frameRateFr, image=frameRateIcon).place(x=0, y=10)
 frameRateVal = ttk.Label(frameRateFr, text='0', font=("Abel", 13))
 frameRateVal.place(x=75, y=20)
 ttk.Label(frameRateFr, text='Frame Rate', font=("Actor", 12)).place(x=75, y=50)
 
-ampFr = tk.Frame(root, height=100, width=220)
+ampFr = ttk.Frame(root, height=100, width=220)
 ampFr.place(x=716, y=100)
-ampIcon = tk.PhotoImage(file='./icons/icon4.png')
+ampIcon = ttk.PhotoImage(file='./icons/icon4.png')
 ttk.Label(ampFr, image=ampIcon).place(x=0, y=10)
-ampVal = tk.Label(ampFr, text='0', font=("Abel", 13))
+ampVal = ttk.Label(ampFr, text='0', font=("Abel", 13))
 ampVal.place(x=75, y=20)
 ttk.Label(ampFr, text='Maximum Amplitude', font=("Actor", 12)).place(x=75, y=50)
 
 # Waveform section
-tk.Label(root, text='Audio Wave Form', font=("Barlow", 17)).place(x=37, y=200)
-
-wvFr = tk.Frame(root, height=190, width=770)
-wvFr.place(x=37, y=240)
-wvFrMod = tk.Frame(root, height=190, width=770)
-wvFrMod.place(x=37, y=470)
+ttk.Label(root, text='Audio Wave Form', font=("Barlow", 17)).place(x=37, y=200)
 
 # tasks section
-tasksLB = tk.Label(root, text='Tasks', font=("Barlow", 17)).place(x=900, y=280)
-tasksVB = ttk.Separator(root, orient='vertical', style='info.Vertical.TSeparator')
-tasksVB.place(x=980, y=280)
-tasksFr = ttk.Frame(root, height=300, width=270)
-tasksFr.place(x=900, y=320)
+ttk.Label(root, text='Tasks', font=("Barlow", 17)).place(x=900, y=280)
+ttk.Separator(root, orient='vertical', style='info.Vertical.TSeparator').place(x=980, y=280)
+ttk.Frame(root, height=300, width=270).place(x=900, y=320)
 
 # Task labels
 ttk.Label(root, text='Amplitude').place(x=915, y=345)
-ampText = tk.StringVar()
-ampValueLB = ttk.Entry(root,
-                       justify="center",
-                       textvariable=ampText,
-                       width=15,
-                       font=("Barlow", 10)
-                       )
+ampText = ttk.StringVar()
+ampValueLB = ttk.Entry(root, justify="center", textvariable=ampText, width=15, font=("Barlow", 10))
 ampValueLB.place(x=1015, y=345)
 ttk.Label(root, text='Shift', ).place(x=915, y=385)
 
-shiftText = tk.StringVar()
-shiftValueLB = ttk.Entry(root,
-                         justify="center",
-                         textvariable=shiftText,
-                         width=15,
-                         font=("Barlow", 10)
-                         )
+shiftText = ttk.StringVar()
+shiftValueLB = ttk.Entry(root, justify="center", textvariable=shiftText, width=15, font=("Barlow", 10))
 shiftValueLB.place(x=1015, y=385)
 
 ttk.Label(root, text='Speed', ).place(x=915, y=425)
-speedText = tk.StringVar()
-speedValueLB = ttk.Entry(root,
-                         justify="center",
-                         textvariable=speedText,
-                         width=15,
-                         font=("Barlow", 10)
-                         )
+speedText = ttk.StringVar()
+speedValueLB = ttk.Entry(root, justify="center", textvariable=speedText, width=15, font=("Barlow", 10))
 speedValueLB.place(x=1015, y=425)
 
 ttk.Label(root, text='Reverse', ).place(x=915, y=465)
-revText = tk.StringVar()
+revText = ttk.StringVar()
 reverseTrueVal = ttk.Radiobutton(root, style='primary.TRadiobutton', text="True", variable=revText, value=1)
 reverseTrueVal.place(x=1055, y=470)
 reverseFalseVal = ttk.Radiobutton(root, style='primary.TRadiobutton', text="False", variable=revText, value=2, )
 reverseFalseVal.place(x=1055, y=500)
 
 ttk.Label(root, text='Echo', ).place(x=915, y=530)
-echoText = tk.StringVar()
+echoText = ttk.StringVar()
 echoTrueVal = ttk.Radiobutton(root, style='TRadiobutton', text="True", variable=echoText, value=3)
 echoTrueVal.place(x=1055, y=540)
 echoFalseVal = ttk.Radiobutton(root, style='primary.TRadiobutton', text="False", variable=echoText, value=4, )
 echoFalseVal.place(x=1055, y=570)
 
 # Tasks buttons
-ttk.Button(
-    root,
-    style='success.Outline.TButton',
-    text='Apply',
-    command=applyOperations
-).place(x=940, y=630)
+ttk.Button(root, padding=(15, 8), style='success.Outline.TButton', text='Apply', command=apply_operations).place(x=940,
+                                                                                                                 y=630)
 
 # Play buttons
-ttk.Button(
-    root,
-    text='  Play',
-    command=lambda: playAudio('mod'),
-    image=play_icon,
-    compound=tk.LEFT,
-).place(x=1050, y=630)
-ttk.Button(
-    root,
-    text='  Play',
-    command=lambda: playAudio('OG'),
-    image=play_icon,
-    compound=tk.LEFT,
-).place(x=735, y=200)
+ttk.Button(root, text='  Play', command=lambda: play_audio('mod'), image=play_icon, compound=ttk.LEFT, ).place(x=1050,
+                                                                                                               y=630)
+ttk.Button(root, text='  Play', command=lambda: play_audio('OG'), image=play_icon, compound=ttk.LEFT, ).place(x=735,
+                                                                                                              y=200)
 
 
 # Plot the convolution signal
-def plottCon(signal, place, title):
+def plotting_convolution(targeted_signal, place, title):
     fig = Figure(figsize=(7, 2), dpi=110)
     a = fig.add_subplot(111)
-    # plot the wave
-    a.plot(signal, color='blue')
+    a.plot(targeted_signal, color='blue')
     a.set_ylabel("Amplitude")
     a.set_title(title)
-    a.grid()
-    # Creating Canvas to show it the Frame
-    canv = FigureCanvasTkAgg(fig, master=place)
-    canv.draw()
-    get_widz = canv.get_tk_widget()
-    get_widz.pack()
+    a.grid(alpha=0.4)
+    canvas = FigureCanvasTkAgg(fig, master=place)
+    canvas.draw()
+    get_widget = canvas.get_tk_widget()
+    get_widget.pack()
 
 
-def ApplyConvolution(convVal):
-    updatefr(ModSginalFr)
-    updatefr(ConvSginalFr)
-    if convVal == 'Sine Wave':
+# Delete the values from the textbox
+def delete_entries(wid):
+    wid.delete(0, END)
+
+
+def lti_sys(widget):
+    if widget == 1:
+        # get the values of the textbox as an array
+        num = list(map(int, trFuncValueLB.get().strip().split()))
+        den = list(map(int, tr_func_value_lb2.get().strip().split()))
+        # represent the sys as transfer function
+        sys = signal.lti(num, den)
+        # display the values in the textbox after rounding
+        for z in sys.zeros:
+            z_rounded = np.round(z, 2)
+            zeros_val_lb.insert(0, str(z_rounded) + "  ")
+        for p in sys.poles:
+            p_rounded = np.round(p, 2)
+            poles_val_lb.insert(0, str(p_rounded) + "  ")
+
+    else:
+        zeros = list(map(complex, zeros_val_lb.get().strip().split()))
+        poles = list(map(complex, poles_val_lb.get().strip().split()))
+        # get the num and den from the z and p
+        hs_rep = signal.zpk2tf(zeros, poles, k=1)
+        for z in hs_rep[0]:
+            z_rounded = np.round(z, 2)
+            trFuncValueLB.insert(0, str(z_rounded) + "  ")
+        for p in hs_rep[1]:
+            p_rounded = np.round(p, 2)
+            tr_func_value_lb2.insert(0, str(p_rounded) + "  ")
+
+
+def apply_convolution(conv_val):
+    update_frame(mod_signal_frame)
+    update_frame(conv_signal_frame)
+    # get the value of the option radiobutton
+    option_val = str(zp_to_hs_text.get())
+    if option_val == '1':
+        # update the values each time the button is pressed
+        delete_entries(zeros_val_lb)
+        delete_entries(poles_val_lb)
+        zeros_val_lb.config(state="normal")
+        poles_val_lb.config(state="normal")
+        if trFuncValueLB.get() != "" and tr_func_value_lb2.get() != "":
+            lti_sys(1)
+    if option_val == '2':
+        delete_entries(trFuncValueLB)
+        delete_entries(tr_func_value_lb2)
+        trFuncValueLB.config(state="normal")
+        tr_func_value_lb2.config(state="normal")
+        if zeros_val_lb.get() != "" and poles_val_lb.get() != "":
+            lti_sys(2)
+
+    if conv_val == 'Sine Wave':
         win = signal.windows.hann(50)
-        plottCon(win, ModSginalFr, 'Impulse Response')
+        plotting_convolution(win, mod_signal_frame, 'Impulse Response')
         filtered = signal.convolve(sig, win, mode='same') / sum(win)
-        plottCon(filtered, ConvSginalFr, 'Filtered Signal')
-    else:
+        plotting_convolution(filtered, conv_signal_frame, 'Filtered Signal')
+        mb.config(text="Sine Wave")
+    if conv_val == 'Rec Wave':
         win = np.repeat([0., 1., 0.], 50)
-        plottCon(win, ModSginalFr, 'Impulse Response')
+        plotting_convolution(win, mod_signal_frame, 'Impulse Response')
         filtered = signal.convolve(sig, win, mode='same') / sum(win)
-        plottCon(filtered, ConvSginalFr, 'Filtered Signal')
+        plotting_convolution(filtered, conv_signal_frame, 'Filtered Signal')
+        mb.config(text="Rec Wave")
 
 
-# Covolution PopUp
-def openConvWindow():
-    # checking if the user has imported a file or not
-    if hasImported:
-        # be treated as a new window
-        newConvWindow = Toplevel(root)
-        newConvWindow.title("Convolution")
-        newConvWindow.iconbitmap('./icons/picon.ico')
-        newConvWindow.resizable(False, False)
-        newConvWindow.geometry("1200x740")
-        # Three plotting frames
-        global OGSginalFr
-        OGSginalFr = ttk.Frame(newConvWindow, style='TFrame', height=190, width=770)
-        OGSginalFr.place(x=10, y=10)
-        global ModSginalFr
-        ModSginalFr = ttk.Frame(newConvWindow, style='TFrame', height=190, width=770)
-        ModSginalFr.place(x=10, y=250)
-        global ConvSginalFr
-        ConvSginalFr = ttk.Frame(newConvWindow, style='TFrame', height=190, width=770)
-        ConvSginalFr.place(x=10, y=490)
-        # menu selection
-        mb = ttk.Menubutton(newConvWindow, text='Select Wave', style='info.Outline.TMenubutton', )
-        mb.pack()
-        mb.place(x=1000, y=230)
-        # create menu
-        menu = tk.Menu(mb, font=("Barlow", 13))
-        # add options
-        option_var = tk.StringVar()
-        for option in ['Sine Wave', 'Rec Wave']:
-            menu.add_radiobutton(label=option, value=option, variable=option_var)
-        # associate menu with menubutton
-        mb['menu'] = menu
-        ttk.Label(newConvWindow, text="Select Impulse Response").place(x=810, y=230)
-        ttk.Button(
-            newConvWindow,
-            text='Apply',
-            command=lambda: ApplyConvolution(option_var.get()),
-        ).place(x=910, y=500)
-        # plot the original signal based on the imported audio file
-        global sig
-        sig = data
-        # plot the original signal
-        plottCon(sig, OGSginalFr, 'Original Signal')
+# disable and enable the desired textbox based on the state of the option radiobutton
+def disable_box(num):
+    delete_entries(zeros_val_lb)
+    delete_entries(poles_val_lb)
+    delete_entries(trFuncValueLB)
+    delete_entries(tr_func_value_lb2)
+    if num == 1:
+        zeros_val_lb.config(state="readonly")
+        poles_val_lb.config(state="readonly")
+        trFuncValueLB.config(state="normal")
+        tr_func_value_lb2.config(state="normal")
     else:
-        messagebox.showinfo("Warning", "Please Import Audio File First")
+        trFuncValueLB.config(state="readonly")
+        tr_func_value_lb2.config(state="readonly")
+        zeros_val_lb.config(state="normal")
+        poles_val_lb.config(state="normal")
 
 
+# Convolution PopUp
+def open_conv_window():
+    # be treated as a new window
+    new_conv_window = Toplevel(root)
+    new_conv_window.title("Convolution")
+    new_conv_window.iconbitmap('./icons/picon.ico')
+    new_conv_window.resizable(False, False)
+    new_conv_window.geometry("1200x740")
+    # Three plotting frames
+    global og_signal_frame
+    og_signal_frame = ttk.Frame(new_conv_window, height=190, width=770)
+    og_signal_frame.place(x=10, y=10)
+    global mod_signal_frame
+    mod_signal_frame = ttk.Frame(new_conv_window, height=190, width=770)
+    mod_signal_frame.place(x=10, y=250)
+    global conv_signal_frame
+    conv_signal_frame = ttk.Frame(new_conv_window, height=190, width=770)
+    conv_signal_frame.place(x=10, y=490)
 
-# convlution button on the main interface
-ttk.Button(
-    root,
-    text='  Convolution',
-    command=openConvWindow,
-    image=conv_icon,
-    compound=tk.LEFT,
-    width=9,
-    style='warning.TButton'
-).place(x=1000, y=200)
+    tabs_fr = ttk.Frame(new_conv_window, height=700, width=350)
+    tabs_fr.place(x=800, y=10)
+    notebook = ttk.Notebook(tabs_fr)
+    notebook.pack(pady=10, expand=True)
+
+    # create frames
+    frame1 = ttk.Frame(notebook, width=350, height=400)
+    frame2 = ttk.Frame(notebook, width=350, height=400)
+    ttk.Label(frame2, text='Numerator').place(x=10, y=10)
+    tr_func_text = ttk.StringVar()
+    global trFuncValueLB
+    trFuncValueLB = ttk.Entry(frame2, justify="center", textvariable=tr_func_text, width=15, font=("Barlow", 10),
+                              state="disabled")
+    trFuncValueLB.place(x=130, y=10)
+    ttk.Label(frame2, text='Denominator').place(x=10, y=60)
+    tr_func_text2 = ttk.StringVar()
+    global tr_func_value_lb2
+    tr_func_value_lb2 = ttk.Entry(frame2, justify="center", textvariable=tr_func_text2, width=15, font=("Barlow", 10),
+                                  state="disabled")
+    tr_func_value_lb2.place(x=130, y=60)
+    ttk.Separator(frame2, orient='horizontal', style='info.horizontal.TSeparator').place(x=10, y=115)
+    ttk.Label(frame2, text='Zeros').place(x=10, y=130)
+    zeros_text = ttk.StringVar()
+    global zeros_val_lb
+    zeros_val_lb = ttk.Entry(frame2, justify="center", textvariable=zeros_text, width=15, font=("Barlow", 10),
+                             state="disabled")
+    zeros_val_lb.place(x=130, y=130)
+
+    ttk.Label(frame2, text='Poles').place(x=10, y=180)
+    poles_text = ttk.StringVar()
+    global poles_val_lb
+    poles_val_lb = ttk.Entry(frame2, justify="center", textvariable=poles_text, width=15, font=("Barlow", 10),
+                             state="disabled"
+
+                             )
+    poles_val_lb.place(x=130, y=180)
+
+    ttk.Label(frame2, text='Option', ).place(x=10, y=250)
+    global zp_to_hs_text
+    zp_to_hs_text = ttk.StringVar()
+    zp_to_hs_true_val = ttk.Radiobutton(frame2, style='primary.TRadiobutton', text="H (s) To Zeros",
+                                        command=lambda: disable_box(1), variable=zp_to_hs_text, value=1)
+    zp_to_hs_true_val.place(x=130, y=250)
+    zp_to_hs_false_val = ttk.Radiobutton(frame2, style='primary.TRadiobutton', text="Zeros To H (s)",
+                                         command=lambda: disable_box(2), variable=zp_to_hs_text, value=2, )
+    zp_to_hs_false_val.place(x=130, y=280)
+
+    frame1.pack(fill='both', expand=True)
+    frame2.pack(fill='both', expand=True)
+
+    # add frames to notebook
+
+    notebook.add(frame1, text='Wave')
+    notebook.add(frame2, text='Transfer Function')
+
+    # menu selection
+    global mb
+    mb = ttk.Menubutton(frame1, text='Select Wave', style='info.Outline.TMenubutton', )
+    mb.place(x=10, y=100)
+    # create menu
+    menu = ttk.Menu(mb, font=("Barlow", 13))
+    # add options
+    option_var = ttk.StringVar()
+    for option in ['Sine Wave', 'Rec Wave']:
+        menu.add_radiobutton(label=option, value=option, variable=option_var)
+    # associate menu with menubutton
+    mb['menu'] = menu
+    ttk.Label(frame1, text="Select Impulse Response").place(x=10, y=10)
+    ttk.Button(new_conv_window, text='Apply', command=lambda: apply_convolution(option_var.get()), ).place(x=940, y=500)
+    # plot the original signal based on the imported Audio Output file
+    global sig
+    sig = np.repeat([0., 1., 0.], 100)
+    # plot the original signal
+    plotting_convolution(sig, og_signal_frame, 'Original Signal')
+
+
+# convolution button on the main interface
+ttk.Button(root, text='  Convolution', command=open_conv_window, image=conv_icon, compound=ttk.LEFT, width=11,
+           style='danger.TButton').place(x=1000, y=200)
 
 
 # Text To Speach Function
 def tts(speach):
     engine = pyttsx3.init()  # object creation
     """ RATE"""
-    rate = engine.getProperty('rate')  # getting details of current speaking rate
     engine.setProperty('rate', 220)  # setting up new voice rate
     """VOLUME"""
-    volume = engine.getProperty('volume')  # getting to know current volume level (min=0 and max=1)
     engine.setProperty('volume', 1.0)  # setting up volume level  between 0 and 1
     """VOICE"""
-    voices = engine.getProperty('voices')  # getting details of current voice
-    # engine.setProperty('voice', voices[0].id)  #changing index, changes voices. o for male
-    engine.setProperty('voice', voices[1].id)  # changing index, changes voices. 1 for female
     engine.say(speach)
     engine.runAndWait()
     engine.stop()
     """Saving Voice to a file"""
-    engine.save_to_file(speach, './/audio//Transcript.mp3')
+    engine.save_to_file(speach, 'Audio Output/Transcript.mp3')
     engine.runAndWait()
 
 
-def openTTSWindow():
-    newWindow = Toplevel(root)
-    newWindow.title("Text To Speach")
-    newWindow.iconbitmap('./icons/picon.ico')
-    newWindow.resizable(False, False)
-    newWindow.geometry("400x200")
+def open_tts_window():
+    new_window = Toplevel(root)
+    new_window.title("Text To Speach")
+    new_window.iconbitmap('./icons/picon.ico')
+    new_window.resizable(False, False)
+    new_window.geometry("400x200")
     # A Label widget to show in toplevel
-    ttk.Label(newWindow, text="Please Write The Transcript").pack(pady=10)
-    ttsText = tk.StringVar()
-    ttsValueLB = ttk.Entry(newWindow,
-                           justify="center",
-                           textvariable=ttsText,
-                           font=("Barlow", 12),
-                           )
-    ttsValueLB.pack(fill='x', pady=10)
+    ttk.Label(new_window, text="Please Write The Transcript").pack(pady=10)
+    tts_text = ttk.StringVar()
+    tts_value_lb = ttk.Entry(new_window, justify="center", textvariable=tts_text, font=("Barlow", 12), )
+    tts_value_lb.pack(fill='x', pady=10)
 
     # Get the text value function
-    def Get_MyInputValue(widg):
-        getresult = widg.get()
+    def get_my_input_value(widget):
+        getresult = widget.get()
         tts(str(getresult))
         return
 
-    ttk.Button(
-        newWindow,
-        text='Convert',
-        command=lambda: Get_MyInputValue(ttsValueLB),
-    ).pack(pady=20)
+    ttk.Button(new_window, text='Convert', command=lambda: get_my_input_value(tts_value_lb), ).pack(pady=20)
 
 
 # TTS Button
-ttk.Button(
-    root,
-    text=' Text To Speach',
-    command=openTTSWindow,
-    image=tts_icon,
-    compound=tk.LEFT,
-    style='success.TButton',
-    width=12,
-).place(x=1000, y=280)
+ttk.Button(root, text=' Text To Speach', command=open_tts_window, image=tts_icon, compound=ttk.LEFT,
+           style='success.TButton', width=14, ).place(x=1000, y=280)
 
 # Fix the DPI Bug
 windll.shcore.SetProcessDpiAwareness(1)
+
 root.mainloop()
