@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 
 def Directory():
     # Create directory ,it's a directory name which you are going to create.
-    Directory_Name = 'audio'
+    Directory_Name = 'Audio Output'
     # try and catch block use to handle the exceptions.
     try:
         # Create  Directory
