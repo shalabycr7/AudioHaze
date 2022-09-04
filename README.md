@@ -74,8 +74,7 @@
 ### Changelogs
 
 * **V 0.3**
-  > Playing Audio Does Not Freeze The App Anymore But There Maybe Some Delay Applying Operation Due To The New Method Of
-  Writing Frames
+  > Playing Audio Does Not Freeze The App Anymore
     * Some minor improvements to the code :heavy_check_mark:
     * Fixed Minor Bugs And Improved Optimizations :heavy_check_mark:
     * Added Support For Playing Audio Async :heavy_check_mark:
