@@ -234,7 +234,7 @@ def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state
     pov_shift_in_sec = shift_amount
     for i in range(int(sampleRate * pov_shift_in_sec)):
         zero_in_byte = struct.pack('<h', 0)
-        audio_obj.writeframes(zero_in_byte)
+        audio_obj.writeframesraw(zero_in_byte)
     # Amplification OP
     amp = amp_amount
     n = len(data)
@@ -248,7 +248,7 @@ def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state
             if two_byte_sample < -32760:
                 two_byte_sample = -32760
             sample = struct.pack('<h', int(two_byte_sample))
-            audio_obj.writeframes(sample)
+            audio_obj.writeframesraw(sample)
     else:
         for i in range(data.__len__()):
             two_byte_sampler = data[i] * amp
@@ -257,7 +257,7 @@ def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state
             if two_byte_sampler < -32760:
                 two_byte_sampler = -32760
             sample = struct.pack('<h', int(two_byte_sampler))
-            audio_obj.writeframes(sample)
+            audio_obj.writeframesraw(sample)
 
     audio_obj.close()
     wav_file.close()
