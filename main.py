@@ -3,19 +3,20 @@ import struct
 import wave
 from ctypes import windll
 from tkinter import filedialog, messagebox
+
 import matplotlib
 import numpy as np
-import simpleaudio as sa
+import pyttsx3
 import ttkbootstrap as ttk
+import winsound
+from matplotlib import style
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from matplotlib import style
-from playsound import playsound
 from pydub import AudioSegment
 from scipy import signal
 from ttkbootstrap import Style, Toplevel, END
+
 from AudioLib.AudioProcessing import AudioProcessing
-import pyttsx3
 
 current_style = Style(theme='cosmo')
 root = current_style.master
@@ -188,18 +189,20 @@ def import_file():
 
 def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state):
     update_frame(wvFrMod)
-    obj = wave.open(directory_name + '\\Modified.wav', 'wb')
-    obj.setnchannels(nChannels)
-    obj.setsampwidth(2)
+    out_file = directory_name + "\\Modified.wav"
+    audio_obj = wave.open(out_file, 'wb')
+    audio_obj.setnchannels(nChannels)
+    audio_obj.setsampwidth(2)
+
     # speed OP
     speed_factor = speed_amount
     speed = sampleRate * speed_factor
-    obj.setframerate(speed)
+    audio_obj.setframerate(speed)
     # Shift OP
     pov_shift_in_sec = shift_amount
     for i in range(int(sampleRate * pov_shift_in_sec)):
         zero_in_byte = struct.pack('<h', 0)
-        obj.writeframesraw(zero_in_byte)
+        audio_obj.writeframesraw(zero_in_byte)
     # Amplification OP
     amp = amp_amount
     n = len(data)
@@ -213,7 +216,7 @@ def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state
             if two_byte_sample < -32760:
                 two_byte_sample = -32760
             sample = struct.pack('<h', int(two_byte_sample))
-            obj.writeframesraw(sample)
+            audio_obj.writeframesraw(sample)
     else:
         for i in range(data.__len__()):
             two_byte_sampler = data[i] * amp
@@ -222,9 +225,9 @@ def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state
             if two_byte_sampler < -32760:
                 two_byte_sampler = -32760
             sample = struct.pack('<h', int(two_byte_sampler))
-            obj.writeframesraw(sample)
+            audio_obj.writeframesraw(sample)
 
-    obj.close()
+    audio_obj.close()
     wav.close()
     obj = wave.open(directory_name + '\\Modified.wav', 'rb')  # open
     data_out = obj.readframes(-1)  # get all the frames in data out
@@ -237,6 +240,9 @@ def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state
         sound1 = AudioProcessing(directory_name + '\\Modified.wav')
         sound1.set_echo(0.4)
         sound1.save_to_file(directory_name + '\\Modified.wav')
+    obj.close()
+    wav.close()
+    return
 
 
 def apply_operations():
@@ -261,22 +267,21 @@ def apply_operations():
 
 def play_audio(indication):
     if hasImported:
+
         if indication == 'OG':
-            wave_object = sa.WaveObject.from_wave_file(file_directory)
-            play_object = wave_object.play()
-            play_object.wait_done()
+            audio_file = file_directory
         else:
-            audio_file = os.path.dirname(__file__) + '//' + directory_name + '//Modified.wav'
-            playsound(audio_file)
+            # audio_file = os.path.join(sys.path[0], directory_name+"/Modified.wav")
+            audio_file = directory_name + "/Modified.wav"
+
+        winsound.PlaySound(audio_file, winsound.SND_FILENAME)
+
     else:
         messagebox.showinfo("Warning", "Please Import Audio File First")
 
 
 # header buttons
 ttk.Button(root, text='  Import', command=import_file, image=import_icon, compound=ttk.LEFT, ).place(x=1050, y=55)
-
-# darkBtn = ttk.Button(root, command=set_theme, image=dark_icon, compound=ttk.LEFT, width=1, style='Link.TButton')
-# darkBtn.place(x=970, y=55)
 
 # header section
 ttk.Label(root, text='Signal Processing with Python', font=("Barlow", 20)).place(x=37, y=17)
@@ -392,13 +397,13 @@ def lti_sys(widget):
         # get the values of the textbox as an array
         num = list(map(int, trFuncValueLB.get().strip().split()))
         den = list(map(int, tr_func_value_lb2.get().strip().split()))
-        # represent the sys as transfer function
-        sys = signal.lti(num, den)
+        # represent the lti_system as transfer function
+        lti_system = signal.lti(num, den)
         # display the values in the textbox after rounding
-        for z in sys.zeros:
+        for z in lti_system.zeros:
             z_rounded = np.round(z, 2)
             zeros_val_lb.insert(0, str(z_rounded) + "  ")
-        for p in sys.poles:
+        for p in lti_system.poles:
             p_rounded = np.round(p, 2)
             poles_val_lb.insert(0, str(p_rounded) + "  ")
 
