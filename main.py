@@ -2,10 +2,9 @@ import os
 import struct
 import wave
 from ctypes import windll
-from tkinter import filedialog, messagebox, Toplevel, END
+from tkinter import filedialog, messagebox
 import matplotlib
 import numpy as np
-import pyttsx3
 import simpleaudio as sa
 import ttkbootstrap as ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -14,20 +13,33 @@ from matplotlib import style
 from playsound import playsound
 from pydub import AudioSegment
 from scipy import signal
-from ttkbootstrap import Style
-
+from ttkbootstrap import Style, Toplevel, END
 from AudioLib.AudioProcessing import AudioProcessing
+import pyttsx3
 
-file_directory = "/"
-directory_name = "Audio Output"
 current_style = Style(theme='cosmo')
 root = current_style.master
+
+# icons
+dark_icon = ttk.PhotoImage(file='icons/darkIcon.png')
+import_icon = ttk.PhotoImage(file='icons/importIcon.png')
+play_icon = ttk.PhotoImage(file='icons/playIcon.png')
+conv_icon = ttk.PhotoImage(file='icons/convIcon.png')
+tts_icon = ttk.PhotoImage(file='icons/ttsIcon.png')
+white_icon = ttk.PhotoImage(file='icons/whiteIcon.png')
+
+# global variables
+file_directory = "/"
+directory_name = "Audio Output"
 dark_mode_state = False
-darkBtn = ttk.Button()
+darkBtn = ttk.Button(root, image=dark_icon, style='Link.TButton')
+darkBtn.place(x=970, y=55)
 wvFr = ttk.Frame(root, height=190, width=770)
 wvFr.place(x=37, y=240)
 wvFrMod = ttk.Frame(root, height=190, width=770)
 wvFrMod.place(x=37, y=470)
+conv_signal_frame = ttk.Frame()
+mod_signal_frame = ttk.Frame()
 nChannels = 1
 sampleRate = 1
 
@@ -38,21 +50,12 @@ def make_output_directory():
     exceptions.
     """
     try:
-        # Create  Directory
         os.mkdir(directory_name)
     except FileExistsError:
         return
 
 
 make_output_directory()
-
-# icons
-import_icon = ttk.PhotoImage(file='icons/importIcon.png')
-play_icon = ttk.PhotoImage(file='icons/playIcon.png')
-conv_icon = ttk.PhotoImage(file='icons/convIcon.png')
-tts_icon = ttk.PhotoImage(file='icons/ttsIcon.png')
-dark_icon = ttk.PhotoImage(file='icons/darkIcon.png')
-white_icon = ttk.PhotoImage(file='icons/whiteIcon.png')
 
 root.title(' Audio Signal Manipulation')
 root.iconbitmap('icons/picon.ico')
@@ -89,6 +92,7 @@ def set_theme():
     global darkBtn
     global wvFr
     global wvFrMod
+
     if dark_mode_state:
         Style(theme='cyborg')
         darkBtn.config(image=white_icon)
@@ -108,6 +112,7 @@ def set_theme():
 
 
 set_theme()
+darkBtn.config(command=set_theme)
 
 
 # read the Audio Output file
@@ -270,8 +275,8 @@ def play_audio(indication):
 # header buttons
 ttk.Button(root, text='  Import', command=import_file, image=import_icon, compound=ttk.LEFT, ).place(x=1050, y=55)
 
-darkBtn = ttk.Button(root, command=set_theme, image=dark_icon, compound=ttk.LEFT, width=1, style='Link.TButton')
-darkBtn.place(x=970, y=55)
+# darkBtn = ttk.Button(root, command=set_theme, image=dark_icon, compound=ttk.LEFT, width=1, style='Link.TButton')
+# darkBtn.place(x=970, y=55)
 
 # header section
 ttk.Label(root, text='Signal Processing with Python', font=("Barlow", 20)).place(x=37, y=17)
@@ -361,6 +366,10 @@ ttk.Button(root, text='  Play', command=lambda: play_audio('OG'), image=play_ico
 
 # Plot the convolution signal
 def plotting_convolution(targeted_signal, place, title):
+    if not dark_mode_state:
+        matplotlib.style.use('dark_background')
+    else:
+        matplotlib.style.use('default')
     fig = Figure(figsize=(7, 2), dpi=110)
     a = fig.add_subplot(111)
     a.plot(targeted_signal, color='blue')
@@ -432,13 +441,13 @@ def apply_convolution(conv_val):
         plotting_convolution(win, mod_signal_frame, 'Impulse Response')
         filtered = signal.convolve(sig, win, mode='same') / sum(win)
         plotting_convolution(filtered, conv_signal_frame, 'Filtered Signal')
-        mb.config(text="Sine Wave")
+        select_wave_menu.config(text="Sine Wave")
     if conv_val == 'Rec Wave':
         win = np.repeat([0., 1., 0.], 50)
         plotting_convolution(win, mod_signal_frame, 'Impulse Response')
         filtered = signal.convolve(sig, win, mode='same') / sum(win)
         plotting_convolution(filtered, conv_signal_frame, 'Filtered Signal')
-        mb.config(text="Rec Wave")
+        select_wave_menu.config(text="Rec Wave")
 
 
 # disable and enable the desired textbox based on the state of the option radiobutton
@@ -534,17 +543,17 @@ def open_conv_window():
     notebook.add(frame2, text='Transfer Function')
 
     # menu selection
-    global mb
-    mb = ttk.Menubutton(frame1, text='Select Wave', style='info.Outline.TMenubutton', )
-    mb.place(x=10, y=100)
+    global select_wave_menu
+    select_wave_menu = ttk.Menubutton(frame1, text='Select Wave', style='info.Outline.TMenubutton', )
+    select_wave_menu.place(x=10, y=100)
     # create menu
-    menu = ttk.Menu(mb, font=("Barlow", 13))
+    menu = ttk.Menu(select_wave_menu, font=("Barlow", 13))
     # add options
     option_var = ttk.StringVar()
     for option in ['Sine Wave', 'Rec Wave']:
         menu.add_radiobutton(label=option, value=option, variable=option_var)
     # associate menu with menubutton
-    mb['menu'] = menu
+    select_wave_menu['menu'] = menu
     ttk.Label(frame1, text="Select Impulse Response").place(x=10, y=10)
     ttk.Button(new_conv_window, text='Apply', command=lambda: apply_convolution(option_var.get()), ).place(x=940, y=500)
     # plot the original signal based on the imported Audio Output file
@@ -561,24 +570,23 @@ ttk.Button(root, text='  Convolution', command=open_conv_window, image=conv_icon
 
 # Text To Speach Function
 def tts(speach):
-    engine = pyttsx3.init()  # object creation
-    """ RATE"""
-    engine.setProperty('rate', 220)  # setting up new voice rate
-    """VOLUME"""
-    engine.setProperty('volume', 1.0)  # setting up volume level  between 0 and 1
-    """VOICE"""
-    engine.say(speach)
-    engine.runAndWait()
-    engine.stop()
-    """Saving Voice to a file"""
-    engine.save_to_file(speach, 'Audio Output/Transcript.mp3')
-    engine.runAndWait()
+    if speach == "":
+        messagebox.showinfo("info", "Enter Some Text")
+    else:
+        engine = pyttsx3.init()
+        # say method on the engine that passing input text to be spoken
+        engine.say(speach)
+        # Saving Voice to a file
+        engine.save_to_file(speach, directory_name + '/Transcript.mp3')
+        # run and wait method, it processes the voice commands.
+        engine.runAndWait()
+        engine.stop()
 
 
 def open_tts_window():
     new_window = Toplevel(root)
     new_window.title("Text To Speach")
-    new_window.iconbitmap('./icons/picon.ico')
+    new_window.iconbitmap('icons/picon.ico')
     new_window.resizable(False, False)
     new_window.geometry("400x200")
     # A Label widget to show in toplevel

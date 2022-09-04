@@ -1,7 +1,18 @@
 ![](https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/Features/Cover%20Design.png)
-# Audio-Signal-Processing-App-GUI-in-Python
-This is a simple GUI application to manipulate audio waves using python
+# Audio Signal Processing App
+###### This is a simple GUI application to manipulate audio waves using python
+
+
+
+
+## Requirements
+##### Install FFmpeg
+* You need to install `FFmpeg` from this guide [Install FFmpeg on Windows](<https://www.wikihow.com/Install-FFmpeg-on-Windows>)
+
 ## Changelogs
+* **V 0.3**
+    * Some minor improvements to the code :heavy_check_mark:
+    * Fixed Minor Bugs And Improved Optimizations :heavy_check_mark:
 * **V 0.2**
     * Added Support For Stereo Audio Files :heavy_check_mark:
     * Fixed Minor Bugs And Improved Optimizations :heavy_check_mark:
@@ -16,3 +27,7 @@ The app was tested on the following version of python
 | Version | Supported          |
 |---------|--------------------|
 | 3.10    | :white_check_mark: |
+
+## Screenshots
+* [s1]: https://drive.google.com/file/d/1QKV19JvzXLyqFY_DHoOegPukZXUNfC1c/view?usp=sharing "Main Interface"
+
