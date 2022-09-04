@@ -4,6 +4,9 @@
 
 ###### This Is A Simple GUI Application To Manipulate Audio Files By Modifying The Audio Wave Form And Display It Using Python
 
+> This Is A Simple GUI Application To Manipulate Audio Files By Modifying The Audio Wave Form And Display It Using
+> Python
+
 ### Requirements
 
 ##### Install FFmpeg
@@ -56,8 +59,6 @@
 [s4]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/429ae76c7a8709cb275418c80d91973158881aa5/Screenshots/44.png "Main Interface For Convolution"
 
 ### Task List
-
-> Text that is a quote
 
 - [x] Add Support For Stereo Files
 - [ ] Add Support For More Audio Formats like `.mp3`
