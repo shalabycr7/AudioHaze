@@ -21,6 +21,7 @@
     * Number Of Channels
     * Audio Frame Rate
     * Maximum Audio Amplitude
+    * Audio File Duration
 * Modify The Audio File By:
     * Increasing/Decreasing The Amplitude
     * Increasing/Decreasing Audio Speed
@@ -60,15 +61,21 @@
 
 ### Task List
 
-- [x] Add Support For Stereo Files
 - [ ] Add Support For More Audio Formats like `.mp3`
-- [ ] Remove Deprecated Functions
+- [x] Add Support For Stereo Files
+- [x] Remove Audio Libraries/Functions
 
 ### Changelogs
 
 * **V 0.3**
+  > Playing Audio Does Not Freeze The App Anymore But There Maybe Some Delay Applying Operation Due To The New Method Of
+  Writing Frames
     * Some minor improvements to the code :heavy_check_mark:
     * Fixed Minor Bugs And Improved Optimizations :heavy_check_mark:
+    * Added Support For Playing Audio Async :heavy_check_mark:
+    * Added Stop Button :heavy_check_mark:
+    * Display Audio File Duration :heavy_check_mark:
+
 * **V 0.2**
     * Added Support For Stereo Audio Files :heavy_check_mark:
     * Fixed Minor Bugs And Improved Optimizations :heavy_check_mark:

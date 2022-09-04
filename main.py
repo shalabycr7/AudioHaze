@@ -25,6 +25,7 @@ root = current_style.master
 dark_icon = ttk.PhotoImage(file='icons/darkIcon.png')
 import_icon = ttk.PhotoImage(file='icons/importIcon.png')
 play_icon = ttk.PhotoImage(file='icons/playIcon.png')
+stop_icon = ttk.PhotoImage(file='icons/stopIcon.png')
 conv_icon = ttk.PhotoImage(file='icons/convIcon.png')
 tts_icon = ttk.PhotoImage(file='icons/ttsIcon.png')
 white_icon = ttk.PhotoImage(file='icons/whiteIcon.png')
@@ -34,15 +35,27 @@ file_directory = "/"
 directory_name = "Audio Output"
 dark_mode_state = False
 darkBtn = ttk.Button(root, image=dark_icon, style='Link.TButton')
-darkBtn.place(x=970, y=55)
 wvFr = ttk.Frame(root, height=190, width=770)
-wvFr.place(x=37, y=240)
 wvFrMod = ttk.Frame(root, height=190, width=770)
-wvFrMod.place(x=37, y=470)
+length_lb = ttk.Label(root, font=("Barlow", 17))
 conv_signal_frame = ttk.Frame()
 mod_signal_frame = ttk.Frame()
 nChannels = 1
 sampleRate = 1
+num_of_frames = 1
+
+
+def display_elements():
+    darkBtn.place(x=970, y=55)
+    wvFr.place(x=37, y=240)
+    wvFrMod.place(x=37, y=470)
+    length_lb.place(x=530, y=205)
+    ttk.Separator(root, orient='vertical', style='info.Vertical.TSeparator').place(x=630, y=200)
+
+    return
+
+
+display_elements()
 
 
 def make_output_directory():
@@ -113,6 +126,7 @@ def set_theme():
 
 
 set_theme()
+
 darkBtn.config(command=set_theme)
 
 
@@ -128,13 +142,21 @@ def read_file(file):
     data = np.frombuffer(raw, "int16")
     global sampleRate
     sampleRate = file.getframerate()
+    global num_of_frames
+    num_of_frames = file.getnframes()
+    # get the duration of the audio file
+    duration = num_of_frames / float(sampleRate)
+    hours, minutes, seconds = output_duration(int(duration))
+    total_time = '{}:{}:{}'.format(hours, minutes, seconds)
+    length_lb.config(text=total_time)
+
     time = np.linspace(0, len(data) / sampleRate, num=len(data))
     return time, data
 
 
 # plot the Audio Output data
 def plotting(time, raw, place):
-    # Apply dark mod on the plot
+    # Apply dark mode on the plot
     if not dark_mode_state:
         matplotlib.style.use('dark_background')
     else:
@@ -154,6 +176,16 @@ def plotting(time, raw, place):
     get_widget.pack()
 
 
+def output_duration(length):
+    hours = length // 3600  # calculate in hours
+    length %= 3600
+    minutes = length // 60  # calculate in minutes
+    length %= 60
+    seconds = length  # calculate in seconds
+
+    return hours, minutes, seconds
+
+
 # import Audio Output file
 def import_file():
     update_frame(wvFr)
@@ -165,9 +197,9 @@ def import_file():
     if file_directory == '':
         messagebox.showinfo("info", "No File Was Selected")
     else:
-        global wav
-        wav = wave.open(file_directory, "rb")
-        result = read_file(wav)
+        global wav_file
+        wav_file = wave.open(file_directory, 'r')
+        result = read_file(wav_file)
         global hasImported
         hasImported = True
         # Update displayed File info
@@ -202,7 +234,7 @@ def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state
     pov_shift_in_sec = shift_amount
     for i in range(int(sampleRate * pov_shift_in_sec)):
         zero_in_byte = struct.pack('<h', 0)
-        audio_obj.writeframesraw(zero_in_byte)
+        audio_obj.writeframes(zero_in_byte)
     # Amplification OP
     amp = amp_amount
     n = len(data)
@@ -216,7 +248,7 @@ def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state
             if two_byte_sample < -32760:
                 two_byte_sample = -32760
             sample = struct.pack('<h', int(two_byte_sample))
-            audio_obj.writeframesraw(sample)
+            audio_obj.writeframes(sample)
     else:
         for i in range(data.__len__()):
             two_byte_sampler = data[i] * amp
@@ -225,10 +257,10 @@ def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state
             if two_byte_sampler < -32760:
                 two_byte_sampler = -32760
             sample = struct.pack('<h', int(two_byte_sampler))
-            audio_obj.writeframesraw(sample)
+            audio_obj.writeframes(sample)
 
     audio_obj.close()
-    wav.close()
+    wav_file.close()
     obj = wave.open(directory_name + '\\Modified.wav', 'rb')  # open
     data_out = obj.readframes(-1)  # get all the frames in data out
     data_out = np.frombuffer(data_out, "int16")  # set the data to a number of two byte form data out
@@ -241,7 +273,7 @@ def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state
         sound1.set_echo(0.4)
         sound1.save_to_file(directory_name + '\\Modified.wav')
     obj.close()
-    wav.close()
+    wav_file.close()
     return
 
 
@@ -265,17 +297,18 @@ def apply_operations():
         messagebox.showinfo("Warning", "Please Import Audio File First And Set The Values")
 
 
+def stop_audio():
+    winsound.PlaySound(None, winsound.SND_FILENAME)
+
+
 def play_audio(indication):
     if hasImported:
 
         if indication == 'OG':
             audio_file = file_directory
         else:
-            # audio_file = os.path.join(sys.path[0], directory_name+"/Modified.wav")
             audio_file = directory_name + "/Modified.wav"
-
-        winsound.PlaySound(audio_file, winsound.SND_FILENAME)
-
+        winsound.PlaySound(audio_file, winsound.SND_FILENAME | winsound.SND_ASYNC)
     else:
         messagebox.showinfo("Warning", "Please Import Audio File First")
 
@@ -365,8 +398,11 @@ ttk.Button(root, padding=(15, 8), style='success.Outline.TButton', text='Apply',
 # Play buttons
 ttk.Button(root, text='  Play', command=lambda: play_audio('mod'), image=play_icon, compound=ttk.LEFT, ).place(x=1050,
                                                                                                                y=630)
-ttk.Button(root, text='  Play', command=lambda: play_audio('OG'), image=play_icon, compound=ttk.LEFT, ).place(x=735,
+ttk.Button(root, text='  Play', command=lambda: play_audio('OG'), image=play_icon, compound=ttk.LEFT, ).place(x=790,
                                                                                                               y=200)
+ttk.Button(root, text='  Stop', style='danger.TButton', command=lambda: stop_audio(), image=stop_icon,
+           compound=ttk.LEFT, ).place(x=650,
+                                      y=200)
 
 
 # Plot the convolution signal
@@ -570,7 +606,7 @@ def open_conv_window():
 
 # convolution button on the main interface
 ttk.Button(root, text='  Convolution', command=open_conv_window, image=conv_icon, compound=ttk.LEFT, width=11,
-           style='danger.TButton').place(x=1000, y=200)
+           style='warning.TButton').place(x=1000, y=200)
 
 
 # Text To Speach Function
