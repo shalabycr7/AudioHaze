@@ -30,11 +30,11 @@ The app was tested on the following version of python
 
 ## Screenshots
 ### Main Interface
-* ![Main Interface][s1]
-* ![Main Interface In Dark Mode][s2]
-#### Convolution Interface
-* ![Main Interface For Convolution][s3]
-* ![Main Interface For Convolution][s4]
+![Main Interface][s1]
+![Main Interface In Dark Mode][s2]
+### Convolution Interface
+![Main Interface For Convolution][s3]
+![Main Interface For Convolution][s4]
 
 
 [s1]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/429ae76c7a8709cb275418c80d91973158881aa5/Screenshots/11.png "Main Interface"
