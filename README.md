@@ -1,14 +1,15 @@
 ![](https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/Features/Cover%20Design.png)
 # Audio Signal Processing App
+
 ###### This Is A Simple GUI Application To Manipulate Audio Files By Modifying The Audio Wave Form And Display It Using Python
 
-## Requirements
+### Requirements
 ##### Install FFmpeg
 * You Need To Install `FFmpeg` From This Guide [Install FFmpeg on Windows](<https://www.wikihow.com/Install-FFmpeg-on-Windows>)
 
-## Core Features
+### Core Features
 * Show Audio File Information Such As:
-  * File Type
+  * File Type (Supports Only `.Wav` Files For Now )
   * Number Of Channels
   * Audio Frame Rate 
   * Maximum Audio Amplitude
@@ -28,11 +29,11 @@
 * Support For Stereo Audio Files
 * Support Dark Mode Theme
 
-## Screenshots
-### Main Interface
+### Screenshots
+#### Main Interface
 ![Main Interface][s1]
 ![Main Interface In Dark Mode][s2]
-### Convolution Interface
+#### Convolution Interface
 ![Main Interface For Convolution][s3]
 ![Main Interface For Convolution][s4]
 
@@ -45,8 +46,15 @@
 
 [s4]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/429ae76c7a8709cb275418c80d91973158881aa5/Screenshots/44.png "Main Interface For Convolution"
 
+### Task List
+[x] Add Support For Stereo Files
 
-## Changelogs
+[ ] Add Support For More Audio Formats like `.mp3`
+
+[ ] Remove Deprecated Functions
+
+
+### Changelogs
 * **V 0.3**
     * Some minor improvements to the code :heavy_check_mark:
     * Fixed Minor Bugs And Improved Optimizations :heavy_check_mark:
@@ -57,8 +65,8 @@
     * Support For Dark Mode :heavy_check_mark:
 * **V 0.1**
     * Initial Release :warning:
-## Supported Versions
 
+### Supported Versions
 The app was tested on the following version of python
 
 | Version | Supported          |
