@@ -57,6 +57,8 @@
 
 ### Task List
 
+> Text that is a quote
+
 - [x] Add Support For Stereo Files
 - [ ] Add Support For More Audio Formats like `.mp3`
 - [ ] Remove Deprecated Functions
