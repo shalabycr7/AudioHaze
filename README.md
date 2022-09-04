@@ -2,8 +2,6 @@
 
 # Audio Signal Processing App
 
-###### This Is A Simple GUI Application To Manipulate Audio Files By Modifying The Audio Wave Form And Display It Using Python
-
 > This Is A Simple GUI Application To Manipulate Audio Files By Modifying The Audio Wave Form And Display It Using
 > Python
 
@@ -13,6 +11,8 @@
 
 * You Need To Install `FFmpeg` From This
   Guide [Install FFmpeg on Windows](<https://www.wikihow.com/Install-FFmpeg-on-Windows>)
+
+> Make Sure You Install The Python Packages Correctly using `pip install <Pakage Name>`
 
 ### Core Features
 
