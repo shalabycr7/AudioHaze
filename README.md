@@ -6,7 +6,7 @@
 ##### Install FFmpeg
 * You Need To Install `FFmpeg` From This Guide [Install FFmpeg on Windows](<https://www.wikihow.com/Install-FFmpeg-on-Windows>)
 
-## > Core Features
+## Core Features
 * Show Audio File Information Such As:
   * File Type
   * Number Of Channels
