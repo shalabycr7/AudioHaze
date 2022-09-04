@@ -29,5 +29,7 @@ The app was tested on the following version of python
 | 3.10    | :white_check_mark: |
 
 ## Screenshots
-* [s1]: https://drive.google.com/file/d/1QKV19JvzXLyqFY_DHoOegPukZXUNfC1c/view?usp=sharing "Main Interface"
+![Main Interface][s1]
+
+[s1]: https://drive.google.com/file/d/1QKV19JvzXLyqFY_DHoOegPukZXUNfC1c/view?usp=sharing "Main Interface"
 
