@@ -30,6 +30,23 @@ conv_icon = ttk.PhotoImage(file='icons/convIcon.png')
 tts_icon = ttk.PhotoImage(file='icons/ttsIcon.png')
 white_icon = ttk.PhotoImage(file='icons/whiteIcon.png')
 
+# set title and fav icon
+root.title(' Audio Signal Manipulation')
+root.iconbitmap('icons/picon.ico')
+# make the window not resizable
+root.resizable(False, False)
+# window dimensions
+window_width = 1200
+window_height = 700
+# get the screen dimension
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+# find the center point
+center_x = int(screen_width / 2 - window_width / 2)
+center_y = int(screen_height / 2 - window_height / 2)
+# set the position of the window to the center of the screen
+root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+
 # global variables
 hasImported = False  # checks if a file has been imported
 file_directory = "/"
@@ -45,6 +62,7 @@ og_plot_showed = False
 mod_plot_showed = False
 plotting_figure = Figure()
 figure_subplot = plotting_figure.add_subplot()
+data = np.array([])
 
 # UI elements
 darkBtn = ttk.Button(root, image=dark_icon, style='Link.TButton')
@@ -67,11 +85,8 @@ def display_elements():
 display_elements()
 
 
+# Create directory if it is not there
 def make_output_directory():
-    """
-    Create directory ,it's a directory name which you are going to create, try and catch block use to handle the
-    exceptions.
-    """
     try:
         os.mkdir(directory_name)
     except FileExistsError:
@@ -80,23 +95,6 @@ def make_output_directory():
 
 
 make_output_directory()
-
-# set title and fav icon
-root.title(' Audio Signal Manipulation')
-root.iconbitmap('icons/picon.ico')
-# make the window not resizable
-root.resizable(False, False)
-# window dimensions
-window_width = 1200
-window_height = 700
-# get the screen dimension
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
-# find the center point
-center_x = int(screen_width / 2 - window_width / 2)
-center_y = int(screen_height / 2 - window_height / 2)
-# set the position of the window to the center of the screen
-root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 
 
 # update the plotting frame
@@ -109,41 +107,32 @@ def update_frame(obj):
 
 # read the Audio Output file
 def read_file(file):
-    # minus one here means that all the frames of Audio Output has to be read
-    raw = file.readframes(-1)
-    # get the number of channels in the wave
     global nChannels
-    nChannels = file.getnchannels()
-    # sign it with 16-bit integers since wave files are encoded with 16 bits per sample
     global data
-    data = np.frombuffer(raw, "int16")
     global sampleRate
-    sampleRate = file.getframerate()
     global num_of_frames
+    raw = file.readframes(-1)  # minus one here means that all the frames of Audio Output has to be read
+    nChannels = file.getnchannels()  # get the number of channels in the wave
+    data = np.frombuffer(raw, "int16")  # sign it with 16-bit ints since wave files are encoded with 16 bits per sample
+    sampleRate = file.getframerate()
     num_of_frames = file.getnframes()
-    # get the duration of the audio file
-    duration = num_of_frames / float(sampleRate)
+    duration = num_of_frames / float(sampleRate)  # get the duration of the audio file
     hours, minutes, seconds = output_duration(int(duration))
     total_time = '{}:{}:{}'.format(hours, minutes, seconds)
-    length_lb.config(text=total_time)
-
+    length_lb.config(text=total_time)  # display the duration
     time = np.linspace(0, len(data) / sampleRate, num=len(data))
     return time, data
 
 
-# creat another figure to hold the plot of the ave file to display it in GUI
+# creat another figure to hold the plot of the wave form to display it in GUI
 def create_plot_fig():
     global plotting_figure
     global figure_subplot
-    print("y")
-    # Apply dark mode on the plot
-    if not dark_mode_state:
-        matplotlib.style.use('dark_background')
-    else:
-        matplotlib.style.use('default')
+    # toggle between light and dark mode
+    matplotlib.style.use('dark_background') if not dark_mode_state else matplotlib.style.use('default')
     plotting_figure = Figure(figsize=(7, 2), dpi=110)
     figure_subplot = plotting_figure.add_subplot(111)
-    figure_subplot.set_ylabel("Amplitude")
+    figure_subplot.set_ylabel('Amplitude')
     figure_subplot.grid(alpha=0.4)
     return
 
@@ -156,7 +145,6 @@ def play_audio(indication):
             audio_file = directory_name + '/Modified.wav'
         winsound.PlaySound(audio_file, winsound.SND_FILENAME | winsound.SND_ASYNC)
     else:
-        print(darkBtn.state())
         messagebox.showinfo("Warning", "Please Import Audio File First")
     return
 
