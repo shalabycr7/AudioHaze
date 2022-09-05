@@ -1,5 +1,6 @@
 /Audio Output
 AudioLib/__pycache__/
+.github
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
