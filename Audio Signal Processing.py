@@ -326,7 +326,7 @@ def apply_operations():
             reverse_st = True
         else:
             reverse_st = False
-        if echo_val == '3':
+        if echo_val == '3' and nChannels == 2:
             echo_state = True
         else:
             echo_state = False

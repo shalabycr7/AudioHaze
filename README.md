@@ -73,6 +73,10 @@
 
 ### Changelogs
 
+* **V 0.4**
+    * Fixed dark mode interface issues :heavy_check_mark:
+    * Fixed some echo issues when importing stereo files :heavy_check_mark:
+
 * **V 0.3**
   > Playing Audio Does Not Freeze The App Anymore
     * Some minor improvements to the code :heavy_check_mark:
