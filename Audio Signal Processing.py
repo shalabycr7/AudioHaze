@@ -646,6 +646,8 @@ def tts(speach):
         messagebox.showinfo("info", "Enter Some Text")
     else:
         engine = pyttsx3.init()
+        engine.setProperty('rate', 300)  # setting up new voice rate
+
         # say method on the engine that passing input text to be spoken
         engine.say(speach)
         # Saving Voice to a file
