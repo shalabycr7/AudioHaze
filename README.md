@@ -7,12 +7,24 @@
 
 ### Requirements
 
-##### Install FFmpeg
+* ##### Install FFmpeg
 
 * You Need To Install `FFmpeg` From This
   Guide [Install FFmpeg on Windows](<https://www.wikihow.com/Install-FFmpeg-on-Windows>)
 
-> Make Sure You Install The Python Packages Correctly using `pip install <Pakage Name>`
+* ##### Required Packages
+
+> Make Sure You Install The Python Packages Globally (System-Wide) using `pip install <Pakage Name>`
+
+| Python Package | Version  |
+|----------------|----------|
+| `matplotlib`   | `3.5.3`  |
+| `numpy`        | `1.23.2` |
+| `pyttsx3`      | `2.90`   |
+| `ttkbootstrap` | `1.9.0`  |
+| `winsound`     | `3.5.3`  |
+| `pydub`        | `0.25.1` |
+| `scipy`        | `1.9.1`  |
 
 ### Core Features
 
@@ -55,27 +67,28 @@
 ![TTS Interface][s5]
 
 
-[s1]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/11.png "Main Interface"
+[s1]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/b9debebd0c047fa9d33f3abca1ebfea73e21faf2/Screenshots/11.png "Main Interface"
 
-[s2]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/22.png "Main Interface In Dark Mode"
+[s2]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/b9debebd0c047fa9d33f3abca1ebfea73e21faf2/Screenshots/22.png "Main Interface In Dark Mode"
 
-[s3]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/33.png "Main Interface For Convolution"
+[s3]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/b9debebd0c047fa9d33f3abca1ebfea73e21faf2/Screenshots/33.png "Main Interface For Convolution"
 
-[s4]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/44.png "Main Interface For Convolution"
+[s4]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/b9debebd0c047fa9d33f3abca1ebfea73e21faf2/Screenshots/44.png "Main Interface For Convolution"
 
-[s5]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/55.png "TTS Interface"
+[s5]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/b9debebd0c047fa9d33f3abca1ebfea73e21faf2/Screenshots/55.png "TTS Interface"
 
 ### Task List
 
 - [ ] Add Support For More Audio Formats like `.mp3`
 - [x] Add Support For Stereo Files
-- [x] Remove Audio Libraries/Functions
+- [x] Remove Deprecated Audio Libraries/Functions
 
 ### Changelogs
 
 * **V 0.4**
-    * Fixed dark mode interface issues :heavy_check_mark:
-    * Fixed some echo issues when importing stereo files :heavy_check_mark:
+    * Fixed Dark Mode Interface Issues :heavy_check_mark:
+    * Fixed Some Echo Issues When Importing Stereo Files :heavy_check_mark:
+    * Code Reformat :heavy_check_mark:
 
 * **V 0.3**
   > Playing Audio Does Not Freeze The App Anymore
