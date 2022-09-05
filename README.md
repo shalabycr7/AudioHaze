@@ -67,15 +67,15 @@
 ![TTS Interface][s5]
 
 
-[s1]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/11.png "Main Interface"
+[s1]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/b9debebd0c047fa9d33f3abca1ebfea73e21faf2/Screenshots/11.png "Main Interface"
 
-[s2]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/22.png "Main Interface In Dark Mode"
+[s2]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/b9debebd0c047fa9d33f3abca1ebfea73e21faf2/Screenshots/22.png "Main Interface In Dark Mode"
 
-[s3]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/33.png "Main Interface For Convolution"
+[s3]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/b9debebd0c047fa9d33f3abca1ebfea73e21faf2/Screenshots/33.png "Main Interface For Convolution"
 
-[s4]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/44.png "Main Interface For Convolution"
+[s4]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/b9debebd0c047fa9d33f3abca1ebfea73e21faf2/Screenshots/44.png "Main Interface For Convolution"
 
-[s5]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/55.png "TTS Interface"
+[s5]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/b9debebd0c047fa9d33f3abca1ebfea73e21faf2/Screenshots/55.png "TTS Interface"
 
 ### Task List
 
