@@ -7,12 +7,24 @@
 
 ### Requirements
 
-##### Install FFmpeg
+* ##### Install FFmpeg
 
 * You Need To Install `FFmpeg` From This
   Guide [Install FFmpeg on Windows](<https://www.wikihow.com/Install-FFmpeg-on-Windows>)
 
-> Make Sure You Install The Python Packages Correctly using `pip install <Pakage Name>`
+* ##### Required Packages
+
+> Make Sure You Install The Python Packages Globally (System-Wide) using `pip install <Pakage Name>`
+
+| Python Package | Version  |
+|----------------|----------|
+| `matplotlib`   | `3.5.3`  |
+| `numpy`        | `1.23.2` |
+| `pyttsx3`      | `2.90`   |
+| `ttkbootstrap` | `1.9.0`  |
+| `winsound`     | `3.5.3`  |
+| `pydub`        | `0.25.1` |
+| `scipy`        | `1.9.1`  |
 
 ### Core Features
 
@@ -69,13 +81,14 @@
 
 - [ ] Add Support For More Audio Formats like `.mp3`
 - [x] Add Support For Stereo Files
-- [x] Remove Audio Libraries/Functions
+- [x] Remove Deprecated Audio Libraries/Functions
 
 ### Changelogs
 
 * **V 0.4**
-    * Fixed dark mode interface issues :heavy_check_mark:
-    * Fixed some echo issues when importing stereo files :heavy_check_mark:
+    * Fixed Dark Mode Interface Issues :heavy_check_mark:
+    * Fixed Some Echo Issues When Importing Stereo Files :heavy_check_mark:
+    * Code Reformat :heavy_check_mark:
 
 * **V 0.3**
   > Playing Audio Does Not Freeze The App Anymore
