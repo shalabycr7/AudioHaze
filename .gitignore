@@ -1,2 +1,20 @@
 /Audio Output
 AudioLib/__pycache__/
+# Pycache and compiled python files.
+__pycache__/
+*py[cod]
+
+# Juyter notebook checkpoints
+.ipynb_checkpoints
+
+#Egg info files produced by pip installation
+*egg-info
+
+# Default ignored files
+/shelf/
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
