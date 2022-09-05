@@ -21,6 +21,7 @@
     * Number Of Channels
     * Audio Frame Rate
     * Maximum Audio Amplitude
+    * Audio File Duration
 * Modify The Audio File By:
     * Increasing/Decreasing The Amplitude
     * Increasing/Decreasing Audio Speed
@@ -49,26 +50,41 @@
 ![Main Interface For Convolution][s3]
 ![Main Interface For Convolution][s4]
 
+#### TTS Interface
 
-[s1]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/429ae76c7a8709cb275418c80d91973158881aa5/Screenshots/11.png "Main Interface"
+![TTS Interface][s5]
 
-[s2]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/429ae76c7a8709cb275418c80d91973158881aa5/Screenshots/22.png "Main Interface In Dark Mode"
 
-[s3]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/429ae76c7a8709cb275418c80d91973158881aa5/Screenshots/33.png "Main Interface For Convolution"
+[s1]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/11.png "Main Interface"
 
-[s4]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/429ae76c7a8709cb275418c80d91973158881aa5/Screenshots/44.png "Main Interface For Convolution"
+[s2]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/22.png "Main Interface In Dark Mode"
+
+[s3]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/33.png "Main Interface For Convolution"
+
+[s4]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/44.png "Main Interface For Convolution"
+
+[s5]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/e49d7278176bfaeff378d8111766807b42958eb7/Screenshots/55.png "TTS Interface"
 
 ### Task List
 
-- [x] Add Support For Stereo Files
 - [ ] Add Support For More Audio Formats like `.mp3`
-- [ ] Remove Deprecated Functions
+- [x] Add Support For Stereo Files
+- [x] Remove Audio Libraries/Functions
 
 ### Changelogs
 
+* **V 0.4**
+    * Fixed dark mode interface issues :heavy_check_mark:
+    * Fixed some echo issues when importing stereo files :heavy_check_mark:
+
 * **V 0.3**
+  > Playing Audio Does Not Freeze The App Anymore
     * Some minor improvements to the code :heavy_check_mark:
     * Fixed Minor Bugs And Improved Optimizations :heavy_check_mark:
+    * Added Support For Playing Audio Async :heavy_check_mark:
+    * Added Stop Button :heavy_check_mark:
+    * Display Audio File Duration :heavy_check_mark:
+
 * **V 0.2**
     * Added Support For Stereo Audio Files :heavy_check_mark:
     * Fixed Minor Bugs And Improved Optimizations :heavy_check_mark:

@@ -18,31 +18,53 @@ from ttkbootstrap import Style, Toplevel, END
 
 from AudioLib.AudioProcessing import AudioProcessing
 
-current_style = Style(theme='cosmo')
+current_style = Style(theme='cosmo')  # set main theme
 root = current_style.master
 
 # icons
 dark_icon = ttk.PhotoImage(file='icons/darkIcon.png')
 import_icon = ttk.PhotoImage(file='icons/importIcon.png')
 play_icon = ttk.PhotoImage(file='icons/playIcon.png')
+stop_icon = ttk.PhotoImage(file='icons/stopIcon.png')
 conv_icon = ttk.PhotoImage(file='icons/convIcon.png')
 tts_icon = ttk.PhotoImage(file='icons/ttsIcon.png')
 white_icon = ttk.PhotoImage(file='icons/whiteIcon.png')
 
 # global variables
+hasImported = False  # checks if a file has been imported
 file_directory = "/"
 directory_name = "Audio Output"
 dark_mode_state = False
-darkBtn = ttk.Button(root, image=dark_icon, style='Link.TButton')
-darkBtn.place(x=970, y=55)
-wvFr = ttk.Frame(root, height=190, width=770)
-wvFr.place(x=37, y=240)
-wvFrMod = ttk.Frame(root, height=190, width=770)
-wvFrMod.place(x=37, y=470)
-conv_signal_frame = ttk.Frame()
-mod_signal_frame = ttk.Frame()
 nChannels = 1
 sampleRate = 1
+num_of_frames = 1
+result = [0, 0]
+timeout = 0
+data_out = 1
+og_plot_showed = False
+mod_plot_showed = False
+plotting_figure = Figure()
+figure_subplot = plotting_figure.add_subplot()
+
+# UI elements
+darkBtn = ttk.Button(root, image=dark_icon, style='Link.TButton')
+wvFr = ttk.Frame(root, height=190, width=770)
+wvFrMod = ttk.Frame(root, height=190, width=770)
+length_lb = ttk.Label(root, font=("Barlow", 17))
+conv_signal_frame = ttk.Frame()
+mod_signal_frame = ttk.Frame()
+ttk.Separator(root, orient='vertical', style='info.Vertical.TSeparator').place(x=630, y=200)
+
+
+def display_elements():
+    darkBtn.place(x=970, y=55)
+    wvFr.place(x=37, y=240)
+    wvFrMod.place(x=37, y=470)
+    length_lb.place(x=530, y=205)
+    return
+
+
+display_elements()
 
 
 def make_output_directory():
@@ -54,31 +76,27 @@ def make_output_directory():
         os.mkdir(directory_name)
     except FileExistsError:
         return
+    return
 
 
 make_output_directory()
 
+# set title and fav icon
 root.title(' Audio Signal Manipulation')
 root.iconbitmap('icons/picon.ico')
-
 # make the window not resizable
 root.resizable(False, False)
 # window dimensions
 window_width = 1200
 window_height = 700
-
 # get the screen dimension
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-
 # find the center point
 center_x = int(screen_width / 2 - window_width / 2)
 center_y = int(screen_height / 2 - window_height / 2)
-
 # set the position of the window to the center of the screen
 root.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
-# checks if a file has been imported
-hasImported = False
 
 
 # update the plotting frame
@@ -86,9 +104,70 @@ def update_frame(obj):
     # clear the frame when we add another plot
     for wid in obj.winfo_children():
         wid.destroy()
+    return
+
+
+# read the Audio Output file
+def read_file(file):
+    # minus one here means that all the frames of Audio Output has to be read
+    raw = file.readframes(-1)
+    # get the number of channels in the wave
+    global nChannels
+    nChannels = file.getnchannels()
+    # sign it with 16-bit integers since wave files are encoded with 16 bits per sample
+    global data
+    data = np.frombuffer(raw, "int16")
+    global sampleRate
+    sampleRate = file.getframerate()
+    global num_of_frames
+    num_of_frames = file.getnframes()
+    # get the duration of the audio file
+    duration = num_of_frames / float(sampleRate)
+    hours, minutes, seconds = output_duration(int(duration))
+    total_time = '{}:{}:{}'.format(hours, minutes, seconds)
+    length_lb.config(text=total_time)
+
+    time = np.linspace(0, len(data) / sampleRate, num=len(data))
+    return time, data
+
+
+# creat another figure to hold the plot of the ave file to display it in GUI
+def create_plot_fig():
+    global plotting_figure
+    global figure_subplot
+    print("y")
+    # Apply dark mode on the plot
+    if not dark_mode_state:
+        matplotlib.style.use('dark_background')
+    else:
+        matplotlib.style.use('default')
+    plotting_figure = Figure(figsize=(7, 2), dpi=110)
+    figure_subplot = plotting_figure.add_subplot(111)
+    figure_subplot.set_ylabel("Amplitude")
+    figure_subplot.grid(alpha=0.4)
+    return
+
+
+def play_audio(indication):
+    if hasImported:
+        if indication == 'OG':
+            audio_file = file_directory
+        else:
+            audio_file = directory_name + '/Modified.wav'
+        winsound.PlaySound(audio_file, winsound.SND_FILENAME | winsound.SND_ASYNC)
+    else:
+        print(darkBtn.state())
+        messagebox.showinfo("Warning", "Please Import Audio File First")
+    return
+
+
+def stop_audio():
+    winsound.PlaySound(None, winsound.SND_FILENAME)
+    return
 
 
 def set_theme():
+    stop_audio()
     global dark_mode_state
     global darkBtn
     global wvFr
@@ -110,52 +189,36 @@ def set_theme():
     current_style.configure('TNotebook.Tab', font=("Barlow", 12))
     update_frame(wvFr)
     update_frame(wvFrMod)
+    if og_plot_showed:
+        plotting(result[0], result[1], wvFr, "Original Audio")
+    if mod_plot_showed:
+        plotting(timeout, data_out, wvFrMod, "Modified Audio")
+    return
 
 
 set_theme()
+
 darkBtn.config(command=set_theme)
 
 
-# read the Audio Output file
-def read_file(file):
-    # minus one here means that all the frames of Audio Output has to be read
-    raw = file.readframes(-1)
-    # get the number of channels in the wave
-    global nChannels
-    nChannels = file.getnchannels()
-    # sign it with 16-bit integers since wave files are encoded with 16 bits per sample
-    global data
-    data = np.frombuffer(raw, "int16")
-    global sampleRate
-    sampleRate = file.getframerate()
-    time = np.linspace(0, len(data) / sampleRate, num=len(data))
-    return time, data
+def output_duration(length):
+    hours = length // 3600  # calculate in hours
+    length %= 3600
+    minutes = length // 60  # calculate in minutes
+    length %= 60
+    seconds = length  # calculate in seconds
 
-
-# plot the Audio Output data
-def plotting(time, raw, place):
-    # Apply dark mod on the plot
-    if not dark_mode_state:
-        matplotlib.style.use('dark_background')
-    else:
-        matplotlib.style.use('default')
-
-    # creat another figure to hold the plot of the ave file to display it in GUI
-    fig = Figure(figsize=(7, 2), dpi=110)
-    a = fig.add_subplot(111)
-    # plot the wave
-    a.plot(time, raw, color='blue', )
-    a.set_ylabel("Amplitude")
-    a.grid(alpha=0.4)
-    # Creating Canvas to show it in the Frame
-    canvas = FigureCanvasTkAgg(fig, master=place)
-    canvas.draw()
-    get_widget = canvas.get_tk_widget()
-    get_widget.pack()
+    return hours, minutes, seconds
 
 
 # import Audio Output file
 def import_file():
+    global og_plot_showed
+    global mod_plot_showed
+    og_plot_showed = False
+    mod_plot_showed = False
+
+    stop_audio()
     update_frame(wvFr)
     update_frame(wvFrMod)
     # open window to select the wav file and get the path to the Audio Output dile then save in variable directory
@@ -165,9 +228,10 @@ def import_file():
     if file_directory == '':
         messagebox.showinfo("info", "No File Was Selected")
     else:
-        global wav
-        wav = wave.open(file_directory, "rb")
-        result = read_file(wav)
+        global wav_file
+        wav_file = wave.open(file_directory, 'r')
+        global result
+        result = read_file(wav_file)
         global hasImported
         hasImported = True
         # Update displayed File info
@@ -177,7 +241,8 @@ def import_file():
         channelsVal.config(text=nChannels)
         frameRateVal.config(text=sampleRate)
         ampVal.config(text=max_amp)
-        plotting(result[0], result[1], wvFr)
+        plotting(result[0], result[1], wvFr, "Original Audio")
+        og_plot_showed = True
         # Set echo options on if the file is stereo
         if nChannels == 2:
             echoTrueVal.config(state='!selected')
@@ -228,24 +293,29 @@ def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state
             audio_obj.writeframesraw(sample)
 
     audio_obj.close()
-    wav.close()
+    wav_file.close()
     obj = wave.open(directory_name + '\\Modified.wav', 'rb')  # open
+    global data_out
     data_out = obj.readframes(-1)  # get all the frames in data out
     data_out = np.frombuffer(data_out, "int16")  # set the data to a number of two byte form data out
     sample_rate_out = obj.getframerate()  # frame rate HZ (number of frames to be reads in seconds)
+    global timeout
     timeout = np.linspace(0, len(data_out) / sample_rate_out, len(data_out))  # time of the output
-    plotting(timeout, data_out, wvFrMod)
+    plotting(timeout, data_out, wvFrMod, "Modified Audio")
+    global mod_plot_showed
+    mod_plot_showed = True
     # set the echo based on state
     if echo_state:
         sound1 = AudioProcessing(directory_name + '\\Modified.wav')
         sound1.set_echo(0.4)
         sound1.save_to_file(directory_name + '\\Modified.wav')
     obj.close()
-    wav.close()
+    wav_file.close()
     return
 
 
 def apply_operations():
+    stop_audio()
     if hasImported and (ampValueLB.get() != "" and shiftValueLB.get() != "" and speedValueLB.get() != ""):
         amp_amount = float(ampValueLB.get())
         shift_amount = float(shiftValueLB.get())
@@ -256,28 +326,13 @@ def apply_operations():
             reverse_st = True
         else:
             reverse_st = False
-        if echo_val == '3':
+        if echo_val == '3' and nChannels == 2:
             echo_state = True
         else:
             echo_state = False
         operations(amp_amount, shift_amount, speed_amount, reverse_st, echo_state)
     else:
         messagebox.showinfo("Warning", "Please Import Audio File First And Set The Values")
-
-
-def play_audio(indication):
-    if hasImported:
-
-        if indication == 'OG':
-            audio_file = file_directory
-        else:
-            # audio_file = os.path.join(sys.path[0], directory_name+"/Modified.wav")
-            audio_file = directory_name + "/Modified.wav"
-
-        winsound.PlaySound(audio_file, winsound.SND_FILENAME)
-
-    else:
-        messagebox.showinfo("Warning", "Please Import Audio File First")
 
 
 # header buttons
@@ -290,7 +345,7 @@ ttk.Label(root, text='Audio File Overview', font=("Barlow", 17)).place(x=37, y=6
 # file info section
 fileTypeFr = ttk.Frame(root, height=100, width=215)
 fileTypeFr.place(x=37, y=100)
-folderIcon = ttk.PhotoImage(file='./icons/icon1.png')
+folderIcon = ttk.PhotoImage(file='icons/icon1.png')
 ttk.Label(fileTypeFr, image=folderIcon).place(x=0, y=10)
 fileTypeVal = ttk.Label(fileTypeFr, text='Unknown', font=("Abel", 13))
 fileTypeVal.place(x=75, y=20)
@@ -298,7 +353,7 @@ ttk.Label(fileTypeFr, text='Type Of Audio File', font=("Actor", 12)).place(x=75,
 
 channelFr = ttk.Frame(root, height=100, width=215)
 channelFr.place(x=270, y=100)
-channelsIcon = ttk.PhotoImage(file='./icons/icon2.png')
+channelsIcon = ttk.PhotoImage(file='icons/icon2.png')
 ttk.Label(channelFr, image=channelsIcon).place(x=0, y=10)
 channelsVal = ttk.Label(channelFr, text='0', font=("Abel", 13))
 channelsVal.place(x=75, y=20)
@@ -306,7 +361,7 @@ ttk.Label(channelFr, text='Channels', font=("Actor", 12)).place(x=75, y=50)
 
 frameRateFr = ttk.Frame(root, height=100, width=215)
 frameRateFr.place(x=493, y=100)
-frameRateIcon = ttk.PhotoImage(file='./icons/icon3.png')
+frameRateIcon = ttk.PhotoImage(file='icons/icon3.png')
 ttk.Label(frameRateFr, image=frameRateIcon).place(x=0, y=10)
 frameRateVal = ttk.Label(frameRateFr, text='0', font=("Abel", 13))
 frameRateVal.place(x=75, y=20)
@@ -314,7 +369,7 @@ ttk.Label(frameRateFr, text='Frame Rate', font=("Actor", 12)).place(x=75, y=50)
 
 ampFr = ttk.Frame(root, height=100, width=220)
 ampFr.place(x=716, y=100)
-ampIcon = ttk.PhotoImage(file='./icons/icon4.png')
+ampIcon = ttk.PhotoImage(file='icons/icon4.png')
 ttk.Label(ampFr, image=ampIcon).place(x=0, y=10)
 ampVal = ttk.Label(ampFr, text='0', font=("Abel", 13))
 ampVal.place(x=75, y=20)
@@ -365,26 +420,37 @@ ttk.Button(root, padding=(15, 8), style='success.Outline.TButton', text='Apply',
 # Play buttons
 ttk.Button(root, text='  Play', command=lambda: play_audio('mod'), image=play_icon, compound=ttk.LEFT, ).place(x=1050,
                                                                                                                y=630)
-ttk.Button(root, text='  Play', command=lambda: play_audio('OG'), image=play_icon, compound=ttk.LEFT, ).place(x=735,
+ttk.Button(root, text='  Play', command=lambda: play_audio('OG'), image=play_icon, compound=ttk.LEFT, ).place(x=790,
                                                                                                               y=200)
+ttk.Button(root, text='  Stop', style='danger.TButton', command=lambda: stop_audio(), image=stop_icon,
+           compound=ttk.LEFT, ).place(x=650,
+                                      y=200)
 
 
 # Plot the convolution signal
 def plotting_convolution(targeted_signal, place, title):
-    if not dark_mode_state:
-        matplotlib.style.use('dark_background')
-    else:
-        matplotlib.style.use('default')
-    fig = Figure(figsize=(7, 2), dpi=110)
-    a = fig.add_subplot(111)
-    a.plot(targeted_signal, color='blue')
-    a.set_ylabel("Amplitude")
-    a.set_title(title)
-    a.grid(alpha=0.4)
-    canvas = FigureCanvasTkAgg(fig, master=place)
+    create_plot_fig()
+    figure_subplot.set_title(title)
+    figure_subplot.plot(targeted_signal, color='blue')
+    canvas = FigureCanvasTkAgg(plotting_figure, master=place)
     canvas.draw()
     get_widget = canvas.get_tk_widget()
     get_widget.pack()
+    return
+
+
+# plot the Audio Output data
+def plotting(time, raw, place, title):
+    create_plot_fig()
+    # plot the wave
+    figure_subplot.set_title(title)
+    figure_subplot.plot(time, raw, color='blue')
+    # Creating Canvas to show it in the Frame
+    canvas = FigureCanvasTkAgg(plotting_figure, master=place)
+    canvas.draw()
+    get_widget = canvas.get_tk_widget()
+    get_widget.pack()
+    return
 
 
 # Delete the values from the textbox
@@ -475,6 +541,7 @@ def disable_box(num):
 
 # Convolution PopUp
 def open_conv_window():
+    stop_audio()
     # be treated as a new window
     new_conv_window = Toplevel(root)
     new_conv_window.title("Convolution")
@@ -570,7 +637,7 @@ def open_conv_window():
 
 # convolution button on the main interface
 ttk.Button(root, text='  Convolution', command=open_conv_window, image=conv_icon, compound=ttk.LEFT, width=11,
-           style='danger.TButton').place(x=1000, y=200)
+           style='warning.TButton').place(x=1000, y=200)
 
 
 # Text To Speach Function
@@ -579,6 +646,8 @@ def tts(speach):
         messagebox.showinfo("info", "Enter Some Text")
     else:
         engine = pyttsx3.init()
+        engine.setProperty('rate', 300)  # setting up new voice rate
+
         # say method on the engine that passing input text to be spoken
         engine.say(speach)
         # Saving Voice to a file
@@ -589,6 +658,7 @@ def tts(speach):
 
 
 def open_tts_window():
+    stop_audio()
     new_window = Toplevel(root)
     new_window.title("Text To Speach")
     new_window.iconbitmap('icons/picon.ico')
