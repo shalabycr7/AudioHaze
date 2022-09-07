@@ -240,6 +240,10 @@ def import_file():
     global hasImported
     global max_amp
 
+    # checks if the output file is there and delete it
+    if os.path.isfile(out_file):
+        os.remove(out_file)
+
     # hide the plotting frames every time we import
     og_plot_showed = False
     mod_plot_showed = False
@@ -273,8 +277,6 @@ def import_file():
             echoFalseVal.config(state='disabled')
         return
 
-    # creat another figure to hold the plot of the wave form to display it in GUI
-
 
 def create_plot_fig():
     global plotting_figure
@@ -293,7 +295,11 @@ def play_audio(indication):
         if indication == 'OG':
             audio_file = file_directory
         else:
-            audio_file = out_file
+            if os.path.isfile(out_file):
+                audio_file = out_file
+            else:
+                messagebox.showinfo('Info', 'Apply Modification To The Audio File Then Play It')
+                return
         winsound.PlaySound(audio_file, winsound.SND_FILENAME | winsound.SND_ASYNC)
     else:
         messagebox.showinfo("Warning", "Please Import Audio File First")
@@ -436,7 +442,7 @@ def apply_operations():
             return
         operations(amp_amount, shift_amount, speed_amount, reverse_st, echo_state)
     else:
-        messagebox.showinfo("Warning", "Please Import Audio File First And Set The Values")
+        messagebox.showinfo('Warning', 'Please Import Audio File First And Set The Values')
     return
 
 
