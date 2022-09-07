@@ -474,8 +474,8 @@ def delete_entries(wid):
 def lti_sys(widget):
     if widget == 1:
         # get the values of the textbox as an array
-        num = list(map(int, trFuncValueLB.get().strip().split()))
-        den = list(map(int, tr_func_value_lb2.get().strip().split()))
+        num = list(map(float, trFuncValueLB.get().strip().split()))
+        den = list(map(float, tr_func_value_lb2.get().strip().split()))
         # represent the lti_system as transfer function
         lti_system = signal.lti(num, den)
         # display the values in the textbox after rounding
