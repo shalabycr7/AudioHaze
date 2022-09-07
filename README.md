@@ -85,6 +85,10 @@
 
 ### Changelogs
 
+* **V 0.5**
+    * Added Validation For User Input :heavy_check_mark:
+    * Added Splash Screen :heavy_check_mark:
+
 * **V 0.4**
     * Fixed Dark Mode Interface Issues :heavy_check_mark:
     * Fixed Some Echo Issues When Importing Stereo Files :heavy_check_mark:

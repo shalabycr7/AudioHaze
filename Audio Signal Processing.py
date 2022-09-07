@@ -1,3 +1,4 @@
+import importlib
 import os
 import struct
 import wave
@@ -17,6 +18,12 @@ from scipy import signal
 from ttkbootstrap import Style, Toplevel, END
 
 from AudioLib.AudioProcessing import AudioProcessing
+
+# Set the splash screen
+if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
+    import pyi_splash
+
+    pyi_splash.close()
 
 current_style = Style(theme='cosmo')  # set main theme
 root = current_style.master
@@ -55,6 +62,7 @@ out_file = directory_name + '\\Modified.wav'
 dark_mode_state = False
 nChannels = 1
 sampleRate = 1
+max_amp = 0
 num_of_frames = 1
 result = (0, 0, 0)
 modified_result = (0, 0, 0)
@@ -230,6 +238,7 @@ def import_file():
     global file_directory
     global result
     global hasImported
+    global max_amp
 
     # hide the plotting frames every time we import
     og_plot_showed = False
@@ -412,6 +421,19 @@ def apply_operations():
             echo_state = True
         else:
             echo_state = False
+
+        preferred_amp_amount = int(32760 / max_amp) - 1
+        # Validate input
+        if speed_amount > 2 or speed_amount < 0.25:
+            messagebox.showinfo('Info', 'Speed Value Must Be Between 0.25 And 2')
+            return
+        if amp_amount > preferred_amp_amount:
+            messagebox.showinfo('Info', 'Amplitude Value Can\'t Exceed {} Or There Will Be Distortion'.format(
+                preferred_amp_amount))
+            return
+        if shift_amount < 0:
+            messagebox.showinfo('Info', 'Shift Value Must Be Positive')
+            return
         operations(amp_amount, shift_amount, speed_amount, reverse_st, echo_state)
     else:
         messagebox.showinfo("Warning", "Please Import Audio File First And Set The Values")
@@ -465,8 +487,8 @@ def lti_sys(widget):
             poles_val_lb.insert(0, str(p_rounded) + "  ")
 
     else:
-        zeros = list(map(complex, zeros_val_lb.get().strip().split()))
-        poles = list(map(complex, poles_val_lb.get().strip().split()))
+        zeros = list(map(int, zeros_val_lb.get().strip().split()))
+        poles = list(map(int, poles_val_lb.get().strip().split()))
         # get the num and den from the z and p
         hs_rep = signal.zpk2tf(zeros, poles, k=1)
         for z in hs_rep[0]:
