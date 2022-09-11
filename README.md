@@ -29,7 +29,8 @@
 ### Core Features
 
 * Show Audio File Information Such As:
-    * File Type (Supports Only `.Wav` Files For Now )
+    * File Type (Supports Mainly `.Wav` Files For Now)
+    * > Note: `.Mp3` Initial Support Was Added In `V 0.6`
     * Number Of Channels
     * Audio Frame Rate
     * Maximum Audio Amplitude
@@ -79,11 +80,16 @@
 
 ### Task List
 
-- [ ] Add Support For More Audio Formats like `.mp3`
+- [x] Add Support For More Audio Formats like `.Mp3`
 - [x] Add Support For Stereo Files
 - [x] Remove Deprecated Audio Libraries/Functions
 
 ### Changelogs
+
+* **V 0.6**
+    * Initial Support for `.Mp3` Files :heavy_check_mark:
+    * Fixed User Input Validation Bugs :heavy_check_mark:
+    * Fixed Some Bugs Regarding Audio Playing :heavy_check_mark:
 
 * **V 0.5**
     * Added Validation For User Input :heavy_check_mark:
@@ -107,6 +113,7 @@
     * Fixed Minor Bugs And Improved Optimizations :heavy_check_mark:
     * Added Convolution For Some Elementary Signals :heavy_check_mark:
     * Support For Dark Mode :heavy_check_mark:
+
 * **V 0.1**
     * Initial Release :warning:
 
