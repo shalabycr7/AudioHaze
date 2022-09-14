@@ -9,22 +9,12 @@
 
 * ##### Install FFmpeg
 
-* You Need To Install `FFmpeg` From This
-  Guide [Install FFmpeg on Windows](<https://www.wikihow.com/Install-FFmpeg-on-Windows>)
+    * You Need To Install `FFmpeg` From This
+      Guide [Install FFmpeg on Windows](<https://www.wikihow.com/Install-FFmpeg-on-Windows>)
 
 * ##### Required Packages
 
-> Make Sure You Install The Python Packages Globally (System-Wide) using `pip install <Pakage Name>`
-
-| Python Package | Version  |
-|----------------|----------|
-| `matplotlib`   | `3.5.3`  |
-| `numpy`        | `1.23.2` |
-| `pyttsx3`      | `2.90`   |
-| `ttkbootstrap` | `1.9.0`  |
-| `winsound`     | `3.5.3`  |
-| `pydub`        | `0.25.1` |
-| `scipy`        | `1.9.1`  |
+    * In Project Directory Open The Terminal And Type `pip install -r requirements.txt`
 
 ### Core Features
 
@@ -84,42 +74,9 @@
 - [x] Add Support For Stereo Files
 - [x] Remove Deprecated Audio Libraries/Functions
 
-### Changelogs
-
-* **V 0.6**
-    * Initial Support for `.Mp3` Files :heavy_check_mark:
-    * Fixed User Input Validation Bugs :heavy_check_mark:
-    * Fixed Some Bugs Regarding Audio Playing :heavy_check_mark:
-
-* **V 0.5**
-    * Added Validation For User Input :heavy_check_mark:
-    * Added Splash Screen :heavy_check_mark:
-
-* **V 0.4**
-    * Fixed Dark Mode Interface Issues :heavy_check_mark:
-    * Fixed Some Echo Issues When Importing Stereo Files :heavy_check_mark:
-    * Code Reformat :heavy_check_mark:
-
-* **V 0.3**
-  > Playing Audio Does Not Freeze The App Anymore
-    * Some minor improvements to the code :heavy_check_mark:
-    * Fixed Minor Bugs And Improved Optimizations :heavy_check_mark:
-    * Added Support For Playing Audio Async :heavy_check_mark:
-    * Added Stop Button :heavy_check_mark:
-    * Display Audio File Duration :heavy_check_mark:
-
-* **V 0.2**
-    * Added Support For Stereo Audio Files :heavy_check_mark:
-    * Fixed Minor Bugs And Improved Optimizations :heavy_check_mark:
-    * Added Convolution For Some Elementary Signals :heavy_check_mark:
-    * Support For Dark Mode :heavy_check_mark:
-
-* **V 0.1**
-    * Initial Release :warning:
-
 ### Supported Versions
 
-The app was tested on the following version of python
+The App Was Tested On Windows 11 With The Following Version Of Python
 
 | Version | Supported          |
 |---------|--------------------|

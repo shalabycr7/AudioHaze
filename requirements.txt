@@ -1,0 +1,6 @@
+numpy~=1.23.3
+scipy~=1.9.1
+matplotlib~=3.5.3
+pyttsx3~=2.90
+ttkbootstrap~=1.9.0
+pydub~=0.25.1
