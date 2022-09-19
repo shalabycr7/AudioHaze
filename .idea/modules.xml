@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Audio-Signal-Proccessing-App-GUI-in-Python.iml" filepath="$PROJECT_DIR$/.idea/Audio-Signal-Proccessing-App-GUI-in-Python.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/pythonProjectGUI.iml" filepath="$PROJECT_DIR$/.idea/pythonProjectGUI.iml" />
     </modules>
   </component>
 </project>
