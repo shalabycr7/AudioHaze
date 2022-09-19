@@ -45,13 +45,13 @@
 
 #### Main Interface
 
-![Main Interface][s1]
-![Main Interface In Dark Mode][s2]
+[Main Interface][s1]
+[Main Interface In Dark Mode][s2]
 
 #### Convolution Interface
 
-![Main Interface For Convolution][s3]
-![Main Interface For Convolution][s4]
+[Main Interface For Convolution][s3]
+[Main Interface For Convolution][s4]
 
 #### TTS Interface
 
