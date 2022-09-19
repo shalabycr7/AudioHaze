@@ -6,8 +6,6 @@
 > Python
 
 ### Requirements
-![image](https://user-images.githubusercontent.com/17945581/191077349-7bfcb9aa-2ea3-4f54-806f-877b48c570ae.png)
-
 
 * ##### Install FFmpeg
 
@@ -60,15 +58,17 @@
 ![TTS Interface][s5]
 
 
-[s1]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/09c5ca42142a9ed7e327bcf1f7d43a6d98bb78e0/Screenshots/11.png "Main Interface"
+![s1](https://user-images.githubusercontent.com/17945581/191077543-bc2716ce-67a6-4a20-9308-5eaf74245a34.png)
 
-[s2]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/09c5ca42142a9ed7e327bcf1f7d43a6d98bb78e0/Screenshots/22.png "Main Interface In Dark Mode"
+![s2](https://user-images.githubusercontent.com/17945581/191077555-21788fe5-800c-4519-8cee-4bdacb5a3d99.png)
 
-[s3]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/09c5ca42142a9ed7e327bcf1f7d43a6d98bb78e0/Screenshots/33.png "Main Interface For Convolution"
+![s3](https://user-images.githubusercontent.com/17945581/191077567-235d355d-530d-4ecf-9a11-4ca12bff2b4b.png)
 
-[s4]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/09c5ca42142a9ed7e327bcf1f7d43a6d98bb78e0/Screenshots/44.png "Main Interface For Convolution"
+![s4](https://user-images.githubusercontent.com/17945581/191077599-4185ed6a-b5bb-4784-bcd9-64c198715a69.png)
 
-[s5]: https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/09c5ca42142a9ed7e327bcf1f7d43a6d98bb78e0/Screenshots/55.png "TTS Interface"
+![s5](https://user-images.githubusercontent.com/17945581/191077629-c4f748cb-7021-4d75-ba7a-06cc67bb8dd5.png)
+
+
 
 ### Task List
 
