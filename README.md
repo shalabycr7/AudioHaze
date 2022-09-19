@@ -1,4 +1,4 @@
-![](https://github.com/shalabycr7/Audio-Signal-Proccessing-App-GUI-in-Python/blob/Features/Cover%20Design.png)
+![Cover Design](https://user-images.githubusercontent.com/17945581/191078771-0af9a028-595e-4907-a32a-105166c3a42a.png)
 
 # Audio Signal Processing App
 
