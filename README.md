@@ -6,6 +6,8 @@
 > Python
 
 ### Requirements
+![image](https://user-images.githubusercontent.com/17945581/191077349-7bfcb9aa-2ea3-4f54-806f-877b48c570ae.png)
+
 
 * ##### Install FFmpeg
 
