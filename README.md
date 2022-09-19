@@ -45,26 +45,19 @@
 
 #### Main Interface
 
-[Main Interface][s1]
-[Main Interface In Dark Mode][s2]
+![s1](https://user-images.githubusercontent.com/17945581/191077543-bc2716ce-67a6-4a20-9308-5eaf74245a34.png)
+![s3](https://user-images.githubusercontent.com/17945581/191077567-235d355d-530d-4ecf-9a11-4ca12bff2b4b.png)
+
+
 
 #### Convolution Interface
 
-[Main Interface For Convolution][s3]
-[Main Interface For Convolution][s4]
-
-#### TTS Interface
-
-![TTS Interface][s5]
-
-
-![s1](https://user-images.githubusercontent.com/17945581/191077543-bc2716ce-67a6-4a20-9308-5eaf74245a34.png)
 
 ![s2](https://user-images.githubusercontent.com/17945581/191077555-21788fe5-800c-4519-8cee-4bdacb5a3d99.png)
-
-![s3](https://user-images.githubusercontent.com/17945581/191077567-235d355d-530d-4ecf-9a11-4ca12bff2b4b.png)
-
 ![s4](https://user-images.githubusercontent.com/17945581/191077599-4185ed6a-b5bb-4784-bcd9-64c198715a69.png)
+
+
+#### TTS Interface
 
 ![s5](https://user-images.githubusercontent.com/17945581/191077629-c4f748cb-7021-4d75-ba7a-06cc67bb8dd5.png)
 
