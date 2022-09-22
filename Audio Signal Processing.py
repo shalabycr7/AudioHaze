@@ -3,7 +3,6 @@ import os
 import struct
 import wave
 from tkinter import filedialog, messagebox
-
 import matplotlib
 import numpy as np
 import pyttsx3
@@ -17,7 +16,6 @@ from scipy import signal
 from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
 from ttkbootstrap.style import Style
-
 from AudioLib import AudioEffect
 
 
@@ -52,7 +50,7 @@ class MainGUI(ttk.Window):
             update_frame(og_wave_frame)
             update_frame(mod_wave_frame)
             if self.dark_mode_state:
-                current_style.theme_use('mate')
+                current_style.theme_use('cyborg')
                 theme_btn.config(image='themeToggleLight')
                 self.dark_mode_state = False
             else:
@@ -491,11 +489,11 @@ class ConvolutionWindow:
         tabs_fr = ttk.Frame(new_conv_window)
         tabs_fr.pack(side=RIGHT, fill=BOTH, padx=30)
         self.og_signal_frame = ttk.Frame(new_conv_window)
-        self.og_signal_frame.pack(side=TOP)
+        self.og_signal_frame.pack(side=TOP, pady=10)
         self.mod_signal_frame = ttk.Frame(new_conv_window)
         self.mod_signal_frame.pack(side=TOP, pady=10)
         self.conv_signal_frame = ttk.Frame(new_conv_window)
-        self.conv_signal_frame.pack(side=TOP)
+        self.conv_signal_frame.pack(side=TOP, pady=10)
 
         notebook = ttk.Notebook(tabs_fr)
         notebook.pack(side=TOP, pady=10)
@@ -642,7 +640,6 @@ if __name__ == '__main__':
         if len(obj.winfo_children()) >= 1:
             obj.winfo_children()[0].destroy()
 
-
     def output_duration(length):
         hours = length // 3600  # calculate in hours
         length %= 3600
@@ -651,15 +648,12 @@ if __name__ == '__main__':
         seconds = length  # calculate in seconds
         return hours, minutes, seconds
 
-
     def delete_entries(wid):
         wid.delete(0, END)
-
 
     # Set the splash screen if it is configured and close it when the GUI shows
     if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
         import pyi_splash
-
         pyi_splash.close()
 
     window_width = 1200
