@@ -4,8 +4,20 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Stable]
 
+## V 0.0.9
+
+> This Is A New Build With A Lot Of Changes To The Layout Under The Hood If There Is Any problem Revert To `v 0.0.7`
+
+### Changed
+
+* Updated `requirements.txt` :heavy_check_mark:
+
+### Fixed
+
+* Minor UI Improvements :heavy_check_mark:
+
 ## V 0.0.8
- > This Is A New Build With A Lot Of Changes To The Layout Under The Hood If There Is Any problem Revert To `v 0.0.7`
+
 ### Added
 
 * Initial Release With Responsive Layout :heavy_check_mark:
