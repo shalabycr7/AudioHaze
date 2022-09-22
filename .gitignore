@@ -1,13 +1,8 @@
+# Output directory
 /Audio Output
-AudioLib/__pycache__/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
 
 # Distribution / packaging
 .Python
@@ -33,50 +28,8 @@ var/
 *.manifest
 *.spec
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*,cover
-.hypothesis/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# IPython Notebook
-.ipynb_checkpoints
-
 # pyenv
 .python-version
-
-# celery beat schedule file
-celerybeat-schedule
 
 # dotenv
 .env
@@ -85,11 +38,6 @@ celerybeat-schedule
 venv/
 ENV/
 
-# Spyder project settings
-.spyderproject
-
-# Rope project settings
-.ropeproject
 ### VirtualEnv template
 # Virtualenv
 [Bb]in
@@ -102,18 +50,12 @@ pyvenv.cfg
 .venv
 pip-selfcheck.json
 
-### JetBrains template
-# Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
-
 # User-specific stuff
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
-
-# AWS User-specific
-.idea/**/aws.xml
 
 # Generated files
 .idea/**/contentModel.xml
@@ -126,43 +68,3 @@ pip-selfcheck.json
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
-
-# Gradle
-.idea/**/gradle.xml
-.idea/**/libraries
-
-# CMake
-cmake-build-*/
-
-# Mongo Explorer plugin
-.idea/**/mongoSettings.xml
-
-# File-based project format
-*.iws
-
-# IntelliJ
-out/
-
-# mpeltonen/sbt-idea plugin
-.idea_modules/
-
-# JIRA plugin
-atlassian-ide-plugin.xml
-
-# Cursive Clojure plugin
-.idea/replstate.xml
-
-# SonarLint plugin
-.idea/sonarlint/
-
-# Crashlytics plugin (for Android Studio and IntelliJ)
-com_crashlytics_export_strings.xml
-crashlytics.properties
-crashlytics-build.properties
-fabric.properties
-
-# Editor-based Rest Client
-.idea/httpRequests
-
-# Android studio 3.1+ serialized cache file
-.idea/caches/build_file_checksums.ser
