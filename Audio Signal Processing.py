@@ -1,6 +1,7 @@
 import importlib
 import os
 import struct
+import tkinter
 import wave
 from tkinter import filedialog, messagebox
 import matplotlib
@@ -17,6 +18,9 @@ from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
 from ttkbootstrap.style import Style
 from AudioLib import AudioEffect
+from matplotlib import pyplot as plt
+from skimage import io
+from PIL import Image, ImageTk
 
 
 class MainGUI(ttk.Window):
@@ -34,6 +38,8 @@ class MainGUI(ttk.Window):
     og_plot_showed = False
     mod_plot_showed = False
     data = np.array([])
+    # editing
+    imgcount = 0
 
     def __init__(self, *args, **kwargs):
         super(MainGUI, self).__init__(*args, **kwargs)
@@ -88,8 +94,8 @@ class MainGUI(ttk.Window):
             update_frame(og_wave_frame)
             update_frame(mod_wave_frame)
             # hide the plotting frames every time we import
-            self.og_plot_showed = False
-            self.mod_plot_showed = False
+            self.og_plot_showed = True
+            self.mod_plot_showed = True
             stop_audio()
             # open window to select the wav file and get the path to the Audio Output dile then save in variable directory
             filename = filedialog.askopenfilename(initialdir=self.file_directory, title="Select Audio File",
@@ -272,12 +278,14 @@ class MainGUI(ttk.Window):
             command=import_file
         )
         import_btn.pack(side=RIGHT)
+
         theme_btn = ttk.Button(
             master=hdr_btn_frame,
             image='themeToggleDark',
             bootstyle=LINK,
             command=set_theme
         )
+
         theme_btn.pack(side=RIGHT, padx=10)
 
         file_overview_frame = ttk.Frame(hdr_frame)
@@ -327,6 +335,18 @@ class MainGUI(ttk.Window):
             command=self.open_conv_window
         )
         open_conv_btn.pack(side=RIGHT, padx=(10, 0))
+
+        # Editing.
+        open_conv_btn = ttk.Button(
+            master=file_action_frame,
+            text=' History',
+            image='convolution',
+            compound=LEFT,
+            bootstyle=WARNING,
+            command=self.open_Hist_window
+        )
+        open_conv_btn.pack(side=RIGHT, padx=(10, 0))
+
         og_play_btn = ttk.Button(
             master=file_action_frame,
             text=' Play',
@@ -427,10 +447,16 @@ class MainGUI(ttk.Window):
         figure_subplot.grid(alpha=0.4)
         # plot the wave
         figure_subplot.set_title(title)
+
+        imgtitle = "History\img" + str(self.imgcount) + ".png";
         if targeted_signal is not None:
-            figure_subplot.plot(targeted_signal, color='blue')
+            figure_subplot.plot(targeted_signal, color='red')
+            plotting_figure.savefig("foo.png")
         else:
-            figure_subplot.plot(time, raw, color='blue')
+            figure_subplot.plot(time, raw, color='green')
+            plotting_figure.savefig(imgtitle)
+            self.imgcount += 1;
+
         # Creating Canvas to show it in the Frame
         canvas = FigureCanvasTkAgg(plotting_figure, master=place)
         canvas.flush_events()
@@ -442,6 +468,9 @@ class MainGUI(ttk.Window):
 
     def open_conv_window(self):
         ConvolutionWindow(self.plotting)
+
+    def open_Hist_window(self):
+        HistoryWindow()
 
     def tts(self, speach):
         if speach == '':
@@ -540,7 +569,11 @@ class ConvolutionWindow:
             menu.add_radiobutton(label=option, value=option, variable=option_var)
         # associate menu with menubutton
         self.select_wave_menu['menu'] = menu
-        ttk.Button(tabs_fr, text='Apply', command=lambda: self.apply_convolution(option_var.get())).pack(side=TOP)
+
+        ttk.Button(
+            tabs_fr, text='Apply',
+            command=lambda: self.apply_convolution(option_var.get())).pack(side=TOP)
+
         # plot the original signal based on the imported Audio Output file
         self.sig = np.repeat([0., 1., 0.], 100)
         self.plotting_func(self.sig, None, None, self.og_signal_frame, 'Original Signal')
@@ -624,6 +657,35 @@ class ConvolutionWindow:
             self.poles_val_lb.config(state="normal")
 
 
+# editing
+class HistoryWindow:
+    def __init__(self):
+
+        imgtest = ttk.PhotoImage(
+                name='openfile',
+                file='Icons/icon1.png')
+
+        new_conv_window = Toplevel(title='History', size=[1300, 740])
+        new_conv_window.place_window_center()
+
+        hist_fr = ttk.Frame(new_conv_window, padding=10)
+        hist_fr.pack(side=LEFT)
+
+
+        ttk.Label(master=hist_fr, text="information").pack(side=LEFT)
+        ttk.Label(master=hist_fr, text="infor\nmation").pack(side=LEFT)
+        ttk.Label(master=hist_fr, text="information").pack(side=LEFT)
+        load = Image.open("img0.png")
+        render = ImageTk.PhotoImage(load)
+        img = ttk.Label(hist_fr, image=render, width=300)
+        img.image = render
+        img.pack(side=LEFT)
+        load1 = Image.open("img0.png")
+        render1 = ImageTk.PhotoImage(load1)
+        img1 = ttk.Label(hist_fr, image=render1, width=300)
+        img1.image = render1
+        img1.pack(side=LEFT)
+
 if __name__ == '__main__':
     # check for input validation for float numbers only
     def validation_callback(user_val):
@@ -635,10 +697,12 @@ if __name__ == '__main__':
                 return True
         return False
 
-    # clear the frame when we add another plot
+
+    # clear the frame when we add another plot.
     def update_frame(obj):
         if len(obj.winfo_children()) >= 1:
             obj.winfo_children()[0].destroy()
+
 
     def output_duration(length):
         hours = length // 3600  # calculate in hours
@@ -648,12 +712,15 @@ if __name__ == '__main__':
         seconds = length  # calculate in seconds
         return hours, minutes, seconds
 
+
     def delete_entries(wid):
         wid.delete(0, END)
+
 
     # Set the splash screen if it is configured and close it when the GUI shows
     if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
         import pyi_splash
+
         pyi_splash.close()
 
     window_width = 1200
