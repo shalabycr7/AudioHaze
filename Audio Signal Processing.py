@@ -1,7 +1,7 @@
 import importlib
 import os
+import sqlite3
 import struct
-import tkinter
 import wave
 from tkinter import filedialog, messagebox
 import matplotlib
@@ -9,6 +9,7 @@ import numpy as np
 import pyttsx3
 import ttkbootstrap as ttk
 import winsound
+from PIL import Image, ImageTk
 from matplotlib import style
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -18,8 +19,6 @@ from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
 from ttkbootstrap.style import Style
 from AudioLib import AudioEffect
-from PIL import Image, ImageTk
-import sqlite3
 
 
 class MainGUI(ttk.Window):
@@ -38,7 +37,7 @@ class MainGUI(ttk.Window):
     mod_plot_showed = False
     data = np.array([])
     # editing
-    imgcount = 0
+    img_count = 0
     connection = sqlite3.connect('signals.db')
     db = connection.cursor()
 
@@ -98,7 +97,7 @@ class MainGUI(ttk.Window):
             self.og_plot_showed = False
             self.mod_plot_showed = False
             stop_audio()
-            # open window to select the wav file and get the path to the Audio Output dile then save in variable directory
+            # open window to select the wav file and get path to the file then save in variable directory
             filename = filedialog.askopenfilename(initialdir=self.file_directory, title="Select Audio File",
                                                   filetypes=(('Wav', '*wav'), ('Mp3', '*mp3')))
             self.file_directory = filename
@@ -344,7 +343,7 @@ class MainGUI(ttk.Window):
             image='convolution',
             compound=LEFT,
             bootstyle=WARNING,
-            command=self.open_Hist_window
+            command=self.open_history_window
         )
         open_conv_btn.pack(side=RIGHT, padx=(10, 0))
 
@@ -449,15 +448,15 @@ class MainGUI(ttk.Window):
         # plot the wave
         figure_subplot.set_title(title)
 
-        imgtitle = "History\img" + str(self.imgcount) + ".png";
+        img_title = "History/img" + str(self.img_count) + ".png"
         if targeted_signal is not None:
             figure_subplot.plot(targeted_signal, color='red')
             plotting_figure.savefig("foo.png")
         else:
             figure_subplot.plot(time, raw, color='green')
-            plotting_figure.savefig(imgtitle)
-            self.imgcount += 1;
-            #self.db.execute("INSERT INTO org(name) VALUES (imgtitle)")
+            plotting_figure.savefig(img_title)
+            self.img_count += 1
+            # self.db.execute("INSERT INTO org(name) VALUES (img_title)")
 
         # Creating Canvas to show it in the Frame
         canvas = FigureCanvasTkAgg(plotting_figure, master=place)
@@ -471,7 +470,7 @@ class MainGUI(ttk.Window):
     def open_conv_window(self):
         ConvolutionWindow(self.plotting)
 
-    def open_Hist_window(self):
+    def open_history_window(self):
         HistoryWindow()
 
     def tts(self, speach):
@@ -663,24 +662,20 @@ class ConvolutionWindow:
 class HistoryWindow:
     def __init__(self):
 
-        s = Style()
-        s.configure('My.TFrame', background='red')
-
         new_conv_window = Toplevel(title='History', size=[1200, 740])
         new_conv_window.place_window_center()
 
-        #creat a main frame.
-        hist_fr_primary = ttk.Frame(new_conv_window, padding=5, style='My.TFrame')
-        hist_fr_primary.pack(side=TOP,expand=True, fill=BOTH)
+        # creat a main frame.
+        hist_fr_primary = ttk.Frame(new_conv_window, padding=5, bootstyle=DANGER)
+        hist_fr_primary.pack(expand=True, fill=BOTH)
 
         # Create A Canvas
         my_canvas = ttk.Canvas(hist_fr_primary)
-        my_canvas.pack(side=LEFT, fill=BOTH, expand=10)
+        my_canvas.pack(side=LEFT, fill=BOTH, expand=True)
 
         # Add A Scrollbar To The Canvas
         my_scrollbar = ttk.Scrollbar(hist_fr_primary, orient=VERTICAL, command=my_canvas.yview)
         my_scrollbar.pack(side=RIGHT, fill=Y)
-
 
         # Configure The Canvas
         my_canvas.configure(yscrollcommand=my_scrollbar.set)
@@ -692,15 +687,15 @@ class HistoryWindow:
         # Add that New frame To a Window In The Canvas
         my_canvas.create_window((0, 0), window=hist_fr, anchor="nw")
 
-        #infromation label
+        # information label
         f1 = ttk.Frame(hist_fr)
         ttk.Label(f1, text="").pack(side="top")
         ttk.Label(f1, text="").pack(side="top")
-        amp_lib = ttk.Label(f1, text    ="Amplitude:   1")
-        shift_lib = ttk.Label(f1, text  ="Shift:       5")
-        speed_lib = ttk.Label(f1, text  ="Speed:       1")
+        amp_lib = ttk.Label(f1, text="Amplitude:   1")
+        shift_lib = ttk.Label(f1, text="Shift:       5")
+        speed_lib = ttk.Label(f1, text="Speed:       1")
         reverse_lib = ttk.Label(f1, text="Reverse: false")
-        f1.grid(row=0, column=0, sticky ="nsew")
+        f1.grid(row=0, column=0, sticky="nsew")
         amp_lib.pack(side="top")
         shift_lib.pack(side="top")
         speed_lib.pack(side="top")
@@ -718,14 +713,12 @@ class HistoryWindow:
                 # Cropped image of above dimension
                 # (It will not change original image)
                 im1 = load.crop((left, top, right, bottom))
-                newsize = (width-100, height)
-                im1 = im1.resize(newsize)
+                new_size = (width - 100, height)
+                im1 = im1.resize(new_size)
                 render = ImageTk.PhotoImage(im1)
                 img = ttk.Label(hist_fr, image=render, width=300)
                 img.image = render
-                img.grid(row=i,column=j+1)
-
-
+                img.grid(row=i, column=j + 1)
 
 
 if __name__ == '__main__':
@@ -739,12 +732,10 @@ if __name__ == '__main__':
                 return True
         return False
 
-
     # clear the frame when we add another plot.
     def update_frame(obj):
         if len(obj.winfo_children()) >= 1:
             obj.winfo_children()[0].destroy()
-
 
     def output_duration(length):
         hours = length // 3600  # calculate in hours
@@ -754,15 +745,12 @@ if __name__ == '__main__':
         seconds = length  # calculate in seconds
         return hours, minutes, seconds
 
-
     def delete_entries(wid):
         wid.delete(0, END)
-
 
     # Set the splash screen if it is configured and close it when the GUI shows
     if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
         import pyi_splash
-
         pyi_splash.close()
 
     window_width = 1200
