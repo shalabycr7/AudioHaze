@@ -19,12 +19,10 @@ from ttkbootstrap.constants import *
 from ttkbootstrap.style import Style
 from AudioLib import AudioEffect
 from PIL import Image, ImageTk
-from cs50 import SQL
-
+import sqlite3
 
 
 class MainGUI(ttk.Window):
-    db = SQL("sqlite:///signals.db")
     file_directory = '/'
     directory_name = 'Audio Output'
     dark_mode_state = False
@@ -41,6 +39,7 @@ class MainGUI(ttk.Window):
     data = np.array([])
     # editing
     imgcount = 0
+
 
     def __init__(self, *args, **kwargs):
         super(MainGUI, self).__init__(*args, **kwargs)
