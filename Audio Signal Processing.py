@@ -18,12 +18,13 @@ from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
 from ttkbootstrap.style import Style
 from AudioLib import AudioEffect
-from matplotlib import pyplot as plt
-from skimage import io
 from PIL import Image, ImageTk
+from cs50 import SQL
+
 
 
 class MainGUI(ttk.Window):
+    db = SQL("sqlite:///signals.db")
     file_directory = '/'
     directory_name = 'Audio Output'
     dark_mode_state = False
@@ -94,8 +95,8 @@ class MainGUI(ttk.Window):
             update_frame(og_wave_frame)
             update_frame(mod_wave_frame)
             # hide the plotting frames every time we import
-            self.og_plot_showed = True
-            self.mod_plot_showed = True
+            self.og_plot_showed = False
+            self.mod_plot_showed = False
             stop_audio()
             # open window to select the wav file and get the path to the Audio Output dile then save in variable directory
             filename = filedialog.askopenfilename(initialdir=self.file_directory, title="Select Audio File",
@@ -456,6 +457,7 @@ class MainGUI(ttk.Window):
             figure_subplot.plot(time, raw, color='green')
             plotting_figure.savefig(imgtitle)
             self.imgcount += 1;
+            #self.db.execute("INSERT INTO org(name) VALUES (imgtitle)")
 
         # Creating Canvas to show it in the Frame
         canvas = FigureCanvasTkAgg(plotting_figure, master=place)
@@ -661,30 +663,70 @@ class ConvolutionWindow:
 class HistoryWindow:
     def __init__(self):
 
-        imgtest = ttk.PhotoImage(
-                name='openfile',
-                file='Icons/icon1.png')
+        s = Style()
+        s.configure('My.TFrame', background='red')
 
-        new_conv_window = Toplevel(title='History', size=[1300, 740])
+        new_conv_window = Toplevel(title='History', size=[1200, 740])
         new_conv_window.place_window_center()
 
-        hist_fr = ttk.Frame(new_conv_window, padding=10)
-        hist_fr.pack(side=LEFT)
+        #creat a main frame.
+        hist_fr_primary = ttk.Frame(new_conv_window, padding=5, style='My.TFrame')
+        hist_fr_primary.pack(side=TOP,expand=True, fill=BOTH)
+
+        # Create A Canvas
+        my_canvas = ttk.Canvas(hist_fr_primary)
+        my_canvas.pack(side=LEFT, fill=BOTH, expand=10)
+
+        # Add A Scrollbar To The Canvas
+        my_scrollbar = ttk.Scrollbar(hist_fr_primary, orient=VERTICAL, command=my_canvas.yview)
+        my_scrollbar.pack(side=RIGHT, fill=Y)
 
 
-        ttk.Label(master=hist_fr, text="information").pack(side=LEFT)
-        ttk.Label(master=hist_fr, text="infor\nmation").pack(side=LEFT)
-        ttk.Label(master=hist_fr, text="information").pack(side=LEFT)
-        load = Image.open("img0.png")
-        render = ImageTk.PhotoImage(load)
-        img = ttk.Label(hist_fr, image=render, width=300)
-        img.image = render
-        img.pack(side=LEFT)
-        load1 = Image.open("img0.png")
-        render1 = ImageTk.PhotoImage(load1)
-        img1 = ttk.Label(hist_fr, image=render1, width=300)
-        img1.image = render1
-        img1.pack(side=LEFT)
+        # Configure The Canvas
+        my_canvas.configure(yscrollcommand=my_scrollbar.set)
+        my_canvas.bind('<Configure>', lambda e: my_canvas.configure(scrollregion=my_canvas.bbox("all")))
+
+        # Create ANOTHER Frame INSIDE the Canvas
+        hist_fr = ttk.Frame(my_canvas)
+
+        # Add that New frame To a Window In The Canvas
+        my_canvas.create_window((0, 0), window=hist_fr, anchor="nw")
+
+        #infromation label
+        f1 = ttk.Frame(hist_fr)
+        ttk.Label(f1, text="").pack(side="top")
+        ttk.Label(f1, text="").pack(side="top")
+        amp_lib = ttk.Label(f1, text    ="Amplitude:   1")
+        shift_lib = ttk.Label(f1, text  ="Shift:       5")
+        speed_lib = ttk.Label(f1, text  ="Speed:       1")
+        reverse_lib = ttk.Label(f1, text="Reverse: false")
+        f1.grid(row=0, column=0, sticky ="nsew")
+        amp_lib.pack(side="top")
+        shift_lib.pack(side="top")
+        speed_lib.pack(side="top")
+        reverse_lib.pack(side="top")
+        for i in range(100):
+            for j in range(2):
+                print(j)
+                load = Image.open("img0.png")
+                width, height = load.size
+                # Setting the points for cropped image
+                left = 0
+                top = 0
+                right = width
+                bottom = height
+                # Cropped image of above dimension
+                # (It will not change original image)
+                im1 = load.crop((left, top, right, bottom))
+                newsize = (width-100, height)
+                im1 = im1.resize(newsize)
+                render = ImageTk.PhotoImage(im1)
+                img = ttk.Label(hist_fr, image=render, width=300)
+                img.image = render
+                img.grid(row=i,column=j+1)
+
+
+
 
 if __name__ == '__main__':
     # check for input validation for float numbers only

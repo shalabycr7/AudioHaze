@@ -49,6 +49,14 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Beta / Unreleased]
 
+## V 0.1.0
+
+### Added
+
+
+### Fixed
+
+
 ## V 0.0.6
 
 ### Added
