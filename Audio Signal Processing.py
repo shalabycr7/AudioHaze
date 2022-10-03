@@ -39,7 +39,8 @@ class MainGUI(ttk.Window):
     data = np.array([])
     # editing
     imgcount = 0
-
+    connection = sqlite3.connect('signals.db')
+    db = connection.cursor()
 
     def __init__(self, *args, **kwargs):
         super(MainGUI, self).__init__(*args, **kwargs)
