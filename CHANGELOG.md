@@ -52,7 +52,10 @@ All Notable Changes To This Project Will Be Documented In This File.
 ## V 0.1.0
 
 ### Added
-
+* Add a part to save every original and modified signals. :heavy_check_mark:
+* Create a database to store each signals. :heavy_check_mark:
+* create a connection in the database to connect every modified signals with its original signal. :heavy_check_mark:
+* Add a History window to display all the modified operation, original and modified signals. :heavy_check_mark:
 
 ### Fixed
 

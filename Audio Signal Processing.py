@@ -47,6 +47,7 @@ class MainGUI(ttk.Window):
     max_id_db = db.execute("SELECT MAX(id) FROM org")
     max_id = max_id_db.fetchone()[0]
     imgcount = 0
+    test = "ok"
     if max_id != None:
         imgcount = max_id
 
@@ -715,38 +716,71 @@ class HistoryWindow:
         # Add that New frame To a Window In The Canvas
         my_canvas.create_window((0, 0), window=hist_fr, anchor="nw")
 
-        #infromation label
-        f1 = ttk.Frame(hist_fr)
-        ttk.Label(f1, text="").pack(side="top")
-        ttk.Label(f1, text="").pack(side="top")
-        amp_lib = ttk.Label(f1, text    ="Amplitude:   1")
-        shift_lib = ttk.Label(f1, text  ="Shift:       5")
-        speed_lib = ttk.Label(f1, text  ="Speed:       1")
-        reverse_lib = ttk.Label(f1, text="Reverse: false")
-        f1.grid(row=0, column=0, sticky ="nsew")
-        amp_lib.pack(side="top")
-        shift_lib.pack(side="top")
-        speed_lib.pack(side="top")
-        reverse_lib.pack(side="top")
-        for i in range(100):
-            for j in range(2):
-                load = Image.open("img0.png")
-                width, height = load.size
-                # Setting the points for cropped image
-                left = 0
-                top = 0
-                right = width
-                bottom = height
-                # Cropped image of above dimension
-                # (It will not change original image)
-                im1 = load.crop((left, top, right, bottom))
-                newsize = (width-100, height)
-                im1 = im1.resize(newsize)
-                render = ImageTk.PhotoImage(im1)
-                img = ttk.Label(hist_fr, image=render, width=300)
-                img.image = render
-                img.grid(row=i,column=j+1)
-    #def addimg(self, name, row, column):
+        #fitch the data from the database
+        org_signal_list_db = MainGUI.db.execute("SELECT id, name FROM org")
+        org_signal_list = org_signal_list_db.fetchall()#     id=[0]         name=[1]
+        row = 1
+        clm = 1
+        for org_signal in org_signal_list:
+            #                                                0    1    2    3     4     5      6
+            org_signal_list_db = MainGUI.db.execute("SELECT name,date,amp,shift,speed,reverse,echo FROM modsignal WHERE org_id = (?)",
+                                                    [(org_signal[0])])
+            #mod_name_list = [item[0] for item in org_signal_list_db.fetchall()]
+            mod_signal_info_list = org_signal_list_db.fetchall()
+
+            print(org_signal[0])
+            print ("|")
+            print(mod_signal_info_list)
+
+            for mod_signal_info in mod_signal_info_list:
+                #add the infomation of the  manipulation operation.
+                self.add_info_label(row, hist_fr, mod_signal_info[1], mod_signal_info[2], mod_signal_info[3], mod_signal_info[4],
+                                    mod_signal_info[5], mod_signal_info[6])
+                #add the original signal in the row
+                self.addimg(org_signal[1], row, clm, hist_fr)
+                clm += 1
+
+                #add the modified signal
+                self.addimg(mod_signal_info[0], row, clm, hist_fr)
+                row += 1; clm -= 1
+
+
+
+    def add_info_label(self, row, frame, date, amp, shift, speed, reverse, echo):
+        # infromation label
+        labe_frame = ttk.Frame(frame)#hist_fr
+        labe_frame.grid(row=row, column=0, sticky="nsew")
+
+        ttk.Label(labe_frame, text="").pack(side="top")
+        ttk.Label(labe_frame, text="").pack(side="top")
+        ttk.Label(labe_frame, text="Date: " + date[5:18]).pack(side="top", anchor=NW)
+        amp_lib = ttk.Label(labe_frame, text="Amplitude: "+str(amp))
+        shift_lib = ttk.Label(labe_frame, text="Shift:         "+str(shift))
+        speed_lib = ttk.Label(labe_frame, text="Speed:      "+str(speed))
+        reverse_lib = ttk.Label(labe_frame, text="Reverse:   "+str(bool(reverse)))
+        ttk.Label(labe_frame, text="Echo: " + str(bool(echo))).pack(side="top", anchor=NW)
+
+        amp_lib.pack(side="top", anchor=NW)
+        shift_lib.pack(side="top", anchor=NW)
+        speed_lib.pack(side="top", anchor=NW)
+        reverse_lib.pack(side="top", anchor=NW)
+    def addimg(self, name, row, column, frame):
+        load = Image.open(name)
+        width, height = load.size
+        # Setting the points for cropped image
+        left = 0
+        top = 0
+        right = width
+        bottom = height
+        # Cropped image of above dimension
+        # (It will not change original image)
+        im1 = load.crop((left, top, right, bottom))
+        newsize = (width - 100, height)
+        im1 = im1.resize(newsize)
+        render = ImageTk.PhotoImage(im1)
+        img = ttk.Label(frame, image=render, width=300)
+        img.image = render
+        img.grid(row=row, column=column)
 
 
 
