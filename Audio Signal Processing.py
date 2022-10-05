@@ -1,10 +1,10 @@
 import datetime
-import importlib
 import os
 import sqlite3
 import struct
 import wave
 from tkinter import filedialog, messagebox
+
 import matplotlib
 import numpy as np
 import pyttsx3
@@ -19,6 +19,7 @@ from scipy import signal
 from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
 from ttkbootstrap.style import Style
+
 from AudioLib import AudioEffect
 
 
@@ -72,9 +73,8 @@ class MainGUI(ttk.Window):
                 theme_btn.config(image='themeToggleDark')
                 self.dark_mode_state = True
             current_style.configure('TLabel', font=('Barlow', 10))
-            current_style.configure('TButton', font=("Barlow", 10), padding=(17, 4))
-            current_style.configure('danger.TButton', font=("Barlow", 10), padding=(17, 4))
-            current_style.configure('success.Outline.TButton', padding=(17, 7))
+            current_style.configure('TButton', font=("Barlow", 10))
+            # current_style.configure('success.Outline.TButton', padding=(17, 7))
             current_style.configure('TMenubutton', font=("Barlow", 10))
             current_style.configure('TNotebook.Tab', font=("Barlow", 10))
             if self.og_plot_showed:
@@ -278,7 +278,16 @@ class MainGUI(ttk.Window):
                 file='Icons/convIcon.png'),
             ttk.PhotoImage(
                 name='tts',
-                file='Icons/ttsIcon.png')]
+                file='Icons/ttsIcon.png'),
+            ttk.PhotoImage(
+                name='history',
+                file='Icons/historyIcon.png'),
+            ttk.PhotoImage(
+                name='apply',
+                file='Icons/applyIcon.png'),
+            ttk.PhotoImage(
+                name='convert',
+                file='Icons/convertIcon.png')]
         hdr_frame = ttk.Frame(self, padding=(20, 10))
         hdr_frame.pack(fill=X, padx=10)
         ttk.Label(hdr_frame, text='Audio Signal Processing', font=("Barlow", 15)).pack(fill=X)
@@ -354,7 +363,7 @@ class MainGUI(ttk.Window):
         open_conv_btn = ttk.Button(
             master=file_action_frame,
             text=' History',
-            image='convolution',
+            image='history',
             compound=LEFT,
             bootstyle=WARNING,
             command=self.open_history_window
@@ -431,8 +440,10 @@ class MainGUI(ttk.Window):
 
         apply_operations_btn = ttk.Button(
             master=operations_frame,
-            text='Apply',
-            bootstyle=(SUCCESS, OUTLINE),
+            text=' Apply',
+            image='apply',
+            compound=LEFT,
+            bootstyle=SUCCESS,
             command=apply_operations
         )
         apply_operations_btn.grid(row=4, column=0, sticky=SE, pady=100)
@@ -517,7 +528,8 @@ class TTSWindow:
         ttk.Label(new_window, text="Please Write The Transcript").pack(pady=10)
         tts_value_lb = ttk.Entry(new_window, justify="center", font=("Barlow", 10))
         tts_value_lb.pack(fill=X, pady=10)
-        ttk.Button(new_window, text='Convert', command=lambda: self.get_my_input_value(tts_value_lb)).pack(pady=20)
+        ttk.Button(new_window, text='Convert', image='convert',
+                   compound=LEFT, command=lambda: self.get_my_input_value(tts_value_lb)).pack(pady=20)
 
     def get_my_input_value(self, widget):
         getresult = widget.get()
@@ -588,6 +600,8 @@ class ConvolutionWindow:
 
         ttk.Button(
             tabs_fr, text='Apply',
+            image='apply',
+            compound=LEFT,
             command=lambda: self.apply_convolution(option_var.get())).pack(side=TOP)
 
         # plot the original signal based on the imported Audio Output file
@@ -767,10 +781,12 @@ if __name__ == '__main__':
                 return True
         return False
 
+
     # clear the frame when we add another plot.
     def update_frame(obj):
         if len(obj.winfo_children()) >= 1:
             obj.winfo_children()[0].destroy()
+
 
     def output_duration(length):
         hours = length // 3600  # calculate in hours
@@ -784,12 +800,6 @@ if __name__ == '__main__':
     def delete_entries(wid):
         wid.delete(0, END)
 
-
-    # Set the splash screen if it is configured and close it when the GUI shows
-    if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
-        import pyi_splash
-
-        pyi_splash.close()
 
     window_width = 1200
     window_height = 700
