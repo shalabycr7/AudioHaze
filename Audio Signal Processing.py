@@ -1,8 +1,8 @@
 import datetime
 import importlib
 import os
+import sqlite3
 import struct
-import tkinter
 import wave
 from tkinter import filedialog, messagebox
 import matplotlib
@@ -10,6 +10,7 @@ import numpy as np
 import pyttsx3
 import ttkbootstrap as ttk
 import winsound
+from PIL import Image, ImageTk
 from matplotlib import style
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -19,8 +20,6 @@ from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
 from ttkbootstrap.style import Style
 from AudioLib import AudioEffect
-from PIL import Image, ImageTk
-import sqlite3
 
 
 class MainGUI(ttk.Window):
@@ -38,18 +37,17 @@ class MainGUI(ttk.Window):
     og_plot_showed = False
     mod_plot_showed = False
     data = np.array([])
-    # editing
     org_id = 0
-    imgtitle = ""
+    img_title = ""
     connection = sqlite3.connect('signals.db')
     db = connection.cursor()
-    #start the imgcounter at a propiate number.
+    # start the image counter at an appropriate number.
     max_id_db = db.execute("SELECT MAX(id) FROM org")
     max_id = max_id_db.fetchone()[0]
-    imgcount = 0
+    img_count = 0
     test = "ok"
-    if max_id != None:
-        imgcount = max_id
+    if max_id is not None:
+        img_count = max_id
 
     def __init__(self, *args, **kwargs):
         super(MainGUI, self).__init__(*args, **kwargs)
@@ -107,7 +105,7 @@ class MainGUI(ttk.Window):
             self.og_plot_showed = False
             self.mod_plot_showed = False
             stop_audio()
-            # open window to select the wav file and get the path to the Audio Output dile then save in variable directory
+            # open window to select file to get the path then save in variable directory
             filename = filedialog.askopenfilename(initialdir=self.file_directory, title="Select Audio File",
                                                   filetypes=(('Wav', '*wav'), ('Mp3', '*mp3')))
             self.file_directory = filename
@@ -213,15 +211,13 @@ class MainGUI(ttk.Window):
             if echo_st:
                 AudioEffect.echo(self.out_file, self.out_file)
             obj.close()
-
-            #Editing
-            #write the modified signal into the data base
+            # write the modified signal into the database
             date = datetime.datetime.now()
-            modsignal = [(self.org_id,self.imgtitle ,date,amp_amount, shift_amount, speed_amount, bool(reverse_state), bool(echo_st))]#               1 2 3 4 5 6 7 8
-            self.db.execute('INSERT INTO modsignal(org_id,name,date,amp,shift,speed,reverse,echo) VALUES (?,?,?,?,?,?,?,?)'
-                            , (self.org_id,self.imgtitle ,date,amp_amount, shift_amount, speed_amount, bool(reverse_state), bool(echo_st)))
+            self.db.execute(
+                'INSERT INTO modsignal(org_id,name,date,amp,shift,speed,reverse,echo) VALUES (?,?,?,?,?,?,?,?)',
+                (self.org_id, self.img_title, date, amp_amount, shift_amount, speed_amount, bool(reverse_state),
+                 bool(echo_st)))
             self.connection.commit()
-            #end editing
 
         def apply_operations():
             stop_audio()
@@ -355,14 +351,13 @@ class MainGUI(ttk.Window):
         )
         open_conv_btn.pack(side=RIGHT, padx=(10, 0))
 
-        # Editing.
         open_conv_btn = ttk.Button(
             master=file_action_frame,
             text=' History',
             image='convolution',
             compound=LEFT,
             bootstyle=WARNING,
-            command=self.open_Hist_window
+            command=self.open_history_window
         )
         open_conv_btn.pack(side=RIGHT, padx=(10, 0))
 
@@ -454,6 +449,7 @@ class MainGUI(ttk.Window):
     def make_output_directory(self):
         try:
             os.mkdir(self.directory_name)
+            os.mkdir('History')
         except FileExistsError:
             return
         return
@@ -464,20 +460,18 @@ class MainGUI(ttk.Window):
         figure_subplot = plotting_figure.add_subplot(111)
         figure_subplot.set_ylabel('Amplitude')
         figure_subplot.grid(alpha=0.4)
-        # plot the wave
         figure_subplot.set_title(title)
 
-        self.imgtitle = "History\img" + str(self.imgcount) + ".png";
+        self.img_title = "History/img" + str(self.img_count) + ".png"
         if targeted_signal is not None:
-            figure_subplot.plot(targeted_signal, color='red')
-            plotting_figure.savefig("foo.png")
+            figure_subplot.plot(targeted_signal, color='blue')
         else:
-            figure_subplot.plot(time, raw, color='green')
-            plotting_figure.savefig(self.imgtitle)
-            self.imgcount += 1;
+            figure_subplot.plot(time, raw, color='blue')
+            plotting_figure.savefig(self.img_title)
+            self.img_count += 1
 
             if title == 'Original Audio':
-                text = [(self.imgtitle)]
+                text = [self.img_title]
                 self.db.execute('INSERT INTO org(name) VALUES (?)', text)
                 self.connection.commit()
                 org_id_db = self.db.execute("SELECT id FROM org WHERE name = ?", text)
@@ -495,7 +489,7 @@ class MainGUI(ttk.Window):
     def open_conv_window(self):
         ConvolutionWindow(self.plotting)
 
-    def open_Hist_window(self):
+    def open_history_window(self):
         HistoryWindow()
 
     def tts(self, speach):
@@ -512,7 +506,6 @@ class MainGUI(ttk.Window):
             # run and wait method, it processes the voice commands.
             engine.runAndWait()
             engine.stop()
-        return
 
 
 class TTSWindow:
@@ -524,14 +517,11 @@ class TTSWindow:
         ttk.Label(new_window, text="Please Write The Transcript").pack(pady=10)
         tts_value_lb = ttk.Entry(new_window, justify="center", font=("Barlow", 10))
         tts_value_lb.pack(fill=X, pady=10)
+        ttk.Button(new_window, text='Convert', command=lambda: self.get_my_input_value(tts_value_lb)).pack(pady=20)
 
-        # Get the text value function
-
-        def get_my_input_value(widget):
-            getresult = widget.get()
-            self.speach_func(str(getresult))
-
-        ttk.Button(new_window, text='Convert', command=lambda: get_my_input_value(tts_value_lb), ).pack(pady=20)
+    def get_my_input_value(self, widget):
+        getresult = widget.get()
+        self.speach_func(str(getresult))
 
 
 class ConvolutionWindow:
@@ -686,85 +676,69 @@ class ConvolutionWindow:
 # editing
 class HistoryWindow:
     def __init__(self):
-
-        s = Style()
-        s.configure('My.TFrame', background='red')
-
         new_conv_window = Toplevel(title='History', size=[1200, 740])
         new_conv_window.place_window_center()
 
-        #creat a main frame.
-        hist_fr_primary = ttk.Frame(new_conv_window, padding=5, style='My.TFrame')
-        hist_fr_primary.pack(side=TOP,expand=True, fill=BOTH)
-
+        # creat a main frame.
+        hist_fr_primary = ttk.Frame(new_conv_window, padding=5)
+        hist_fr_primary.pack(side=TOP, expand=True, fill=BOTH)
         # Create A Canvas
         my_canvas = ttk.Canvas(hist_fr_primary)
-        my_canvas.pack(side=LEFT, fill=BOTH, expand=10)
-
+        my_canvas.pack(side=LEFT, fill=BOTH, expand=True)
         # Add A Scrollbar To The Canvas
         my_scrollbar = ttk.Scrollbar(hist_fr_primary, orient=VERTICAL, command=my_canvas.yview)
         my_scrollbar.pack(side=RIGHT, fill=Y)
-
-
         # Configure The Canvas
         my_canvas.configure(yscrollcommand=my_scrollbar.set)
         my_canvas.bind('<Configure>', lambda e: my_canvas.configure(scrollregion=my_canvas.bbox("all")))
-
         # Create ANOTHER Frame INSIDE the Canvas
         hist_fr = ttk.Frame(my_canvas)
-
         # Add that New frame To a Window In The Canvas
         my_canvas.create_window((0, 0), window=hist_fr, anchor="nw")
-
-        #fitch the data from the database
+        # fitch the data from the database
         org_signal_list_db = MainGUI.db.execute("SELECT id, name FROM org")
-        org_signal_list = org_signal_list_db.fetchall()#     id=[0]         name=[1]
+        org_signal_list = org_signal_list_db.fetchall()  # id=[0]         name=[1]
         row = 1
         clm = 1
         for org_signal in org_signal_list:
-            #                                                0    1    2    3     4     5      6
-            org_signal_list_db = MainGUI.db.execute("SELECT name,date,amp,shift,speed,reverse,echo FROM modsignal WHERE org_id = (?)",
-                                                    [(org_signal[0])])
-            #mod_name_list = [item[0] for item in org_signal_list_db.fetchall()]
+            org_signal_list_db = MainGUI.db.execute(
+                "SELECT name,date,amp,shift,speed,reverse,echo FROM modsignal WHERE org_id = (?)",
+                [(org_signal[0])])
+            # mod_name_list = [item[0] for item in org_signal_list_db.fetchall()]
             mod_signal_info_list = org_signal_list_db.fetchall()
-
-            print(org_signal[0])
-            print ("|")
-            print(mod_signal_info_list)
-
             for mod_signal_info in mod_signal_info_list:
-                #add the infomation of the  manipulation operation.
-                self.add_info_label(row, hist_fr, mod_signal_info[1], mod_signal_info[2], mod_signal_info[3], mod_signal_info[4],
+                # add the information of the  manipulation operation.
+                self.add_info_label(row, hist_fr, mod_signal_info[1], mod_signal_info[2], mod_signal_info[3],
+                                    mod_signal_info[4],
                                     mod_signal_info[5], mod_signal_info[6])
-                #add the original signal in the row
-                self.addimg(org_signal[1], row, clm, hist_fr)
+                # add the original signal in the row
+                self.add_img(org_signal[1], row, clm, hist_fr)
                 clm += 1
-
-                #add the modified signal
-                self.addimg(mod_signal_info[0], row, clm, hist_fr)
-                row += 1; clm -= 1
-
-
+                # add the modified signal
+                self.add_img(mod_signal_info[0], row, clm, hist_fr)
+                row += 1
+                clm -= 1
 
     def add_info_label(self, row, frame, date, amp, shift, speed, reverse, echo):
-        # infromation label
-        labe_frame = ttk.Frame(frame)#hist_fr
-        labe_frame.grid(row=row, column=0, sticky="nsew")
+        # information label
+        label_frame = ttk.Frame(frame)  # hist_fr
+        label_frame.grid(row=row, column=0, sticky="nsew")
 
-        ttk.Label(labe_frame, text="").pack(side="top")
-        ttk.Label(labe_frame, text="").pack(side="top")
-        ttk.Label(labe_frame, text="Date: " + date[5:18]).pack(side="top", anchor=NW)
-        amp_lib = ttk.Label(labe_frame, text="Amplitude: "+str(amp))
-        shift_lib = ttk.Label(labe_frame, text="Shift:         "+str(shift))
-        speed_lib = ttk.Label(labe_frame, text="Speed:      "+str(speed))
-        reverse_lib = ttk.Label(labe_frame, text="Reverse:   "+str(bool(reverse)))
-        ttk.Label(labe_frame, text="Echo: " + str(bool(echo))).pack(side="top", anchor=NW)
+        ttk.Label(label_frame, text="").pack(side="top")
+        ttk.Label(label_frame, text="").pack(side="top")
+        ttk.Label(label_frame, text="Date: " + date[5:18]).pack(side="top", anchor=NW)
+        amp_lib = ttk.Label(label_frame, text="Amplitude: " + str(amp))
+        shift_lib = ttk.Label(label_frame, text="Shift:         " + str(shift))
+        speed_lib = ttk.Label(label_frame, text="Speed:      " + str(speed))
+        reverse_lib = ttk.Label(label_frame, text="Reverse:   " + str(bool(reverse)))
+        ttk.Label(label_frame, text="Echo: " + str(bool(echo))).pack(side="top", anchor=NW)
 
         amp_lib.pack(side="top", anchor=NW)
         shift_lib.pack(side="top", anchor=NW)
         speed_lib.pack(side="top", anchor=NW)
         reverse_lib.pack(side="top", anchor=NW)
-    def addimg(self, name, row, column, frame):
+
+    def add_img(self, name, row, column, frame):
         load = Image.open(name)
         width, height = load.size
         # Setting the points for cropped image
@@ -772,17 +746,14 @@ class HistoryWindow:
         top = 0
         right = width
         bottom = height
-        # Cropped image of above dimension
-        # (It will not change original image)
+        # Cropped image of above dimension (It will not change original image)
         im1 = load.crop((left, top, right, bottom))
-        newsize = (width - 100, height)
-        im1 = im1.resize(newsize)
+        new_size = (width - 100, height)
+        im1 = im1.resize(new_size)
         render = ImageTk.PhotoImage(im1)
         img = ttk.Label(frame, image=render, width=300)
         img.image = render
         img.grid(row=row, column=column)
-
-
 
 
 if __name__ == '__main__':
@@ -796,12 +767,10 @@ if __name__ == '__main__':
                 return True
         return False
 
-
     # clear the frame when we add another plot.
     def update_frame(obj):
         if len(obj.winfo_children()) >= 1:
             obj.winfo_children()[0].destroy()
-
 
     def output_duration(length):
         hours = length // 3600  # calculate in hours

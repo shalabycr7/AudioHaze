@@ -1,5 +1,6 @@
 # Output directory
 /Audio Output
+/History
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
