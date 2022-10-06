@@ -19,6 +19,8 @@ from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
 from ttkbootstrap.style import Style
 from AudioLib import AudioEffect
+from ttkbootstrap.tooltip import ToolTip
+from ttkbootstrap.toast import ToastNotification
 
 
 class MainGUI(ttk.Window):
@@ -209,6 +211,13 @@ class MainGUI(ttk.Window):
             if echo_st:
                 AudioEffect.echo(self.out_file, self.out_file)
             obj.close()
+            # show a message when done modifying the file
+            toast = ToastNotification(
+                title="Output File Saved",
+                message="Modified.wav Was Saved To Audio Output Folder",
+                duration=3000,
+            )
+            toast.show_toast()
             # write the modified signal into the database
             date = datetime.datetime.now()
             self.db.execute(
@@ -375,6 +384,7 @@ class MainGUI(ttk.Window):
             compound=LEFT,
             command=lambda: play_audio('OG')
         )
+        ToolTip(og_play_btn,delay=1500, text="Play Original Audio", bootstyle=PRIMARY)
         og_play_btn.pack(side=RIGHT, padx=(30, 110))
         stop_btn = ttk.Button(
             master=file_action_frame,
@@ -445,6 +455,7 @@ class MainGUI(ttk.Window):
             command=apply_operations
         )
         apply_operations_btn.grid(row=4, column=0, sticky=SE, pady=100)
+
         mod_play_btn = ttk.Button(
             master=operations_frame,
             text=' Play',
@@ -452,6 +463,7 @@ class MainGUI(ttk.Window):
             compound=LEFT,
             command=lambda: play_audio('mod'))
         mod_play_btn.grid(row=4, column=1, sticky=SW, pady=100, padx=20)
+        ToolTip(mod_play_btn,delay=1500, text="Play Modified Audio", bootstyle=PRIMARY)
 
         set_theme()
 
@@ -515,6 +527,12 @@ class MainGUI(ttk.Window):
             # run and wait method, it processes the voice commands.
             engine.runAndWait()
             engine.stop()
+            toast = ToastNotification(
+                title="Output File Saved",
+                message="Transcript.mp3 Was Saved To Audio Output Folder",
+                duration=3000,
+            )
+            toast.show_toast()
 
 
 class TTSWindow:
