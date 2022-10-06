@@ -4,7 +4,6 @@ import sqlite3
 import struct
 import wave
 from tkinter import filedialog, messagebox
-
 import matplotlib
 import numpy as np
 import pyttsx3
@@ -19,7 +18,6 @@ from scipy import signal
 from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
 from ttkbootstrap.style import Style
-
 from AudioLib import AudioEffect
 
 
@@ -28,8 +26,8 @@ class MainGUI(ttk.Window):
     directory_name = 'Audio Output'
     dark_mode_state = False
     out_file = directory_name + '/Modified.wav'
-    nChannels = 0
-    sampleRate = 0
+    num_of_channels = 0
+    sample_rate = 0
     max_amp = 0
     num_of_frames = 0
     result = (0, 0, 0)
@@ -46,7 +44,6 @@ class MainGUI(ttk.Window):
     max_id_db = db.execute("SELECT MAX(id) FROM org")
     max_id = max_id_db.fetchone()[0]
     img_count = 0
-    test = "ok"
     if max_id is not None:
         img_count = max_id
 
@@ -56,8 +53,10 @@ class MainGUI(ttk.Window):
         current_style = Style()
         echo_state = ttk.StringVar()
         rev_state = ttk.StringVar()
+
+        # create History and Audio Output directories on launch
         self.make_output_directory()
-        # register the call back function for validation
+        # register the call back function for input validation
         self.user_validation = self.register(validation_callback)
 
         def set_theme():
@@ -74,7 +73,6 @@ class MainGUI(ttk.Window):
                 self.dark_mode_state = True
             current_style.configure('TLabel', font=('Barlow', 10))
             current_style.configure('TButton', font=("Barlow", 10))
-            # current_style.configure('success.Outline.TButton', padding=(17, 7))
             current_style.configure('TMenubutton', font=("Barlow", 10))
             current_style.configure('TNotebook.Tab', font=("Barlow", 10))
             if self.og_plot_showed:
@@ -83,19 +81,19 @@ class MainGUI(ttk.Window):
                 self.plotting(None, self.timeout, self.data_out, mod_wave_frame, 'Modified Audio')
 
         def read_file(file):
-            raw = file.readframes(-1)  # minus one here means that all the frames of Audio Output has to be read
-            self.nChannels = file.getnchannels()  # get the number of channels in the wave
+            raw = file.readframes(-1)  # minus one here means that all the frames of the file has to be read
+            self.num_of_channels = file.getnchannels()  # get the number of channels in the audio file
             # sign it with 16-bit ints since wave files are encoded with 16 bits per sample
             self.data = np.frombuffer(raw, "int16")
-            self.sampleRate = file.getframerate()
+            self.sample_rate = file.getframerate()
             self.num_of_frames = file.getnframes()
             # get the duration of the audio file
-            duration = self.num_of_frames / float(self.sampleRate)
+            duration = self.num_of_frames / float(self.sample_rate)
             hours, minutes, seconds = output_duration(int(duration))
             total_time = f'{hours}:{minutes}:{seconds}'
             # display the duration
             length_lb.config(text=total_time)
-            time = np.linspace(0, len(self.data) / self.sampleRate, num=len(self.data))
+            time = np.linspace(0, len(self.data) / self.sample_rate, num=len(self.data))
             return time, self.data
 
         def import_file():
@@ -122,8 +120,8 @@ class MainGUI(ttk.Window):
                 # convert mp3 file to wav, so it can be read by wave.open()
                 if file_extension == '.mp3':
                     mp3_file = AudioSegment.from_mp3(file=self.file_directory)
-                    mp3_file.export('./Audio Output/Mp3converted.wav', format='wav')
-                    self.file_directory = './Audio Output/Mp3converted.wav'
+                    mp3_file.export(self.directory_name+'/Mp3converted.wav', format='wav')
+                    self.file_directory = self.directory_name+'/Mp3converted.wav'
 
                 # read the new imported file
                 wav_file = wave.open(self.file_directory, 'r')
@@ -132,14 +130,14 @@ class MainGUI(ttk.Window):
                 wav_d = AudioSegment.from_file(file=self.file_directory, format="wav")
                 self.max_amp = wav_d.max
                 file_type_val.config(text=file_extension)
-                file_channels_val.config(text=self.nChannels)
-                file_frames_val.config(text=self.sampleRate)
+                file_channels_val.config(text=self.num_of_channels)
+                file_frames_val.config(text=self.sample_rate)
                 file_max_amp_val.config(text=self.max_amp)
                 # start plotting
                 self.plotting(None, self.result[0], self.result[1], og_wave_frame, 'Original Audio')
                 self.og_plot_showed = True
                 # Set echo options on if the file is stereo
-                if self.nChannels == 2:
+                if self.num_of_channels == 2:
                     echo_toggle.config(state='!selected')
                 else:
                     echo_toggle.config(state='disabled')
@@ -164,15 +162,15 @@ class MainGUI(ttk.Window):
         def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_st):
             update_frame(mod_wave_frame)
             audio_obj = wave.open(self.out_file, 'wb')
-            audio_obj.setnchannels(self.nChannels)
+            audio_obj.setnchannels(self.num_of_channels)
             audio_obj.setsampwidth(2)
             # speed OP
             speed_factor = speed_amount
-            speed = self.sampleRate * speed_factor
+            speed = self.sample_rate * speed_factor
             audio_obj.setframerate(speed)
             # Shift OP
             pov_shift_in_sec = shift_amount
-            for i in range(int(self.sampleRate * pov_shift_in_sec)):
+            for i in range(int(self.sample_rate * pov_shift_in_sec)):
                 zero_in_byte = struct.pack('<h', 0)
                 audio_obj.writeframesraw(zero_in_byte)
             # Amplification OP
@@ -229,7 +227,7 @@ class MainGUI(ttk.Window):
                     reverse_st = True
                 else:
                     reverse_st = False
-                if echo_state.get() == 'echoOn' and self.nChannels == 2:
+                if echo_state.get() == 'echoOn' and self.num_of_channels == 2:
                     echo_st = True
                 else:
                     echo_st = False
@@ -718,7 +716,6 @@ class HistoryWindow:
             org_signal_list_db = MainGUI.db.execute(
                 "SELECT name,date,amp,shift,speed,reverse,echo FROM modsignal WHERE org_id = (?)",
                 [(org_signal[0])])
-            # mod_name_list = [item[0] for item in org_signal_list_db.fetchall()]
             mod_signal_info_list = org_signal_list_db.fetchall()
             for mod_signal_info in mod_signal_info_list:
                 # add the information of the  manipulation operation.
