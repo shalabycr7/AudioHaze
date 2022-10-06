@@ -2,8 +2,6 @@
 /Audio Output
 /History
 
-# Database
-signals.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -73,3 +71,6 @@ pip-selfcheck.json
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
+
+#ignore test files
+dataBaseCreator.py

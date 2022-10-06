@@ -1,7 +1,8 @@
 import datetime
+import importlib
 import os
-import sqlite3
 import struct
+import tkinter
 import wave
 from tkinter import filedialog, messagebox
 import matplotlib
@@ -9,7 +10,6 @@ import numpy as np
 import pyttsx3
 import ttkbootstrap as ttk
 import winsound
-from PIL import Image, ImageTk
 from matplotlib import style
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -18,9 +18,10 @@ from scipy import signal
 from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
 from ttkbootstrap.style import Style
+from ttkbootstrap.scrolled import ScrolledFrame
 from AudioLib import AudioEffect
-from ttkbootstrap.tooltip import ToolTip
-from ttkbootstrap.toast import ToastNotification
+from PIL import Image, ImageTk
+import sqlite3
 
 
 class MainGUI(ttk.Window):
@@ -28,8 +29,8 @@ class MainGUI(ttk.Window):
     directory_name = 'Audio Output'
     dark_mode_state = False
     out_file = directory_name + '/Modified.wav'
-    num_of_channels = 0
-    sample_rate = 0
+    nChannels = 0
+    sampleRate = 0
     max_amp = 0
     num_of_frames = 0
     result = (0, 0, 0)
@@ -38,16 +39,18 @@ class MainGUI(ttk.Window):
     og_plot_showed = False
     mod_plot_showed = False
     data = np.array([])
+    # editing
     org_id = 0
-    img_title = ""
+    imgtitle = ""
     connection = sqlite3.connect('signals.db')
     db = connection.cursor()
-    # start the image counter at an appropriate number.
+    #start the imgcounter at a propiate number.
     max_id_db = db.execute("SELECT MAX(id) FROM org")
     max_id = max_id_db.fetchone()[0]
-    img_count = 0
-    if max_id is not None:
-        img_count = max_id
+    imgcount = 0
+    test = "ok"
+    if max_id != None:
+        imgcount = max_id
 
     def __init__(self, *args, **kwargs):
         super(MainGUI, self).__init__(*args, **kwargs)
@@ -55,10 +58,8 @@ class MainGUI(ttk.Window):
         current_style = Style()
         echo_state = ttk.StringVar()
         rev_state = ttk.StringVar()
-
-        # create History and Audio Output directories on launch
         self.make_output_directory()
-        # register the call back function for input validation
+        # register the call back function for validation
         self.user_validation = self.register(validation_callback)
 
         def set_theme():
@@ -74,7 +75,9 @@ class MainGUI(ttk.Window):
                 theme_btn.config(image='themeToggleDark')
                 self.dark_mode_state = True
             current_style.configure('TLabel', font=('Barlow', 10))
-            current_style.configure('TButton', font=("Barlow", 10))
+            current_style.configure('TButton', font=("Barlow", 10), padding=(17, 4))
+            current_style.configure('danger.TButton', font=("Barlow", 10), padding=(17, 4))
+            current_style.configure('success.Outline.TButton', padding=(17, 7))
             current_style.configure('TMenubutton', font=("Barlow", 10))
             current_style.configure('TNotebook.Tab', font=("Barlow", 10))
             if self.og_plot_showed:
@@ -83,19 +86,19 @@ class MainGUI(ttk.Window):
                 self.plotting(None, self.timeout, self.data_out, mod_wave_frame, 'Modified Audio')
 
         def read_file(file):
-            raw = file.readframes(-1)  # minus one here means that all the frames of the file has to be read
-            self.num_of_channels = file.getnchannels()  # get the number of channels in the audio file
+            raw = file.readframes(-1)  # minus one here means that all the frames of Audio Output has to be read
+            self.nChannels = file.getnchannels()  # get the number of channels in the wave
             # sign it with 16-bit ints since wave files are encoded with 16 bits per sample
             self.data = np.frombuffer(raw, "int16")
-            self.sample_rate = file.getframerate()
+            self.sampleRate = file.getframerate()
             self.num_of_frames = file.getnframes()
             # get the duration of the audio file
-            duration = self.num_of_frames / float(self.sample_rate)
+            duration = self.num_of_frames / float(self.sampleRate)
             hours, minutes, seconds = output_duration(int(duration))
             total_time = f'{hours}:{minutes}:{seconds}'
             # display the duration
             length_lb.config(text=total_time)
-            time = np.linspace(0, len(self.data) / self.sample_rate, num=len(self.data))
+            time = np.linspace(0, len(self.data) / self.sampleRate, num=len(self.data))
             return time, self.data
 
         def import_file():
@@ -105,7 +108,7 @@ class MainGUI(ttk.Window):
             self.og_plot_showed = False
             self.mod_plot_showed = False
             stop_audio()
-            # open window to select file to get the path then save in variable directory
+            # open window to select the wav file and get the path to the Audio Output dile then save in variable directory
             filename = filedialog.askopenfilename(initialdir=self.file_directory, title="Select Audio File",
                                                   filetypes=(('Wav', '*wav'), ('Mp3', '*mp3')))
             self.file_directory = filename
@@ -122,8 +125,8 @@ class MainGUI(ttk.Window):
                 # convert mp3 file to wav, so it can be read by wave.open()
                 if file_extension == '.mp3':
                     mp3_file = AudioSegment.from_mp3(file=self.file_directory)
-                    mp3_file.export(self.directory_name+'/Mp3converted.wav', format='wav')
-                    self.file_directory = self.directory_name+'/Mp3converted.wav'
+                    mp3_file.export('./Audio Output/Mp3converted.wav', format='wav')
+                    self.file_directory = './Audio Output/Mp3converted.wav'
 
                 # read the new imported file
                 wav_file = wave.open(self.file_directory, 'r')
@@ -132,14 +135,14 @@ class MainGUI(ttk.Window):
                 wav_d = AudioSegment.from_file(file=self.file_directory, format="wav")
                 self.max_amp = wav_d.max
                 file_type_val.config(text=file_extension)
-                file_channels_val.config(text=self.num_of_channels)
-                file_frames_val.config(text=self.sample_rate)
+                file_channels_val.config(text=self.nChannels)
+                file_frames_val.config(text=self.sampleRate)
                 file_max_amp_val.config(text=self.max_amp)
                 # start plotting
                 self.plotting(None, self.result[0], self.result[1], og_wave_frame, 'Original Audio')
                 self.og_plot_showed = True
                 # Set echo options on if the file is stereo
-                if self.num_of_channels == 2:
+                if self.nChannels == 2:
                     echo_toggle.config(state='!selected')
                 else:
                     echo_toggle.config(state='disabled')
@@ -164,15 +167,15 @@ class MainGUI(ttk.Window):
         def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_st):
             update_frame(mod_wave_frame)
             audio_obj = wave.open(self.out_file, 'wb')
-            audio_obj.setnchannels(self.num_of_channels)
+            audio_obj.setnchannels(self.nChannels)
             audio_obj.setsampwidth(2)
             # speed OP
             speed_factor = speed_amount
-            speed = self.sample_rate * speed_factor
+            speed = self.sampleRate * speed_factor
             audio_obj.setframerate(speed)
             # Shift OP
             pov_shift_in_sec = shift_amount
-            for i in range(int(self.sample_rate * pov_shift_in_sec)):
+            for i in range(int(self.sampleRate * pov_shift_in_sec)):
                 zero_in_byte = struct.pack('<h', 0)
                 audio_obj.writeframesraw(zero_in_byte)
             # Amplification OP
@@ -211,20 +214,15 @@ class MainGUI(ttk.Window):
             if echo_st:
                 AudioEffect.echo(self.out_file, self.out_file)
             obj.close()
-            # show a message when done modifying the file
-            toast = ToastNotification(
-                title="Output File Saved",
-                message="Modified.wav Was Saved To Audio Output Folder",
-                duration=3000,
-            )
-            toast.show_toast()
-            # write the modified signal into the database
+
+            #Editing
+            #write the modified signal into the data base
             date = datetime.datetime.now()
-            self.db.execute(
-                'INSERT INTO modsignal(org_id,name,date,amp,shift,speed,reverse,echo) VALUES (?,?,?,?,?,?,?,?)',
-                (self.org_id, self.img_title, date, amp_amount, shift_amount, speed_amount, bool(reverse_state),
-                 bool(echo_st)))
+            modsignal = [(self.org_id,self.imgtitle ,date,amp_amount, shift_amount, speed_amount, bool(reverse_state), bool(echo_st))]#               1 2 3 4 5 6 7 8
+            self.db.execute('INSERT INTO modsignal(org_id,name,date,amp,shift,speed,reverse,echo) VALUES (?,?,?,?,?,?,?,?)'
+                            , (self.org_id,self.imgtitle ,date,amp_amount, shift_amount, speed_amount, bool(reverse_state), bool(echo_st)))
             self.connection.commit()
+            #end editing
 
         def apply_operations():
             stop_audio()
@@ -236,7 +234,7 @@ class MainGUI(ttk.Window):
                     reverse_st = True
                 else:
                     reverse_st = False
-                if echo_state.get() == 'echoOn' and self.num_of_channels == 2:
+                if echo_state.get() == 'echoOn' and self.nChannels == 2:
                     echo_st = True
                 else:
                     echo_st = False
@@ -256,6 +254,9 @@ class MainGUI(ttk.Window):
             ttk.PhotoImage(
                 name='openfile',
                 file='Icons/icon1.png'),
+            ttk.PhotoImage(
+                name='history',
+                file='Icons/historyIcon.png'),
             ttk.PhotoImage(
                 name='channels',
                 file='Icons/icon2.png'),
@@ -285,16 +286,7 @@ class MainGUI(ttk.Window):
                 file='Icons/convIcon.png'),
             ttk.PhotoImage(
                 name='tts',
-                file='Icons/ttsIcon.png'),
-            ttk.PhotoImage(
-                name='history',
-                file='Icons/historyIcon.png'),
-            ttk.PhotoImage(
-                name='apply',
-                file='Icons/applyIcon.png'),
-            ttk.PhotoImage(
-                name='convert',
-                file='Icons/convertIcon.png')]
+                file='Icons/ttsIcon.png')]
         hdr_frame = ttk.Frame(self, padding=(20, 10))
         hdr_frame.pack(fill=X, padx=10)
         ttk.Label(hdr_frame, text='Audio Signal Processing', font=("Barlow", 15)).pack(fill=X)
@@ -367,13 +359,14 @@ class MainGUI(ttk.Window):
         )
         open_conv_btn.pack(side=RIGHT, padx=(10, 0))
 
+        # Editing.
         open_conv_btn = ttk.Button(
             master=file_action_frame,
             text=' History',
             image='history',
             compound=LEFT,
             bootstyle=WARNING,
-            command=self.open_history_window
+            command=self.open_Hist_window
         )
         open_conv_btn.pack(side=RIGHT, padx=(10, 0))
 
@@ -384,7 +377,6 @@ class MainGUI(ttk.Window):
             compound=LEFT,
             command=lambda: play_audio('OG')
         )
-        ToolTip(og_play_btn,delay=1500, text="Play Original Audio", bootstyle=PRIMARY)
         og_play_btn.pack(side=RIGHT, padx=(30, 110))
         stop_btn = ttk.Button(
             master=file_action_frame,
@@ -448,14 +440,11 @@ class MainGUI(ttk.Window):
 
         apply_operations_btn = ttk.Button(
             master=operations_frame,
-            text=' Apply',
-            image='apply',
-            compound=LEFT,
-            bootstyle=SUCCESS,
+            text='Apply',
+            bootstyle=(SUCCESS, OUTLINE),
             command=apply_operations
         )
         apply_operations_btn.grid(row=4, column=0, sticky=SE, pady=100)
-
         mod_play_btn = ttk.Button(
             master=operations_frame,
             text=' Play',
@@ -463,14 +452,12 @@ class MainGUI(ttk.Window):
             compound=LEFT,
             command=lambda: play_audio('mod'))
         mod_play_btn.grid(row=4, column=1, sticky=SW, pady=100, padx=20)
-        ToolTip(mod_play_btn,delay=1500, text="Play Modified Audio", bootstyle=PRIMARY)
 
         set_theme()
 
     def make_output_directory(self):
         try:
             os.mkdir(self.directory_name)
-            os.mkdir('History')
         except FileExistsError:
             return
         return
@@ -481,18 +468,20 @@ class MainGUI(ttk.Window):
         figure_subplot = plotting_figure.add_subplot(111)
         figure_subplot.set_ylabel('Amplitude')
         figure_subplot.grid(alpha=0.4)
+        # plot the wave
         figure_subplot.set_title(title)
 
-        self.img_title = "History/img" + str(self.img_count) + ".png"
+        self.imgtitle = "History\img" + str(self.imgcount) + ".png";
         if targeted_signal is not None:
-            figure_subplot.plot(targeted_signal, color='blue')
+            figure_subplot.plot(targeted_signal, color='red')
+            plotting_figure.savefig("foo.png")
         else:
-            figure_subplot.plot(time, raw, color='blue')
-            plotting_figure.savefig(self.img_title)
-            self.img_count += 1
+            figure_subplot.plot(time, raw, color='green')
+            plotting_figure.savefig(self.imgtitle)
+            self.imgcount += 1;
 
             if title == 'Original Audio':
-                text = [self.img_title]
+                text = [(self.imgtitle)]
                 self.db.execute('INSERT INTO org(name) VALUES (?)', text)
                 self.connection.commit()
                 org_id_db = self.db.execute("SELECT id FROM org WHERE name = ?", text)
@@ -510,7 +499,7 @@ class MainGUI(ttk.Window):
     def open_conv_window(self):
         ConvolutionWindow(self.plotting)
 
-    def open_history_window(self):
+    def open_Hist_window(self):
         HistoryWindow()
 
     def tts(self, speach):
@@ -527,12 +516,7 @@ class MainGUI(ttk.Window):
             # run and wait method, it processes the voice commands.
             engine.runAndWait()
             engine.stop()
-            toast = ToastNotification(
-                title="Output File Saved",
-                message="Transcript.mp3 Was Saved To Audio Output Folder",
-                duration=3000,
-            )
-            toast.show_toast()
+        return
 
 
 class TTSWindow:
@@ -544,12 +528,14 @@ class TTSWindow:
         ttk.Label(new_window, text="Please Write The Transcript").pack(pady=10)
         tts_value_lb = ttk.Entry(new_window, justify="center", font=("Barlow", 10))
         tts_value_lb.pack(fill=X, pady=10)
-        ttk.Button(new_window, text='Convert', image='convert',
-                   compound=LEFT, command=lambda: self.get_my_input_value(tts_value_lb)).pack(pady=20)
 
-    def get_my_input_value(self, widget):
-        getresult = widget.get()
-        self.speach_func(str(getresult))
+        # Get the text value function
+
+        def get_my_input_value(widget):
+            getresult = widget.get()
+            self.speach_func(str(getresult))
+
+        ttk.Button(new_window, text='Convert', command=lambda: get_my_input_value(tts_value_lb), ).pack(pady=20)
 
 
 class ConvolutionWindow:
@@ -616,8 +602,6 @@ class ConvolutionWindow:
 
         ttk.Button(
             tabs_fr, text='Apply',
-            image='apply',
-            compound=LEFT,
             command=lambda: self.apply_convolution(option_var.get())).pack(side=TOP)
 
         # plot the original signal based on the imported Audio Output file
@@ -706,68 +690,62 @@ class ConvolutionWindow:
 # editing
 class HistoryWindow:
     def __init__(self):
+
+        s = Style()
+        s.configure('My.TFrame', background='red')
+
         new_conv_window = Toplevel(title='History', size=[1200, 740])
         new_conv_window.place_window_center()
 
         # creat a main frame.
-        hist_fr_primary = ttk.Frame(new_conv_window, padding=5)
-        hist_fr_primary.pack(side=TOP, expand=True, fill=BOTH)
-        # Create A Canvas
-        my_canvas = ttk.Canvas(hist_fr_primary)
-        my_canvas.pack(side=LEFT, fill=BOTH, expand=True)
-        # Add A Scrollbar To The Canvas
-        my_scrollbar = ttk.Scrollbar(hist_fr_primary, orient=VERTICAL, command=my_canvas.yview)
-        my_scrollbar.pack(side=RIGHT, fill=Y)
-        # Configure The Canvas
-        my_canvas.configure(yscrollcommand=my_scrollbar.set)
-        my_canvas.bind('<Configure>', lambda e: my_canvas.configure(scrollregion=my_canvas.bbox("all")))
-        # Create ANOTHER Frame INSIDE the Canvas
-        hist_fr = ttk.Frame(my_canvas)
-        # Add that New frame To a Window In The Canvas
-        my_canvas.create_window((0, 0), window=hist_fr, anchor="nw")
-        # fitch the data from the database
+        hist_fr = ScrolledFrame(new_conv_window, autohide=True)
+        hist_fr.pack(side=TOP, expand=True, fill=BOTH)
+        #fitch the data from the database
         org_signal_list_db = MainGUI.db.execute("SELECT id, name FROM org")
-        org_signal_list = org_signal_list_db.fetchall()  # id=[0]         name=[1]
+        org_signal_list = org_signal_list_db.fetchall()#     id=[0]         name=[1]
         row = 1
         clm = 1
         for org_signal in org_signal_list:
-            org_signal_list_db = MainGUI.db.execute(
-                "SELECT name,date,amp,shift,speed,reverse,echo FROM modsignal WHERE org_id = (?)",
-                [(org_signal[0])])
+            #                                                0    1    2    3     4     5      6
+            org_signal_list_db = MainGUI.db.execute("SELECT name,date,amp,shift,speed,reverse,echo FROM modsignal WHERE org_id = (?)",
+                                                    [(org_signal[0])])
+            #mod_name_list = [item[0] for item in org_signal_list_db.fetchall()]
             mod_signal_info_list = org_signal_list_db.fetchall()
+
+
             for mod_signal_info in mod_signal_info_list:
-                # add the information of the  manipulation operation.
-                self.add_info_label(row, hist_fr, mod_signal_info[1], mod_signal_info[2], mod_signal_info[3],
-                                    mod_signal_info[4],
+                #add the infomation of the  manipulation operation.
+                self.add_info_label(row, hist_fr, mod_signal_info[1], mod_signal_info[2], mod_signal_info[3], mod_signal_info[4],
                                     mod_signal_info[5], mod_signal_info[6])
-                # add the original signal in the row
-                self.add_img(org_signal[1], row, clm, hist_fr)
+                #add the original signal in the row
+                self.addimg(org_signal[1], row, clm, hist_fr)
                 clm += 1
-                # add the modified signal
-                self.add_img(mod_signal_info[0], row, clm, hist_fr)
-                row += 1
-                clm -= 1
+
+                #add the modified signal
+                self.addimg(mod_signal_info[0], row, clm, hist_fr)
+                row += 1; clm -= 1
+
+
 
     def add_info_label(self, row, frame, date, amp, shift, speed, reverse, echo):
-        # information label
-        label_frame = ttk.Frame(frame)  # hist_fr
-        label_frame.grid(row=row, column=0, sticky="nsew")
+        # infromation label
+        labe_frame = ttk.Frame(frame)#hist_fr
+        labe_frame.grid(row=row, column=0, sticky="nsew")
 
-        ttk.Label(label_frame, text="").pack(side="top")
-        ttk.Label(label_frame, text="").pack(side="top")
-        ttk.Label(label_frame, text="Date: " + date[5:18]).pack(side="top", anchor=NW)
-        amp_lib = ttk.Label(label_frame, text="Amplitude: " + str(amp))
-        shift_lib = ttk.Label(label_frame, text="Shift:         " + str(shift))
-        speed_lib = ttk.Label(label_frame, text="Speed:      " + str(speed))
-        reverse_lib = ttk.Label(label_frame, text="Reverse:   " + str(bool(reverse)))
-        ttk.Label(label_frame, text="Echo: " + str(bool(echo))).pack(side="top", anchor=NW)
+        ttk.Label(labe_frame, text="").pack(side="top")
+        ttk.Label(labe_frame, text="").pack(side="top")
+        ttk.Label(labe_frame, text="Date: " + date[5:18]).pack(side="top", anchor=NW)
+        amp_lib = ttk.Label(labe_frame, text="Amplitude: "+str(amp))
+        shift_lib = ttk.Label(labe_frame, text="Shift:         "+str(shift))
+        speed_lib = ttk.Label(labe_frame, text="Speed:      "+str(speed))
+        reverse_lib = ttk.Label(labe_frame, text="Reverse:   "+str(bool(reverse)))
+        ttk.Label(labe_frame, text="Echo: " + str(bool(echo))).pack(side="top", anchor=NW)
 
         amp_lib.pack(side="top", anchor=NW)
         shift_lib.pack(side="top", anchor=NW)
         speed_lib.pack(side="top", anchor=NW)
         reverse_lib.pack(side="top", anchor=NW)
-
-    def add_img(self, name, row, column, frame):
+    def addimg(self, name, row, column, frame):
         load = Image.open(name)
         width, height = load.size
         # Setting the points for cropped image
@@ -775,14 +753,17 @@ class HistoryWindow:
         top = 0
         right = width
         bottom = height
-        # Cropped image of above dimension (It will not change original image)
+        # Cropped image of above dimension
+        # (It will not change original image)
         im1 = load.crop((left, top, right, bottom))
-        new_size = (width - 100, height)
-        im1 = im1.resize(new_size)
+        newsize = (width - 100, height)
+        im1 = im1.resize(newsize)
         render = ImageTk.PhotoImage(im1)
         img = ttk.Label(frame, image=render, width=300)
         img.image = render
         img.grid(row=row, column=column)
+
+
 
 
 if __name__ == '__main__':
@@ -815,6 +796,12 @@ if __name__ == '__main__':
     def delete_entries(wid):
         wid.delete(0, END)
 
+
+    # Set the splash screen if it is configured and close it when the GUI shows
+    if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
+        import pyi_splash
+
+        pyi_splash.close()
 
     window_width = 1200
     window_height = 700
