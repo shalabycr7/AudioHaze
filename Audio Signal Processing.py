@@ -17,11 +17,12 @@ from pydub import AudioSegment
 from scipy import signal
 from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
-from ttkbootstrap.style import Style
-from AudioLib import AudioEffect
-from ttkbootstrap.tooltip import ToolTip
-from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.scrolled import ScrolledFrame
+from ttkbootstrap.style import Style
+from ttkbootstrap.toast import ToastNotification
+from ttkbootstrap.tooltip import ToolTip
+from AudioLib import AudioEffect
+
 
 class MainGUI(ttk.Window):
     file_directory = '/'
@@ -46,11 +47,13 @@ class MainGUI(ttk.Window):
     max_id_db = db.execute("SELECT MAX(id) FROM org")
     max_id = max_id_db.fetchone()[0]
     img_count = 0
-    if max_id is not None:
-        img_count = max_id
 
     def __init__(self, *args, **kwargs):
         super(MainGUI, self).__init__(*args, **kwargs)
+        # prevent img count from increasing on startup
+        if self.max_id is not None:
+            self.img_count = self.max_id
+
         # app variables
         current_style = Style()
         echo_state = ttk.StringVar()
@@ -122,8 +125,8 @@ class MainGUI(ttk.Window):
                 # convert mp3 file to wav, so it can be read by wave.open()
                 if file_extension == '.mp3':
                     mp3_file = AudioSegment.from_mp3(file=self.file_directory)
-                    mp3_file.export(self.directory_name+'/Mp3converted.wav', format='wav')
-                    self.file_directory = self.directory_name+'/Mp3converted.wav'
+                    mp3_file.export(self.directory_name + '/Mp3converted.wav', format='wav')
+                    self.file_directory = self.directory_name + '/Mp3converted.wav'
 
                 # read the new imported file
                 wav_file = wave.open(self.file_directory, 'r')
@@ -384,7 +387,7 @@ class MainGUI(ttk.Window):
             compound=LEFT,
             command=lambda: play_audio('OG')
         )
-        ToolTip(og_play_btn,delay=1500, text="Play Original Audio", bootstyle=PRIMARY)
+        ToolTip(og_play_btn, delay=1500, text="Play Original Audio", bootstyle=PRIMARY)
         og_play_btn.pack(side=RIGHT, padx=(30, 110))
         stop_btn = ttk.Button(
             master=file_action_frame,
@@ -463,7 +466,7 @@ class MainGUI(ttk.Window):
             compound=LEFT,
             command=lambda: play_audio('mod'))
         mod_play_btn.grid(row=4, column=1, sticky=SW, pady=100, padx=20)
-        ToolTip(mod_play_btn,delay=1500, text="Play Modified Audio", bootstyle=PRIMARY)
+        ToolTip(mod_play_btn, delay=1500, text="Play Modified Audio", bootstyle=PRIMARY)
 
         set_theme()
 
@@ -730,7 +733,7 @@ class HistoryWindow:
             mod_signal_info_list = org_signal_list_db.fetchall()
 
             for mod_signal_info in mod_signal_info_list:
-                # add the infomation of the  manipulation operation.
+                # add the information of the  manipulation operation.
                 self.add_info_label(row, hist_fr, mod_signal_info[1], mod_signal_info[2], mod_signal_info[3],
                                     mod_signal_info[4],
                                     mod_signal_info[5], mod_signal_info[6])
@@ -740,7 +743,7 @@ class HistoryWindow:
 
                 # add the modified signal
                 self.add_img(mod_signal_info[0], row, clm, hist_fr)
-                row += 1;
+                row += 1
                 clm -= 1
 
     def add_info_label(self, row, frame, date, amp, shift, speed, reverse, echo):
@@ -791,12 +794,10 @@ if __name__ == '__main__':
                 return True
         return False
 
-
     # clear the frame when we add another plot.
     def update_frame(obj):
         if len(obj.winfo_children()) >= 1:
             obj.winfo_children()[0].destroy()
-
 
     def output_duration(length):
         hours = length // 3600  # calculate in hours
@@ -806,10 +807,8 @@ if __name__ == '__main__':
         seconds = length  # calculate in seconds
         return hours, minutes, seconds
 
-
     def delete_entries(wid):
         wid.delete(0, END)
-
 
     window_width = 1200
     window_height = 700
