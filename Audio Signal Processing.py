@@ -25,7 +25,7 @@ from AudioLib import AudioEffect
 
 
 class MainGUI(ttk.Window):
-    file_directory = '/'
+    file_directory = ''
     directory_name = 'Audio Output'
     dark_mode_state = False
     out_file = directory_name + '/Modified.wav'
@@ -53,12 +53,10 @@ class MainGUI(ttk.Window):
         # prevent img count from increasing on startup
         if self.max_id is not None:
             self.img_count = self.max_id
-
         # app variables
         current_style = Style()
         echo_state = ttk.StringVar()
         rev_state = ttk.StringVar()
-
         # create History and Audio Output directories on launch
         self.make_output_directory()
         # register the call back function for input validation
@@ -231,7 +229,8 @@ class MainGUI(ttk.Window):
 
         def apply_operations():
             stop_audio()
-            if self.file_directory != '' and amp_entry.get() != '' and speed_entry.get() != '' and shift_entry.get() != '':
+            if self.file_directory != '' and amp_entry.get() != '' and speed_entry.get() != '' \
+                    and shift_entry.get() != '':
                 amp_amount = float(amp_entry.get())
                 shift_amount = float(shift_entry.get())
                 speed_amount = float(speed_entry.get())
@@ -298,6 +297,7 @@ class MainGUI(ttk.Window):
             ttk.PhotoImage(
                 name='convert',
                 file='Icons/convertIcon.png')]
+
         hdr_frame = ttk.Frame(self, padding=(20, 10))
         hdr_frame.pack(fill=X, padx=10)
         ttk.Label(hdr_frame, text='Audio Signal Processing', font=("Barlow", 15)).pack(fill=X)
@@ -706,32 +706,24 @@ class ConvolutionWindow:
             self.poles_val_lb.config(state="normal")
 
 
-# editing
 class HistoryWindow:
     def __init__(self):
-
-        s = Style()
-        s.configure('My.TFrame', background='red')
-
         new_conv_window = Toplevel(title='History', size=[1200, 740])
         new_conv_window.place_window_center()
 
         # creat a main frame.
         hist_fr = ScrolledFrame(new_conv_window, autohide=True)
         hist_fr.pack(side=TOP, expand=True, fill=BOTH)
-        # fitch the data from the database
+        # fetch the data from the database
         org_signal_list_db = MainGUI.db.execute("SELECT id, name FROM org")
-        org_signal_list = org_signal_list_db.fetchall()  # id=[0]         name=[1]
+        org_signal_list = org_signal_list_db.fetchall()
         row = 1
         clm = 1
         for org_signal in org_signal_list:
-            #                                                0    1    2    3     4     5      6
             org_signal_list_db = MainGUI.db.execute(
                 "SELECT name,date,amp,shift,speed,reverse,echo FROM modsignal WHERE org_id = (?)",
                 [(org_signal[0])])
-            # mod_name_list = [item[0] for item in org_signal_list_db.fetchall()]
             mod_signal_info_list = org_signal_list_db.fetchall()
-
             for mod_signal_info in mod_signal_info_list:
                 # add the information of the  manipulation operation.
                 self.add_info_label(row, hist_fr, mod_signal_info[1], mod_signal_info[2], mod_signal_info[3],
@@ -740,7 +732,6 @@ class HistoryWindow:
                 # add the original signal in the row
                 self.add_img(org_signal[1], row, clm, hist_fr)
                 clm += 1
-
                 # add the modified signal
                 self.add_img(mod_signal_info[0], row, clm, hist_fr)
                 row += 1
@@ -748,7 +739,7 @@ class HistoryWindow:
 
     def add_info_label(self, row, frame, date, amp, shift, speed, reverse, echo):
         # information label
-        label_frame = ttk.Frame(frame)  # hist_fr
+        label_frame = ttk.Frame(frame)
         label_frame.grid(row=row, column=0, sticky="nsew")
 
         ttk.Label(label_frame, text="").pack(side="top")
@@ -784,6 +775,7 @@ class HistoryWindow:
 
 
 if __name__ == '__main__':
+
     # check for input validation for float numbers only
     def validation_callback(user_val):
         try:
