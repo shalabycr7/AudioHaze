@@ -21,7 +21,7 @@ from ttkbootstrap.style import Style
 from AudioLib import AudioEffect
 from ttkbootstrap.tooltip import ToolTip
 from ttkbootstrap.toast import ToastNotification
-
+from ttkbootstrap.scrolled import ScrolledFrame
 
 class MainGUI(ttk.Window):
     file_directory = '/'
@@ -706,46 +706,41 @@ class ConvolutionWindow:
 # editing
 class HistoryWindow:
     def __init__(self):
+
+        s = Style()
+        s.configure('My.TFrame', background='red')
+
         new_conv_window = Toplevel(title='History', size=[1200, 740])
         new_conv_window.place_window_center()
 
         # creat a main frame.
-        hist_fr_primary = ttk.Frame(new_conv_window, padding=5)
-        hist_fr_primary.pack(side=TOP, expand=True, fill=BOTH)
-        # Create A Canvas
-        my_canvas = ttk.Canvas(hist_fr_primary)
-        my_canvas.pack(side=LEFT, fill=BOTH, expand=True)
-        # Add A Scrollbar To The Canvas
-        my_scrollbar = ttk.Scrollbar(hist_fr_primary, orient=VERTICAL, command=my_canvas.yview)
-        my_scrollbar.pack(side=RIGHT, fill=Y)
-        # Configure The Canvas
-        my_canvas.configure(yscrollcommand=my_scrollbar.set)
-        my_canvas.bind('<Configure>', lambda e: my_canvas.configure(scrollregion=my_canvas.bbox("all")))
-        # Create ANOTHER Frame INSIDE the Canvas
-        hist_fr = ttk.Frame(my_canvas)
-        # Add that New frame To a Window In The Canvas
-        my_canvas.create_window((0, 0), window=hist_fr, anchor="nw")
+        hist_fr = ScrolledFrame(new_conv_window, autohide=True)
+        hist_fr.pack(side=TOP, expand=True, fill=BOTH)
         # fitch the data from the database
         org_signal_list_db = MainGUI.db.execute("SELECT id, name FROM org")
         org_signal_list = org_signal_list_db.fetchall()  # id=[0]         name=[1]
         row = 1
         clm = 1
         for org_signal in org_signal_list:
+            #                                                0    1    2    3     4     5      6
             org_signal_list_db = MainGUI.db.execute(
                 "SELECT name,date,amp,shift,speed,reverse,echo FROM modsignal WHERE org_id = (?)",
                 [(org_signal[0])])
+            # mod_name_list = [item[0] for item in org_signal_list_db.fetchall()]
             mod_signal_info_list = org_signal_list_db.fetchall()
+
             for mod_signal_info in mod_signal_info_list:
-                # add the information of the  manipulation operation.
+                # add the infomation of the  manipulation operation.
                 self.add_info_label(row, hist_fr, mod_signal_info[1], mod_signal_info[2], mod_signal_info[3],
                                     mod_signal_info[4],
                                     mod_signal_info[5], mod_signal_info[6])
                 # add the original signal in the row
                 self.add_img(org_signal[1], row, clm, hist_fr)
                 clm += 1
+
                 # add the modified signal
                 self.add_img(mod_signal_info[0], row, clm, hist_fr)
-                row += 1
+                row += 1;
                 clm -= 1
 
     def add_info_label(self, row, frame, date, amp, shift, speed, reverse, echo):
