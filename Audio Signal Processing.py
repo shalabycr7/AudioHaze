@@ -826,10 +826,12 @@ if __name__ == '__main__':
                 return True
         return False
 
+
     # clear the frame when we add another plot.
     def update_frame(obj):
         if len(obj.winfo_children()) >= 1:
             obj.winfo_children()[0].destroy()
+
 
     def output_duration(length):
         hours = length // 3600  # calculate in hours
