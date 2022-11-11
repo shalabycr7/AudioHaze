@@ -1,7 +1,0 @@
-ttkbootstrap~=1.9.0
-Pillow~=9.3.0
-numpy~=1.23.4
-scipy~=1.9.3
-pyttsx3~=2.90
-pydub~=0.25.1
-matplotlib~=3.6.2
