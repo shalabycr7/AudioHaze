@@ -4,6 +4,24 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Stable]
 
+## V 0.1.1
+
+### Added
+
+* Added Tooltip For `Play` Button And Toast Messages That Appear When The Output Is Ready :heavy_check_mark:
+* Added Scroll Frame Instead Of Scroll Canvas :heavy_check_mark:
+
+### Changed
+
+* New UI And Icons For better Visibility :heavy_check_mark:
+
+### Fixed
+
+* Fixed Applying Changes Despite The File Has Not Been Imported :heavy_check_mark:
+* Fixed History Error Caused By Recent Modification :heavy_check_mark:
+* Fixed Some Database Problems :heavy_check_mark:
+* Minor Audio Issues :heavy_check_mark:
+
 ## V 0.0.9
 
 > This Is A New Build With A Lot Of Changes To The Layout Under The Hood If There Is Any problem Revert To `v 0.0.7`
@@ -52,14 +70,15 @@ All Notable Changes To This Project Will Be Documented In This File.
 ## V 0.1.0
 
 ### Added
+
 * Added A History Section To Save Every Original And Modified Signal :heavy_check_mark:
 * Created A Database To Store Each Signals :heavy_check_mark:
 * Created A Connection In The Database To Connect Every Modified Signals With It's Original Signal :heavy_check_mark:
 * Added History Window To Display All The Modified Operation, Original And Modified Signals :heavy_check_mark:
 
 ### Fixed
-* Some UI Icons Not Showing Correctly
 
+* Some UI Icons Not Showing Correctly :heavy_check_mark:
 
 ## V 0.0.6
 

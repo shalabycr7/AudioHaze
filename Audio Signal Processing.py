@@ -4,6 +4,7 @@ import sqlite3
 import struct
 import wave
 from tkinter import filedialog, messagebox
+
 import matplotlib
 import numpy as np
 import pyttsx3
@@ -21,6 +22,7 @@ from ttkbootstrap.scrolled import ScrolledFrame
 from ttkbootstrap.style import Style
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.tooltip import ToolTip
+
 from AudioLib import AudioEffect
 
 
@@ -43,6 +45,7 @@ class MainGUI(ttk.Window):
     img_title = ""
     connection = sqlite3.connect('signals.db')
     db = connection.cursor()
+
     # start the image counter at an appropriate number.
     max_id_db = db.execute("SELECT MAX(id) FROM org")
     max_id = max_id_db.fetchone()[0]
@@ -69,13 +72,22 @@ class MainGUI(ttk.Window):
             if self.dark_mode_state:
                 current_style.theme_use('cyborg')
                 theme_btn.config(image='themeToggleLight')
+                import_btn.config(image='import-dark')
+                open_conv_btn.config(image='convolution-dark')
+                open_history_btn.config(image='history-dark')
+                open_history_btn.config(image='history-dark')
+                tts_btn.config(image='tts-dark')
                 self.dark_mode_state = False
             else:
-                current_style.theme_use('cosmo')
+                current_style.theme_use('litera')
+                import_btn.config(image='import')
+                open_conv_btn.config(image='convolution')
+                open_history_btn.config(image='history')
                 theme_btn.config(image='themeToggleDark')
+                tts_btn.config(image='tts')
                 self.dark_mode_state = True
             current_style.configure('TLabel', font=('Barlow', 10))
-            current_style.configure('TButton', font=("Barlow", 10))
+            current_style.configure('TButton', font=("Barlow", 11))
             current_style.configure('TMenubutton', font=("Barlow", 10))
             current_style.configure('TNotebook.Tab', font=("Barlow", 10))
             if self.og_plot_showed:
@@ -84,8 +96,10 @@ class MainGUI(ttk.Window):
                 self.plotting(None, self.timeout, self.data_out, mod_wave_frame, 'Modified Audio')
 
         def read_file(file):
-            raw = file.readframes(-1)  # minus one here means that all the frames of the file has to be read
-            self.num_of_channels = file.getnchannels()  # get the number of channels in the audio file
+            # minus one here means that all the frames of the file has to be read
+            raw = file.readframes(-1)
+            # get the number of channels in the audio file
+            self.num_of_channels = file.getnchannels()
             # sign it with 16-bit ints since wave files are encoded with 16 bits per sample
             self.data = np.frombuffer(raw, "int16")
             self.sample_rate = file.getframerate()
@@ -257,19 +271,22 @@ class MainGUI(ttk.Window):
         self.images = [
             ttk.PhotoImage(
                 name='openfile',
-                file='Icons/icon1.png'),
+                file='Icons/open-file-icon.png'),
             ttk.PhotoImage(
                 name='channels',
-                file='Icons/icon2.png'),
+                file='Icons/channels-icon.png'),
             ttk.PhotoImage(
                 name='frameRate',
-                file='Icons/icon3.png'),
+                file='Icons/framerate-icon.png'),
             ttk.PhotoImage(
                 name='maxAmp',
-                file='Icons/icon4.png'),
+                file='Icons/max-amp-icon.png'),
             ttk.PhotoImage(
                 name='import',
-                file='Icons/importIcon.png'),
+                file='Icons/import-file.png'),
+            ttk.PhotoImage(
+                name='import-dark',
+                file='Icons/import-file-dark.png'),
             ttk.PhotoImage(
                 name='themeToggleDark',
                 file='Icons/darkIcon.png'),
@@ -278,25 +295,38 @@ class MainGUI(ttk.Window):
                 file='Icons/whiteIcon.png'),
             ttk.PhotoImage(
                 name='play',
-                file='Icons/playIcon.png'),
+                file='Icons/play-button.png'),
             ttk.PhotoImage(
                 name='stop',
-                file='Icons/stopIcon.png'),
+                file='Icons/stop-button.png'),
             ttk.PhotoImage(
                 name='convolution',
-                file='Icons/convIcon.png'),
+                file='Icons/conv-button.png'),
+            ttk.PhotoImage(
+                name='convolution-dark',
+                file='Icons/conv-button-dark.png'),
             ttk.PhotoImage(
                 name='tts',
-                file='Icons/ttsIcon.png'),
+                file='Icons/message-button.png'),
+            ttk.PhotoImage(
+                name='tts-dark',
+                file='Icons/message-button-dark.png'),
             ttk.PhotoImage(
                 name='history',
-                file='Icons/historyIcon.png'),
+                file='Icons/history-button.png'),
+            ttk.PhotoImage(
+                name='history-dark',
+                file='Icons/history-button-dark.png'),
             ttk.PhotoImage(
                 name='apply',
-                file='Icons/applyIcon.png'),
+                file='Icons/apply-button.png'),
             ttk.PhotoImage(
                 name='convert',
-                file='Icons/convertIcon.png')]
+                file='Icons/convert-button.png'),
+            ttk.PhotoImage(
+                name='convert-dark',
+                file='Icons/convert-button-dark.png'),
+        ]
 
         hdr_frame = ttk.Frame(self, padding=(20, 10))
         hdr_frame.pack(fill=X, padx=10)
@@ -306,10 +336,10 @@ class MainGUI(ttk.Window):
         ttk.Label(hdr_btn_frame, text='Audio File Overview', font=("Barlow", 13)).pack(side=LEFT)
         import_btn = ttk.Button(
             master=hdr_btn_frame,
-            text=' Import',
             image='import',
             compound=LEFT,
-            command=import_file
+            command=import_file,
+            bootstyle=LINK
         )
         import_btn.pack(side=RIGHT)
 
@@ -365,36 +395,35 @@ class MainGUI(ttk.Window):
             text=' Convolution',
             image='convolution',
             compound=LEFT,
-            bootstyle=WARNING,
+            bootstyle=LINK,
             command=self.open_conv_window
         )
         open_conv_btn.pack(side=RIGHT, padx=(10, 0))
 
-        open_conv_btn = ttk.Button(
+        open_history_btn = ttk.Button(
             master=file_action_frame,
             text=' History',
             image='history',
             compound=LEFT,
-            bootstyle=WARNING,
+            bootstyle=LINK,
             command=self.open_history_window
         )
-        open_conv_btn.pack(side=RIGHT, padx=(10, 0))
+        open_history_btn.pack(side=RIGHT)
 
         og_play_btn = ttk.Button(
             master=file_action_frame,
-            text=' Play',
             image='play',
             compound=LEFT,
+            bootstyle=LINK,
             command=lambda: play_audio('OG')
         )
         ToolTip(og_play_btn, delay=1500, text="Play Original Audio", bootstyle=PRIMARY)
-        og_play_btn.pack(side=RIGHT, padx=(30, 110))
+        og_play_btn.pack(side=RIGHT, padx=20)
         stop_btn = ttk.Button(
             master=file_action_frame,
-            text=' Stop',
             image='stop',
             compound=LEFT,
-            bootstyle=DANGER,
+            bootstyle=LINK,
             command=stop_audio
         )
         stop_btn.pack(side=RIGHT)
@@ -419,7 +448,7 @@ class MainGUI(ttk.Window):
             text=' Text To Speach',
             image='tts',
             compound=LEFT,
-            bootstyle=SUCCESS,
+            bootstyle=LINK,
             command=self.open_tts_window
         )
         tts_btn.pack(side=RIGHT)
@@ -454,7 +483,7 @@ class MainGUI(ttk.Window):
             text=' Apply',
             image='apply',
             compound=LEFT,
-            bootstyle=SUCCESS,
+            bootstyle=LINK,
             command=apply_operations
         )
         apply_operations_btn.grid(row=4, column=0, sticky=SE, pady=100)
@@ -464,6 +493,7 @@ class MainGUI(ttk.Window):
             text=' Play',
             image='play',
             compound=LEFT,
+            bootstyle=LINK,
             command=lambda: play_audio('mod'))
         mod_play_btn.grid(row=4, column=1, sticky=SW, pady=100, padx=20)
         ToolTip(mod_play_btn, delay=1500, text="Play Modified Audio", bootstyle=PRIMARY)
@@ -508,12 +538,13 @@ class MainGUI(ttk.Window):
         canvas.get_tk_widget().pack()
 
     def open_tts_window(self):
-        TTSWindow(self.tts)
+        TTSWindow(self.tts, self.dark_mode_state)
 
     def open_conv_window(self):
         ConvolutionWindow(self.plotting)
 
-    def open_history_window(self):
+    @staticmethod
+    def open_history_window():
         HistoryWindow()
 
     def tts(self, speach):
@@ -539,7 +570,7 @@ class MainGUI(ttk.Window):
 
 
 class TTSWindow:
-    def __init__(self, speach_func):
+    def __init__(self, speach_func, theme_state):
         new_window = Toplevel(title='Text To Speach', size=[400, 200], resizable=[False, False])
         self.speach_func = speach_func
         new_window.place_window_center()
@@ -547,8 +578,14 @@ class TTSWindow:
         ttk.Label(new_window, text="Please Write The Transcript").pack(pady=10)
         tts_value_lb = ttk.Entry(new_window, justify="center", font=("Barlow", 10))
         tts_value_lb.pack(fill=X, pady=10)
-        ttk.Button(new_window, text='Convert', image='convert',
-                   compound=LEFT, command=lambda: self.get_my_input_value(tts_value_lb)).pack(pady=20)
+        convert_btn = ttk.Button(new_window, text=' Convert', image='convert', bootstyle=LINK,
+                                 compound=LEFT, command=lambda: self.get_my_input_value(tts_value_lb))
+        if theme_state:
+            convert_btn.config(image='convert')
+
+        else:
+            convert_btn.config(image='convert-dark')
+        convert_btn.pack(pady=20)
 
     def get_my_input_value(self, widget):
         getresult = widget.get()
@@ -618,9 +655,10 @@ class ConvolutionWindow:
         self.select_wave_menu['menu'] = menu
 
         ttk.Button(
-            tabs_fr, text='Apply',
+            tabs_fr, text=' Apply',
             image='apply',
             compound=LEFT,
+            bootstyle=LINK,
             command=lambda: self.apply_convolution(option_var.get())).pack(side=TOP)
 
         # plot the original signal based on the imported Audio Output file
@@ -737,7 +775,8 @@ class HistoryWindow:
                 row += 1
                 clm -= 1
 
-    def add_info_label(self, row, frame, date, amp, shift, speed, reverse, echo):
+    @staticmethod
+    def add_info_label(row, frame, date, amp, shift, speed, reverse, echo):
         # information label
         label_frame = ttk.Frame(frame)
         label_frame.grid(row=row, column=0, sticky="nsew")
@@ -756,7 +795,8 @@ class HistoryWindow:
         speed_lib.pack(side="top", anchor=NW)
         reverse_lib.pack(side="top", anchor=NW)
 
-    def add_img(self, name, row, column, frame):
+    @staticmethod
+    def add_img(name, row, column, frame):
         load = Image.open(name)
         width, height = load.size
         # Setting the points for cropped image
@@ -799,8 +839,10 @@ if __name__ == '__main__':
         seconds = length  # calculate in seconds
         return hours, minutes, seconds
 
+
     def delete_entries(wid):
         wid.delete(0, END)
+
 
     window_width = 1200
     window_height = 700
