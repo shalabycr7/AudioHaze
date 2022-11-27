@@ -3,8 +3,12 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
+      <excludeFolder url="file://$MODULE_DIR$/Audio Output" />
+      <excludeFolder url="file://$MODULE_DIR$/Audio_Signal_Processing_App_GUI_in_Python.egg-info" />
+      <excludeFolder url="file://$MODULE_DIR$/History" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.11 (Audio-Signal-Processing-App-GUI-in-Python)" jdkType="Python SDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
