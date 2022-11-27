@@ -20,7 +20,7 @@
 
 * Show Audio File Information Such As:
     * File Type (Supports Mainly `.Wav` Files)
-    * > Note: `.Mp3` Initial Support Was Added In `V 0.6`
+    * > `.Mp3` Initial Support Was Added In `V 0.6`
     * Number Of Channels
     * Audio Frame Rate
     * Maximum Audio Amplitude
@@ -32,6 +32,7 @@
     * Reversing The Audio
     * Add An Echo Effect
 * Represent The Audio Wave Form For Both Original And Modified Files
+* Show A History Of Previous Modified Audio Files
 * The Ability To Play Both Audio Files
 * Text To Speach Functionality
 * Export Both The New Modified Audio File And The Transcript TTS File In A New Directory `Audio output`
@@ -45,26 +46,26 @@
 
 #### Main Interface
 
-![s1](https://user-images.githubusercontent.com/17945581/191077543-bc2716ce-67a6-4a20-9308-5eaf74245a34.png)
-![s3](https://user-images.githubusercontent.com/17945581/191077567-235d355d-530d-4ecf-9a11-4ca12bff2b4b.png)
-
-
+![s1](https://user-images.githubusercontent.com/17945581/201343392-f82d0995-d7f6-44c7-9c82-eecbf695dfdc.png)
+![s3](https://user-images.githubusercontent.com/17945581/201343489-d9844cdc-612e-4e6c-b748-052a6061b1c7.png)
 
 #### Convolution Interface
 
-
-![s2](https://user-images.githubusercontent.com/17945581/191077555-21788fe5-800c-4519-8cee-4bdacb5a3d99.png)
-![s4](https://user-images.githubusercontent.com/17945581/191077599-4185ed6a-b5bb-4784-bcd9-64c198715a69.png)
-
+![s2](https://user-images.githubusercontent.com/17945581/201343642-07d3f5d1-8b6b-44ba-ae51-473e6bf1ed05.png)
+![s4](https://user-images.githubusercontent.com/17945581/201343647-d24cd73c-2560-4fdd-810e-983aae215934.png)
 
 #### TTS Interface
 
-![s5](https://user-images.githubusercontent.com/17945581/191077629-c4f748cb-7021-4d75-ba7a-06cc67bb8dd5.png)
+![s5](https://user-images.githubusercontent.com/17945581/201343775-1ff48888-38b7-4153-b168-5201d9a8910d.png)
 
+#### History Interface
 
+![s6](https://user-images.githubusercontent.com/17945581/201343908-f86291ff-da4c-4673-97f9-99c83fb2cb2e.png)
 
-### Task List
+### Tasks List
 
+- [x] Add History Window For Previous Imported Files
+- [x] Revamp The UI
 - [x] Add Support For More Audio Formats like `.Mp3`
 - [x] Add Support For Stereo Files
 - [x] Remove Deprecated Audio Libraries/Functions

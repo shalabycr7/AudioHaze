@@ -1,5 +1,9 @@
 # Output directory
 /Audio Output
+/History
+
+# database files
+signals.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -23,8 +27,6 @@ var/
 *.egg
 
 # PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
@@ -51,7 +53,6 @@ pyvenv.cfg
 pip-selfcheck.json
 
 # User-specific stuff
-.idea/
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/**/usage.statistics.xml
@@ -69,3 +70,6 @@ pip-selfcheck.json
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
+
+#ignore test files
+dataBaseCreator.py
