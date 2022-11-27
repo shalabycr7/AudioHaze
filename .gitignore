@@ -2,6 +2,9 @@
 /Audio Output
 /History
 
+# database files
+signals.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 
