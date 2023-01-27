@@ -113,7 +113,7 @@ class MainGUI(ttk.Window):
 
         def read_file(file, indicator):
             # read all the frames of the file
-            raw = file.readframes(file.getframerate())
+            raw = file.readframes(file.getnframes())
 
             # create a dictionary to hold file data
             data_dict = {1: file.getnchannels(), 2: file.getframerate(), 3: file.getnframes(),
