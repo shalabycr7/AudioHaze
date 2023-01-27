@@ -3,23 +3,22 @@ import os
 import sqlite3
 import struct
 import wave
+# ttk UI specific modules
+from tkinter import filedialog, messagebox
+
 import matplotlib
 import numpy as np
 import pyttsx3
 import ttkbootstrap as ttk
-import utils
-
 # handling images and convolution modules
 from PIL import Image, ImageTk
-from scipy import signal
-
 # plotting specific modules
 from matplotlib import style
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-
-# ttk UI specific modules
-from tkinter import filedialog, messagebox
+# audio effects modules
+from pydub import AudioSegment
+from scipy import signal
 from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
 from ttkbootstrap.scrolled import ScrolledFrame
@@ -27,8 +26,7 @@ from ttkbootstrap.style import Style
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.tooltip import ToolTip
 
-# audio effects modules
-from pydub import AudioSegment
+import utils
 from AudioLib import AudioEffect
 
 
@@ -40,14 +38,8 @@ class MainGUI(ttk.Window):
     output_file = directory_name + '/Modified.wav'
 
     # initial parameters for audio file data
-    num_of_channels = 0
-    sample_rate = 0
-    max_amp = 0
-    num_of_frames = 0
-    result = (0, 0, 0)
-    timeout = 0
-    data_out = 0
-    data = np.array([])
+    original_file_data = {}
+    modified_file_data = {}
 
     # initial parameters for data plotting frames on the UI
     original_plot_state = False
@@ -112,32 +104,32 @@ class MainGUI(ttk.Window):
             current_style.configure('TNotebook.Tab', font='-family Barlow -size 10')
 
             if self.original_plot_state:
-                self.plotting(None, self.result[0], self.result[1], original_wave_frame, 'Original Audio')
+                self.plotting(None, self.original_file_data[5], self.original_file_data[4],
+                              original_wave_frame,
+                              'Original Audio')
             if self.modified_plot_state:
-                self.plotting(None, self.timeout, self.data_out, modified_wave_frame, 'Modified Audio')
+                self.plotting(None, self.modified_file_data.get(5), self.modified_file_data.get(4), modified_wave_frame,
+                              'Modified Audio')
 
-        def read_file(file):
+        def read_file(file, indicator):
             # read all the frames of the file
             raw = file.readframes(file.getframerate())
 
-            # get the number of channels in the audio file
-            self.num_of_channels = file.getnchannels()
+            # create a dictionary to hold file data
+            data_dict = {1: file.getnchannels(), 2: file.getframerate(), 3: file.getnframes(),
+                         4: np.frombuffer(raw, 'int16')}
+            time = np.linspace(0, len(data_dict.get(4)) / data_dict.get(2),
+                               num=len(data_dict.get(4)))
+            data_dict.update({5: time})
 
-            # sign it with 16-bit ints since wave files are encoded with 16 bits per sample
-            self.data = np.frombuffer(raw, 'int16')
-            self.sample_rate = file.getframerate()
-            self.num_of_frames = file.getnframes()
-
-            # get the duration of the audio file
-            duration = self.num_of_frames / float(self.sample_rate)
-            hours, minutes, seconds = utils.output_duration(int(duration))
-            total_time = f'{hours}:{minutes}:{seconds}'
-
-            # display the duration
-            length_lb.config(text=total_time)
-
-            time = np.linspace(0, len(self.data) / self.sample_rate, num=len(self.data))
-            return time, self.data
+            if indicator == 'original':
+                # get the duration of the audio file
+                duration = data_dict.get(3) / float(data_dict.get(2))
+                hours, minutes, seconds = utils.output_duration(int(duration))
+                total_time = f'{hours}:{minutes}:{seconds}'
+                # display the duration
+                length_lb.config(text=total_time)
+            return data_dict
 
         def import_file():
             utils.update_frame(original_wave_frame)
@@ -146,7 +138,6 @@ class MainGUI(ttk.Window):
             # hide the plotting frames every time we import
             self.original_plot_state = False
             self.modified_plot_state = False
-
             utils.stop_audio()
 
             # open window to select file to get the path then save in variable directory
@@ -172,22 +163,24 @@ class MainGUI(ttk.Window):
 
                 # read the new imported file
                 wav_file = wave.open(self.file_directory, 'r')
-                self.result = read_file(wav_file)
+                self.original_file_data = read_file(wav_file, 'original')
 
                 # Update displayed File info
                 wav_d = AudioSegment.from_file(file=self.file_directory, format="wav")
-                self.max_amp = wav_d.max
+                max_amp = wav_d.max
                 file_type_val.config(text=file_extension)
-                file_channels_val.config(text=self.num_of_channels)
-                file_frames_val.config(text=self.sample_rate)
-                file_max_amp_val.config(text=self.max_amp)
+                file_channels_val.config(text=self.original_file_data.get(1))
+                file_frames_val.config(text=self.original_file_data.get(2))
+                file_max_amp_val.config(text=max_amp)
 
                 # start plotting
-                self.plotting(None, self.result[0], self.result[1], original_wave_frame, 'Original Audio')
+                self.plotting(None, self.original_file_data.get(5), self.original_file_data.get(4),
+                              original_wave_frame,
+                              'Original Audio')
                 self.original_plot_state = True
 
                 # Set echo options on if the file is stereo
-                if self.num_of_channels == 2:
+                if self.original_file_data.get(1) == 2:
                     echo_toggle.config(state='!selected')
                 else:
                     echo_toggle.config(state='disabled')
@@ -213,29 +206,25 @@ class MainGUI(ttk.Window):
 
             # create a new output WAV file to write the new modified audio data
             audio_obj = wave.open(self.output_file, 'wb')
-            audio_obj.setnchannels(self.num_of_channels)
+            audio_obj.setnchannels(self.original_file_data.get(1))
             audio_obj.setsampwidth(2)
 
             # changing audio speed
-            speed_factor = speed_amount
-            speed = self.sample_rate * speed_factor
+            speed = self.original_file_data.get(2) * speed_amount
             audio_obj.setframerate(speed)
 
             # Shifting audio process
-            pov_shift_in_sec = shift_amount
-            for i in range(int(self.sample_rate * pov_shift_in_sec)):
+            for i in range(int(self.original_file_data.get(2) * shift_amount)):
                 zero_in_byte = struct.pack('<h', 0)
                 audio_obj.writeframesraw(zero_in_byte)
 
             # Amplification process
-            amp = amp_amount
-            n = len(self.data)
+            n = len(self.original_file_data.get(4))
 
             # Reverse process
-            reverse = reverse_state
-            if reverse:
-                for i in range(self.data.__len__()):
-                    two_byte_sample = self.data[n - 1 - i] * amp
+            if reverse_state:
+                for i in range(self.original_file_data.get(4).__len__()):
+                    two_byte_sample = self.original_file_data.get(4)[n - 1 - i] * amp_amount
                     if two_byte_sample > 32760:
                         two_byte_sample = 32760
                     if two_byte_sample < -32760:
@@ -243,34 +232,31 @@ class MainGUI(ttk.Window):
                     sample = struct.pack('<h', int(two_byte_sample))
                     audio_obj.writeframesraw(sample)
             else:
-                for i in range(self.data.__len__()):
-                    if self.data[i] * amp > 32760:
+                for i in range(self.original_file_data.get(4).__len__()):
+                    if self.original_file_data.get(4)[i] * amp_amount > 32760:
                         two_byte_sampler = 32760
-                    elif self.data[i] * amp < -32760:
+                    elif self.original_file_data.get(4)[i] * amp_amount < -32760:
                         two_byte_sampler = -32760
                     else:
-                        two_byte_sampler = self.data[i] * amp
+                        two_byte_sampler = self.original_file_data.get(4)[i] * amp_amount
                     sample = struct.pack('<h', int(two_byte_sampler))
                     audio_obj.writeframesraw(sample)
 
             # close and save the modified output file
             audio_obj.close()
 
-            # open the file again to read the new data and plot it
-            obj = wave.open(self.output_file, 'rb')
-            self.data_out = obj.readframes(-1)  # get all the frames in data out
-            self.data_out = np.frombuffer(self.data_out, "int16")  # set the data to a number of two byte form data out
-            self.sample_rate_out = obj.getframerate()  # frame rate HZ (number of frames to be reads in seconds)
-            self.timeout = np.linspace(0, len(self.data_out) / self.sample_rate_out, num=len(self.data_out))
+            audio_file = wave.open(self.output_file, 'rb')
+            self.modified_file_data = read_file(audio_file, 'modified')
 
             # plot the modified data
-            self.plotting(None, self.timeout, self.data_out, modified_wave_frame, 'Modified Audio')
+            self.plotting(None, self.modified_file_data.get(5), self.modified_file_data.get(4), modified_wave_frame,
+                          'Modified Audio')
             self.modified_plot_state = True
 
             # set the echo based on button state
             if echo_st:
                 AudioEffect.echo(self.output_file, self.output_file)
-            obj.close()
+            audio_file.close()
 
             # show a message when done modifying the file
             toast = ToastNotification(
@@ -305,7 +291,7 @@ class MainGUI(ttk.Window):
                     reverse_st = True
                 else:
                     reverse_st = False
-                if echo_state.get() == 'echoOn' and self.num_of_channels == 2:
+                if echo_state.get() == 'echoOn' and self.original_file_data.get(1) == 2:
                     echo_st = True
                 else:
                     echo_st = False
