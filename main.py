@@ -3,19 +3,23 @@ import os
 import sqlite3
 import struct
 import wave
-from tkinter import filedialog, messagebox
-
 import matplotlib
 import numpy as np
 import pyttsx3
 import ttkbootstrap as ttk
 import winsound
+
+# handling images and convolution modules
 from PIL import Image, ImageTk
+from scipy import signal
+
+# plotting specific modules
 from matplotlib import style
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from pydub import AudioSegment
-from scipy import signal
+
+# ttk UI specific modules
+from tkinter import filedialog, messagebox
 from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
 from ttkbootstrap.scrolled import ScrolledFrame
@@ -23,14 +27,19 @@ from ttkbootstrap.style import Style
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.tooltip import ToolTip
 
+# audio effects modules
+from pydub import AudioSegment
 from AudioLib import AudioEffect
 
 
 class MainGUI(ttk.Window):
+    # initial parameters for audio file name and location
     file_directory = ''
     directory_name = 'Audio Output'
     dark_mode_state = False
-    out_file = directory_name + '/Modified.wav'
+    output_file = directory_name + '/Modified.wav'
+
+    # initial parameters for audio file data
     num_of_channels = 0
     sample_rate = 0
     max_amp = 0
@@ -38,11 +47,15 @@ class MainGUI(ttk.Window):
     result = (0, 0, 0)
     timeout = 0
     data_out = 0
-    og_plot_showed = False
-    mod_plot_showed = False
     data = np.array([])
-    org_id = 0
-    img_title = ""
+
+    # initial parameters for data plotting frames on the UI
+    original_plot_state = False
+    modified_plot_state = False
+    original_id = 0
+    plot_img_title = ''
+
+    # connect to database
     connection = sqlite3.connect('signals.db')
     db = connection.cursor()
 
@@ -53,15 +66,19 @@ class MainGUI(ttk.Window):
 
     def __init__(self, *args, **kwargs):
         super(MainGUI, self).__init__(*args, **kwargs)
+
         # prevent img count from increasing on startup
         if self.max_id is not None:
             self.img_count = self.max_id
+
         # app variables
         current_style = Style()
         echo_state = ttk.StringVar()
         rev_state = ttk.StringVar()
+
         # create History and Audio Output directories on launch
         self.make_output_directory()
+
         # register the call back function for input validation
         self.user_validation = self.register(validation_callback)
 
@@ -90,9 +107,9 @@ class MainGUI(ttk.Window):
             current_style.configure('TButton', font=("Barlow", 11))
             current_style.configure('TMenubutton', font=("Barlow", 10))
             current_style.configure('TNotebook.Tab', font=("Barlow", 10))
-            if self.og_plot_showed:
+            if self.original_plot_state:
                 self.plotting(None, self.result[0], self.result[1], og_wave_frame, "Original Audio")
-            if self.mod_plot_showed:
+            if self.modified_plot_state:
                 self.plotting(None, self.timeout, self.data_out, mod_wave_frame, 'Modified Audio')
 
         def read_file(file):
@@ -117,8 +134,8 @@ class MainGUI(ttk.Window):
             update_frame(og_wave_frame)
             update_frame(mod_wave_frame)
             # hide the plotting frames every time we import
-            self.og_plot_showed = False
-            self.mod_plot_showed = False
+            self.original_plot_state = False
+            self.modified_plot_state = False
             stop_audio()
             # open window to select file to get the path then save in variable directory
             filename = filedialog.askopenfilename(initialdir=self.file_directory, title="Select Audio File",
@@ -131,8 +148,8 @@ class MainGUI(ttk.Window):
                 return
             else:
                 # checks if the output file is there and delete it
-                if os.path.isfile(self.out_file):
-                    os.remove(self.out_file)
+                if os.path.isfile(self.output_file):
+                    os.remove(self.output_file)
 
                 # convert mp3 file to wav, so it can be read by wave.open()
                 if file_extension == '.mp3':
@@ -152,7 +169,7 @@ class MainGUI(ttk.Window):
                 file_max_amp_val.config(text=self.max_amp)
                 # start plotting
                 self.plotting(None, self.result[0], self.result[1], og_wave_frame, 'Original Audio')
-                self.og_plot_showed = True
+                self.original_plot_state = True
                 # Set echo options on if the file is stereo
                 if self.num_of_channels == 2:
                     echo_toggle.config(state='!selected')
@@ -164,8 +181,8 @@ class MainGUI(ttk.Window):
                 if indication == 'OG':
                     audio_file = self.file_directory
                 else:
-                    if os.path.isfile(self.out_file):
-                        audio_file = self.out_file
+                    if os.path.isfile(self.output_file):
+                        audio_file = self.output_file
                     else:
                         messagebox.showinfo('Info', 'Apply Modification To The Audio File Then Play It')
                         return
@@ -178,7 +195,7 @@ class MainGUI(ttk.Window):
 
         def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_st):
             update_frame(mod_wave_frame)
-            audio_obj = wave.open(self.out_file, 'wb')
+            audio_obj = wave.open(self.output_file, 'wb')
             audio_obj.setnchannels(self.num_of_channels)
             audio_obj.setsampwidth(2)
             # speed OP
@@ -215,16 +232,16 @@ class MainGUI(ttk.Window):
                     sample = struct.pack('<h', int(two_byte_sampler))
                     audio_obj.writeframesraw(sample)
             audio_obj.close()
-            obj = wave.open(self.out_file, 'rb')  # open
+            obj = wave.open(self.output_file, 'rb')  # open
             self.data_out = obj.readframes(-1)  # get all the frames in data out
             self.data_out = np.frombuffer(self.data_out, "int16")  # set the data to a number of two byte form data out
             self.sample_rate_out = obj.getframerate()  # frame rate HZ (number of frames to be reads in seconds)
             self.timeout = np.linspace(0, len(self.data_out) / self.sample_rate_out, num=len(self.data_out))
             self.plotting(None, self.timeout, self.data_out, mod_wave_frame, 'Modified Audio')
-            self.mod_plot_showed = True
+            self.modified_plot_state = True
             # set the echo based on state
             if echo_st:
-                AudioEffect.echo(self.out_file, self.out_file)
+                AudioEffect.echo(self.output_file, self.output_file)
             obj.close()
             # show a message when done modifying the file
             toast = ToastNotification(
@@ -237,7 +254,8 @@ class MainGUI(ttk.Window):
             date = datetime.datetime.now()
             self.db.execute(
                 'INSERT INTO modsignal(org_id,name,date,amp,shift,speed,reverse,echo) VALUES (?,?,?,?,?,?,?,?)',
-                (self.org_id, self.img_title, date, amp_amount, shift_amount, speed_amount, bool(reverse_state),
+                (self.original_id, self.plot_img_title, date, amp_amount, shift_amount, speed_amount,
+                 bool(reverse_state),
                  bool(echo_st)))
             self.connection.commit()
 
@@ -516,20 +534,20 @@ class MainGUI(ttk.Window):
         figure_subplot.grid(alpha=0.4)
         figure_subplot.set_title(title)
 
-        self.img_title = "History/img" + str(self.img_count) + ".png"
+        self.plot_img_title = "History/img" + str(self.img_count) + ".png"
         if targeted_signal is not None:
             figure_subplot.plot(targeted_signal, color='blue')
         else:
             figure_subplot.plot(time, raw, color='blue')
-            plotting_figure.savefig(self.img_title)
+            plotting_figure.savefig(self.plot_img_title)
             self.img_count += 1
 
             if title == 'Original Audio':
-                text = [self.img_title]
+                text = [self.plot_img_title]
                 self.db.execute('INSERT INTO org(name) VALUES (?)', text)
                 self.connection.commit()
                 org_id_db = self.db.execute("SELECT id FROM org WHERE name = ?", text)
-                self.org_id = org_id_db.fetchone()[0]
+                self.original_id = org_id_db.fetchone()[0]
 
         # Creating Canvas to show it in the Frame
         canvas = FigureCanvasTkAgg(plotting_figure, master=place)
