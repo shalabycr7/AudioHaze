@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import sqlite3
 import struct
@@ -19,7 +20,7 @@ from scipy import signal
 from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
 from ttkbootstrap.scrolled import ScrolledFrame
-from ttkbootstrap.style import Style
+from ttkbootstrap.style import ThemeDefinition
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.tooltip import ToolTip
 
@@ -61,10 +62,9 @@ class MainGUI(ttk.Window):
             self.img_count = self.max_id
 
         # app variables
-        current_style = Style()
         echo_state = ttk.StringVar()
         rev_state = ttk.StringVar()
-
+        self.user_theme('Theme/user.json')
         # create History and Audio Output directories on launch
         self.make_output_directory()
 
@@ -77,7 +77,7 @@ class MainGUI(ttk.Window):
 
             # toggle between dark and light mode
             if self.dark_mode_state:
-                current_style.theme_use('cyborg')
+                self.style.theme_use('cyborg')
                 theme_btn.config(image='themeToggleLight')
                 import_btn.config(image='import-dark')
                 open_conv_btn.config(image='convolution-dark')
@@ -86,7 +86,7 @@ class MainGUI(ttk.Window):
                 tts_btn.config(image='tts-dark')
                 self.dark_mode_state = False
             else:
-                current_style.theme_use('litera')
+                self.style.theme_use('litera')
                 import_btn.config(image='import')
                 open_conv_btn.config(image='convolution')
                 open_history_btn.config(image='history')
@@ -95,10 +95,10 @@ class MainGUI(ttk.Window):
                 self.dark_mode_state = True
 
             # set global font size for widgets
-            current_style.configure('TLabel', font='-family Barlow -size 10')
-            current_style.configure('TButton', font='-family Barlow -size 11')
-            current_style.configure('TMenubutton', font='-family Barlow -size 10')
-            current_style.configure('TNotebook.Tab', font='-family Barlow -size 10')
+            self.style.configure('TLabel', font='-family Barlow -size 10')
+            self.style.configure('TButton', font='-family Barlow -size 11')
+            self.style.configure('TMenubutton', font='-family Barlow -size 10')
+            self.style.configure('TNotebook.Tab', font='-family Barlow -size 10')
 
             if self.original_plot_state:
                 self.plotting(None, self.original_file_data[5], self.original_file_data[4],
@@ -109,16 +109,12 @@ class MainGUI(ttk.Window):
                               'Modified Audio')
 
         def read_file(file, indicator):
-            # read all the frames of the file
-            raw = file.readframes(file.getnframes())
-
             # create a dictionary to hold file data
-            data_dict = {1: file.getnchannels(), 2: file.getframerate(), 3: file.getnframes(),
-                         4: np.frombuffer(raw, 'int16')}
+            data_dict = {1: file.channels, 2: file.frame_rate, 3: file.frame_count(),
+                         4: np.frombuffer(file.raw_data, 'int16')}
             time = np.linspace(0, len(data_dict.get(4)) / data_dict.get(2),
                                num=len(data_dict.get(4)))
             data_dict.update({5: time})
-
             if indicator == 'original':
                 # get the duration of the audio file
                 duration = data_dict.get(3) / float(data_dict.get(2))
@@ -152,24 +148,20 @@ class MainGUI(ttk.Window):
                 if os.path.isfile(self.output_file):
                     os.remove(self.output_file)
 
-                # convert mp3 file to wav, so it can be read by wave.open()
+                # convert mp3 file to wav, so it can be read
                 if file_extension == '.mp3':
                     mp3_file = AudioSegment.from_mp3(file=self.file_directory)
                     mp3_file.export(self.directory_name + '/Mp3converted.wav', format='wav')
                     self.file_directory = self.directory_name + '/Mp3converted.wav'
 
-                # read the new imported file
-                wav_file = wave.open(self.file_directory, 'r')
-                self.original_file_data = read_file(wav_file, 'original')
+                wav_original = AudioSegment.from_file(file=self.file_directory)
+                self.original_file_data = read_file(wav_original, 'original')
 
                 # Update displayed File info
-                wav_d = AudioSegment.from_file(file=self.file_directory, format="wav")
-                print(wav_d.max_possible_amplitude)
-                max_amp = wav_d.max
                 file_type_val.config(text=file_extension)
                 file_channels_val.config(text=self.original_file_data.get(1))
                 file_frames_val.config(text=self.original_file_data.get(2))
-                file_max_amp_val.config(text=max_amp)
+                file_max_amp_val.config(text=wav_original.max)
 
                 # start plotting
                 self.plotting(None, self.original_file_data.get(5), self.original_file_data.get(4),
@@ -243,7 +235,7 @@ class MainGUI(ttk.Window):
             # close and save the modified output file
             audio_obj.close()
 
-            audio_file = wave.open(self.output_file, 'rb')
+            audio_file = AudioSegment.from_file(file=self.output_file, format="wav")
             self.modified_file_data = read_file(audio_file, 'modified')
 
             # plot the modified data
@@ -254,7 +246,6 @@ class MainGUI(ttk.Window):
             # set the echo based on button state
             if echo_st:
                 AudioEffect.echo(self.output_file, self.output_file)
-            audio_file.close()
 
             # show a message when done modifying the file
             toast = ToastNotification(
@@ -545,6 +536,22 @@ class MainGUI(ttk.Window):
         except FileExistsError:
             return
         return
+
+    def user_theme(self, file):
+        """Load user themes saved in json format"""
+        with open(file, encoding='utf-8') as f:
+            data = json.load(f)
+
+            theme = data['themes']
+            for name, definition in theme.items():
+                print(name, definition)
+                self.style.register_theme(
+                    ThemeDefinition(
+                        name=name,
+                        themetype=definition["type"],
+                        colors=definition["colors"],
+                    )
+                )
 
     def plotting(self, targeted_signal, time, raw, place, title):
         matplotlib.style.use('dark_background') if not self.dark_mode_state else matplotlib.style.use('default')
