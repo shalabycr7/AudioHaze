@@ -3,15 +3,12 @@ import os
 import sqlite3
 import struct
 import wave
-# ttk UI specific modules
 from tkinter import filedialog, messagebox
 
 import matplotlib
 import numpy as np
 import pyttsx3
 import ttkbootstrap as ttk
-# handling images and convolution modules
-from PIL import Image, ImageTk
 # plotting specific modules
 from matplotlib import style
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -167,6 +164,7 @@ class MainGUI(ttk.Window):
 
                 # Update displayed File info
                 wav_d = AudioSegment.from_file(file=self.file_directory, format="wav")
+                print(wav_d.max_possible_amplitude)
                 max_amp = wav_d.max
                 file_type_val.config(text=file_extension)
                 file_channels_val.config(text=self.original_file_data.get(1))
@@ -573,8 +571,6 @@ class MainGUI(ttk.Window):
 
         # Creating Canvas to show it in the Frame
         canvas = FigureCanvasTkAgg(plotting_figure, master=place)
-        canvas.flush_events()
-        canvas.draw()
         canvas.get_tk_widget().pack()
 
     def open_tts_window(self):
@@ -804,54 +800,16 @@ class HistoryWindow:
             mod_signal_info_list = org_signal_list_db.fetchall()
             for mod_signal_info in mod_signal_info_list:
                 # add the information of the  manipulation operation.
-                self.add_info_label(row, hist_fr, mod_signal_info[1], mod_signal_info[2], mod_signal_info[3],
-                                    mod_signal_info[4],
-                                    mod_signal_info[5], mod_signal_info[6])
+                utils.add_info_label(row, hist_fr, mod_signal_info[1], mod_signal_info[2], mod_signal_info[3],
+                                     mod_signal_info[4],
+                                     mod_signal_info[5], mod_signal_info[6])
                 # add the original signal in the row
-                self.add_img(org_signal[1], row, clm, hist_fr)
+                utils.add_img(org_signal[1], row, clm, hist_fr)
                 clm += 1
                 # add the modified signal
-                self.add_img(mod_signal_info[0], row, clm, hist_fr)
+                utils.add_img(mod_signal_info[0], row, clm, hist_fr)
                 row += 1
                 clm -= 1
-
-    @staticmethod
-    def add_info_label(row, frame, date, amp, shift, speed, reverse, echo):
-        # information label
-        label_frame = ttk.Frame(frame)
-        label_frame.grid(row=row, column=0, sticky="nsew")
-
-        ttk.Label(label_frame, text="").pack(side="top")
-        ttk.Label(label_frame, text="").pack(side="top")
-        ttk.Label(label_frame, text="Date: " + date[5:18]).pack(side="top", anchor=NW)
-        amp_lib = ttk.Label(label_frame, text="Amplitude: " + str(amp))
-        shift_lib = ttk.Label(label_frame, text="Shift:         " + str(shift))
-        speed_lib = ttk.Label(label_frame, text="Speed:      " + str(speed))
-        reverse_lib = ttk.Label(label_frame, text="Reverse:   " + str(bool(reverse)))
-        ttk.Label(label_frame, text="Echo: " + str(bool(echo))).pack(side="top", anchor=NW)
-
-        amp_lib.pack(side="top", anchor=NW)
-        shift_lib.pack(side="top", anchor=NW)
-        speed_lib.pack(side="top", anchor=NW)
-        reverse_lib.pack(side="top", anchor=NW)
-
-    @staticmethod
-    def add_img(name, row, column, frame):
-        load = Image.open(name)
-        width, height = load.size
-        # Setting the points for cropped image
-        left = 0
-        top = 0
-        right = width
-        bottom = height
-        # Cropped image of above dimension (It will not change original image)
-        im1 = load.crop((left, top, right, bottom))
-        new_size = (width - 100, height)
-        im1 = im1.resize(new_size)
-        render = ImageTk.PhotoImage(im1)
-        img = ttk.Label(frame, image=render, width=300)
-        img.image = render
-        img.grid(row=row, column=column)
 
 
 if __name__ == '__main__':
