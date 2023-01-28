@@ -65,6 +65,7 @@ class MainGUI(ttk.Window):
         # app variables
         echo_state = ttk.StringVar()
         rev_state = ttk.StringVar()
+
         # create History and Audio Output directories on launch
         self.make_output_directory()
 
@@ -77,7 +78,7 @@ class MainGUI(ttk.Window):
 
             # toggle between dark and light mode
             if self.dark_mode_state:
-                self.style.theme_use('cyborg')
+                self.style.theme_use('midnight')
                 theme_btn.config(image='themeToggleLight')
                 import_btn.config(image='import-dark')
                 open_conv_btn.config(image='convolution-dark')
@@ -670,7 +671,7 @@ class ConvolutionWindow:
 
         ttk.Label(select_wave_frame, text='Select Impulse Response').pack(side=TOP)
         # menu selection
-        self.select_wave_menu = ttk.Menubutton(select_wave_frame, text='Select Wave', bootstyle=(INFO, OUTLINE))
+        self.select_wave_menu = ttk.Menubutton(select_wave_frame, text='Select Wave', bootstyle=(PRIMARY, OUTLINE))
         self.select_wave_menu.pack(side=TOP, pady=20)
         # create menu
         menu = ttk.Menu(self.select_wave_menu)

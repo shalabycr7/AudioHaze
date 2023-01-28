@@ -1,48 +1,48 @@
 {
   "themes": [
     {
-      "theme1": {
+      "midnight": {
         "type": "dark",
         "colors": {
-          "primary": "#4582ec",
-          "secondary": "#adb5bd",
-          "success": "#02b875",
-          "info": "#17a2b8",
-          "warning": "#f0ad4e",
-          "danger": "#d9534f",
-          "light": "#F8F9FA",
-          "dark": "#343A40",
-          "bg": "#ffffff",
-          "fg": "#343a40",
-          "selectbg": "#adb5bd",
-          "selectfg": "#ffffff",
-          "border": "#bfbfbf",
-          "inputfg": "#343a40",
-          "inputbg": "#fff",
-          "active": "#e5e5e5"
+          "primary": "#0a21f5",
+            "secondary": "#555555",
+            "success": "#77b300",
+            "info": "#c6c6c6",
+            "warning": "#ff8800",
+            "danger": "#cc0000",
+            "light": "#adafae",
+            "dark": "#000000",
+            "bg": "#000000",
+            "fg": "#ffffff",
+            "selectbg": "#454545",
+            "selectfg": "#ffffff",
+            "border": "#060606",
+            "inputfg": "#ffffff",
+            "inputbg": "#191919",
+            "active": "#282828"
         }
       }
     },
     {
-      "theme2": {
-        "type": "light",
+      "nightout": {
+        "type": "dark",
         "colors": {
-          "primary": "#4582ec",
-          "secondary": "#adb5bd",
-          "success": "#02b875",
-          "info": "#17a2b8",
-          "warning": "#f0ad4e",
-          "danger": "#d9534f",
-          "light": "#F8F9FA",
-          "dark": "#343A40",
-          "bg": "#ffffff",
-          "fg": "#343a40",
-          "selectbg": "#adb5bd",
-          "selectfg": "#ffffff",
-          "border": "#bfbfbf",
-          "inputfg": "#343a40",
-          "inputbg": "#fff",
-          "active": "#e5e5e5"
+          "primary": "#164fe2",
+            "secondary": "#555555",
+            "success": "#77b300",
+            "info": "#c0c0c0",
+            "warning": "#ff8800",
+            "danger": "#cc0000",
+            "light": "#ADAFAE",
+            "dark": "#222222",
+            "bg": "#000000",
+            "fg": "#ffffff",
+            "selectbg": "#454545",
+            "selectfg": "#ffffff",
+            "border": "#060606",
+            "inputfg": "#ffffff",
+            "inputbg": "#191919",
+            "active": "#282828"
         }
       }
     }
