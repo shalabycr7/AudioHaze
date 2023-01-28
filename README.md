@@ -1,3 +1,6 @@
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/shalabycr7/Audio-Signal-Processing-App-GUI-in-Python)
+![GitHub repo file count](https://img.shields.io/github/directory-file-count/shalabycr7/Audio-Signal-Processing-App-GUI-in-Python)
+
 ![Cover Design](https://user-images.githubusercontent.com/17945581/191078771-0af9a028-595e-4907-a32a-105166c3a42a.png)
 
 # Audio Signal Processing App
