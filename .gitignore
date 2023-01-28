@@ -3,7 +3,7 @@
 /History
 
 # database files
-signals.db
+#signals.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
