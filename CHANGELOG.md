@@ -4,6 +4,25 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Stable]
 
+## V 0.2.0
+
+### Added
+
+* Added The Ability To Create User Customized Themes Using `user.json` File :heavy_check_mark:
+
+### Changed
+
+* Updated Used Packages :heavy_check_mark:
+* Moved Some Static Functions To `utils.py` :heavy_check_mark
+* Renamed The Main File To `main.py` :heavy_check_mark
+
+### Fixed
+
+* Fixed An Issue Regarding Reading The File Multiple Times In A Row :heavy_check_mark:
+* Removed Repeated Code :heavy_check_mark:
+* Minor Bugs :heavy_check_mark
+* Code Revamping And Improvements :heavy_check_mark
+
 ## V 0.1.1
 
 ### Added
@@ -73,7 +92,7 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 * Added A History Section To Save Every Original And Modified Signal :heavy_check_mark:
 * Created A Database To Store Each Signals :heavy_check_mark:
-* Created A Connection In The Database To Connect Every Modified Signals With It's Original Signal :heavy_check_mark:
+* Created A Connection In The Database To Connect Every Modified Signals With Its Original Signal :heavy_check_mark:
 * Added History Window To Display All The Modified Operation, Original And Modified Signals :heavy_check_mark:
 
 ### Fixed

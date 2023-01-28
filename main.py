@@ -1,5 +1,4 @@
 import datetime
-import json
 import os
 import sqlite3
 import struct
@@ -20,7 +19,6 @@ from scipy import signal
 from ttkbootstrap import Toplevel
 from ttkbootstrap.constants import *
 from ttkbootstrap.scrolled import ScrolledFrame
-from ttkbootstrap.style import ThemeDefinition
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.tooltip import ToolTip
 
@@ -61,10 +59,12 @@ class MainGUI(ttk.Window):
         if self.max_id is not None:
             self.img_count = self.max_id
 
+        # load user created themes
+        self.style.load_user_themes('Theme/user.json')
+
         # app variables
         echo_state = ttk.StringVar()
         rev_state = ttk.StringVar()
-        self.user_theme('Theme/user.json')
         # create History and Audio Output directories on launch
         self.make_output_directory()
 
@@ -536,22 +536,6 @@ class MainGUI(ttk.Window):
         except FileExistsError:
             return
         return
-
-    def user_theme(self, file):
-        """Load user themes saved in json format"""
-        with open(file, encoding='utf-8') as f:
-            data = json.load(f)
-
-            theme = data['themes']
-            for name, definition in theme.items():
-                print(name, definition)
-                self.style.register_theme(
-                    ThemeDefinition(
-                        name=name,
-                        themetype=definition["type"],
-                        colors=definition["colors"],
-                    )
-                )
 
     def plotting(self, targeted_signal, time, raw, place, title):
         matplotlib.style.use('dark_background') if not self.dark_mode_state else matplotlib.style.use('default')
