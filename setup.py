@@ -4,8 +4,12 @@ from setuptools import setup
 long_description = """
 ![Cover Design](https://user-images.githubusercontent.com/17945581/191078771-0af9a028-595e-4907-a32a-105166c3a42a.png)
 
-# Audio Signal Processing App
+# AudioHaze (An Audio Wave Processing App)
 
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/shalabycr7/Audio-Signal-Processing-App-GUI-in-Python)
+![GitHub repo file count](https://img.shields.io/github/directory-file-count/shalabycr7/Audio-Signal-Processing-App-GUI-in-Python)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/shalabycr7/Audio-Signal-Processing-App-GUI-in-Python)
+![GitHub forks](https://img.shields.io/github/forks/shalabycr7/Audio-Signal-Processing-App-GUI-in-Python?style=social)
 > This Is A Simple GUI Application To Manipulate Audio Files By Modifying The Audio Wave Form And Display It Using
 > Python
 
@@ -45,6 +49,8 @@ long_description = """
     * Convert Between Zeros And Poles Formula To H (s) Represented In Numerator/Denominator Formula
 * Support For Stereo Audio Files
 * Support Dark Mode Theme
+* Support User Customized Themes Using `user.json` File Located In `Theme`
+  Folder
 
 ### Screenshots
 
@@ -73,6 +79,8 @@ long_description = """
 - [x] Add Support For More Audio Formats like `.Mp3`
 - [x] Add Support For Stereo Files
 - [x] Remove Deprecated Audio Libraries/Functions
+- [x] Added Support For User Created Themes
+
 
 ### Supported Versions
 
@@ -85,7 +93,7 @@ The App Was Tested On Windows 11 With The Following Version Of Python
 """
 
 setup(
-    name='Audio-Signal-Processing-App-GUI-in-Python',
+    name='AudioHaze',
     version='0.2.0',
     package_dir={"": "AudioLib"},
     packages=setuptools.find_packages(where="AudioLib"),
@@ -95,7 +103,7 @@ setup(
     classifiers=[
         "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: Windows",
+        "Operating System :: Microsoft :: Windows",
     ],
     license='MIT',
     author='Abdulrahman Shalaby',
