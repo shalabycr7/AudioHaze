@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="signals" uuid="81ee7685-3a40-40e2-827d-1a67e741820c">
+    <data-source source="LOCAL" name="signals" uuid="82fbbc00-7a09-49a9-b4ac-d7b2058123e2">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:C:\Users\cr7sh\PycharmProjects\Audio-Signal-Processing-App-GUI-in-Python\signals.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:C:\Users\cr7sh\PycharmProjects\AudioHaze\signals.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
       <libraries>
         <library>
