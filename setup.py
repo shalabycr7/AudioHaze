@@ -6,7 +6,6 @@ with open('README.md', 'r') as fh:
 setup(
     name='AudioHaze',
     version='0.2.1',
-    readme="README.md",
     package_dir={"": "AudioHaze"},
     long_description=long_description,
     long_description_content_type="text/markdown",
