@@ -4,6 +4,13 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Stable]
 
+## V 0.2.1
+
+### Changed
+
+* Files Structure Main Files Moved To `AudioHaze` Folder :heavy_check_mark:
+* Updated `setup.py` & `requirements.txt` :heavy_check_mark
+
 ## V 0.2.0
 
 ### Added

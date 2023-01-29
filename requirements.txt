@@ -5,4 +5,4 @@ pyttsx3==2.90
 ttkbootstrap==1.10.1
 Pillow==9.4.0
 pydub==0.25.1
-setuptools==66.1.1
+setuptools==67.0.0

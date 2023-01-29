@@ -29,7 +29,7 @@ from AudioLib import AudioEffect
 class MainGUI(ttk.Window):
     # initial parameters for audio file name and location
     file_directory = ''
-    directory_name = 'Audio Output'
+    directory_name = '../Audio Output'
     dark_mode_state = False
     output_file = directory_name + '/Modified.wav'
 
@@ -44,7 +44,7 @@ class MainGUI(ttk.Window):
     plot_img_title = ''
 
     # connect to database
-    connection = sqlite3.connect('signals.db')
+    connection = sqlite3.connect('../signals.db')
     db = connection.cursor()
 
     # start the image counter at an appropriate number.
@@ -60,7 +60,7 @@ class MainGUI(ttk.Window):
             self.img_count = self.max_id
 
         # load user created themes
-        self.style.load_user_themes('Theme/user.json')
+        self.style.load_user_themes('../Theme/user.json')
 
         # app variables
         echo_state = ttk.StringVar()
@@ -192,7 +192,7 @@ class MainGUI(ttk.Window):
             else:
                 messagebox.showwarning('Warning', 'Please Import Audio File First')
 
-        def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_st):
+        def operations(amp_amount, shift_amount, speed_amount, reverse_state, echo_state):
             utils.update_frame(modified_wave_frame)
 
             # create a new output WAV file to write the new modified audio data
@@ -245,7 +245,7 @@ class MainGUI(ttk.Window):
             self.modified_plot_state = True
 
             # set the echo based on button state
-            if echo_st:
+            if echo_state:
                 AudioEffect.echo(self.output_file, self.output_file)
 
             # show a message when done modifying the file
@@ -262,7 +262,7 @@ class MainGUI(ttk.Window):
                 'INSERT INTO modsignal(org_id,name,date,amp,shift,speed,reverse,echo) VALUES (?,?,?,?,?,?,?,?)',
                 (self.original_id, self.plot_img_title, date, amp_amount, shift_amount, speed_amount,
                  bool(reverse_state),
-                 bool(echo_st)))
+                 bool(echo_state)))
             self.connection.commit()
 
         def apply_operations():
@@ -298,64 +298,65 @@ class MainGUI(ttk.Window):
                 messagebox.showinfo('Warning', 'Please Import Audio File First And Set Valid Values')
                 return
 
+        # app icons
         self.images = [
             ttk.PhotoImage(
                 name='openfile',
-                file='Icons/open-file-icon.png'),
+                file='../Icons/open-file-icon.png'),
             ttk.PhotoImage(
                 name='channels',
-                file='Icons/channels-icon.png'),
+                file='../Icons/channels-icon.png'),
             ttk.PhotoImage(
                 name='frameRate',
-                file='Icons/framerate-icon.png'),
+                file='../Icons/framerate-icon.png'),
             ttk.PhotoImage(
                 name='maxAmp',
-                file='Icons/max-amp-icon.png'),
+                file='../Icons/max-amp-icon.png'),
             ttk.PhotoImage(
                 name='import',
-                file='Icons/import-file.png'),
+                file='../Icons/import-file.png'),
             ttk.PhotoImage(
                 name='import-dark',
-                file='Icons/import-file-dark.png'),
+                file='../Icons/import-file-dark.png'),
             ttk.PhotoImage(
                 name='themeToggleDark',
-                file='Icons/darkIcon.png'),
+                file='../Icons/darkIcon.png'),
             ttk.PhotoImage(
                 name='themeToggleLight',
-                file='Icons/whiteIcon.png'),
+                file='../Icons/whiteIcon.png'),
             ttk.PhotoImage(
                 name='play',
-                file='Icons/play-button.png'),
+                file='../Icons/play-button.png'),
             ttk.PhotoImage(
                 name='stop',
-                file='Icons/stop-button.png'),
+                file='../Icons/stop-button.png'),
             ttk.PhotoImage(
                 name='convolution',
-                file='Icons/conv-button.png'),
+                file='../Icons/conv-button.png'),
             ttk.PhotoImage(
                 name='convolution-dark',
-                file='Icons/conv-button-dark.png'),
+                file='../Icons/conv-button-dark.png'),
             ttk.PhotoImage(
                 name='tts',
-                file='Icons/message-button.png'),
+                file='../Icons/message-button.png'),
             ttk.PhotoImage(
                 name='tts-dark',
-                file='Icons/message-button-dark.png'),
+                file='../Icons/message-button-dark.png'),
             ttk.PhotoImage(
                 name='history',
-                file='Icons/history-button.png'),
+                file='../Icons/history-button.png'),
             ttk.PhotoImage(
                 name='history-dark',
-                file='Icons/history-button-dark.png'),
+                file='../Icons/history-button-dark.png'),
             ttk.PhotoImage(
                 name='apply',
-                file='Icons/apply-button.png'),
+                file='../Icons/apply-button.png'),
             ttk.PhotoImage(
                 name='convert',
-                file='Icons/convert-button.png'),
+                file='../Icons/convert-button.png'),
             ttk.PhotoImage(
                 name='convert-dark',
-                file='Icons/convert-button-dark.png'),
+                file='../Icons/convert-button-dark.png'),
         ]
 
         hdr_frame = ttk.Frame(self, padding=(20, 10))
@@ -533,7 +534,7 @@ class MainGUI(ttk.Window):
     def make_output_directory(self):
         try:
             os.mkdir(self.directory_name)
-            os.mkdir('History')
+            os.mkdir('../History')
         except FileExistsError:
             return
         return
@@ -546,7 +547,7 @@ class MainGUI(ttk.Window):
         figure_subplot.grid(alpha=0.4)
         figure_subplot.set_title(title)
 
-        self.plot_img_title = "History/img" + str(self.img_count) + ".png"
+        self.plot_img_title = "../History/img" + str(self.img_count) + ".png"
         if targeted_signal is not None:
             figure_subplot.plot(targeted_signal, color='blue')
         else:
@@ -807,6 +808,6 @@ class HistoryWindow:
 if __name__ == '__main__':
     window_width = 1200
     window_height = 700
-    app = MainGUI(title='Audio Signal Processing', iconphoto='Icons/favIcon.png', size=[window_width, window_height])
+    app = MainGUI(title='AudioHaze', iconphoto='../Icons/favIcon.png', size=[window_width, window_height])
     app.place_window_center()
     app.mainloop()
