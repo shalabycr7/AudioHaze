@@ -12,8 +12,8 @@ description = "This Is A Simple GUI Application To Manipulate Audio Files By Mod
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
-dependencies = ["numpy==1.24.1", "scipy==1.10.0", "matplotlib==3.6.3", "pyttsx3==2.90", "ttkbootstrap==1.10.1",
-    "Pillow==9.4.0", "pydub==0.25.1"]
+dependencies = ["numpy>=1.24.1", "scipy>=1.10.0", "matplotlib>=3.6.3", "pyttsx3>=2.90", "ttkbootstrap>=1.10.1",
+    "Pillow>=9.4.0", "pydub>=0.25.1"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Win32 (MS Windows)",
@@ -23,7 +23,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: Microsoft :: Windows",
 ]
-keywords = ["gui", "audio", "app"]
+keywords = ["GUI", "Tkinter", "Audio", "App", "Audio Editing", "Audio Processing"]
 
 [project.urls]
 homepage = "https://github.com/shalabycr7/AudioHaze"
