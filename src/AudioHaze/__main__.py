@@ -1,5 +1,6 @@
 import datetime
 import os
+import pathlib
 import sqlite3
 import struct
 import wave
@@ -22,8 +23,11 @@ from ttkbootstrap.scrolled import ScrolledFrame
 from ttkbootstrap.toast import ToastNotification
 from ttkbootstrap.tooltip import ToolTip
 
-from . import AudioEffect
-from . import utils
+from src.AudioHaze import AudioEffect
+from src.AudioHaze import utils
+
+parent_dir = pathlib.Path(__file__).parents[2]
+database_dir = parent_dir / 'signals.db'
 
 
 class MainGUI(ttk.Window):
@@ -44,7 +48,7 @@ class MainGUI(ttk.Window):
     plot_img_title = ''
 
     # connect to database
-    connection = sqlite3.connect('signals.db')
+    connection = sqlite3.connect(database_dir)
     db = connection.cursor()
 
     # start the image counter at an appropriate number.
@@ -60,7 +64,7 @@ class MainGUI(ttk.Window):
             self.img_count = self.max_id
 
         # load user created themes
-        self.style.load_user_themes('user.json')
+        self.style.load_user_themes(parent_dir / 'user.json')
 
         # app variables
         echo_state = ttk.StringVar()
@@ -302,61 +306,61 @@ class MainGUI(ttk.Window):
         self.images = [
             ttk.PhotoImage(
                 name='openfile',
-                file='Icons/open-file-icon.png'),
+                file=parent_dir / 'Icons/open-file-icon.png'),
             ttk.PhotoImage(
                 name='channels',
-                file='Icons/channels-icon.png'),
+                file=parent_dir / 'Icons/channels-icon.png'),
             ttk.PhotoImage(
                 name='frameRate',
-                file='Icons/framerate-icon.png'),
+                file=parent_dir / 'Icons/framerate-icon.png'),
             ttk.PhotoImage(
                 name='maxAmp',
-                file='Icons/max-amp-icon.png'),
+                file=parent_dir / 'Icons/max-amp-icon.png'),
             ttk.PhotoImage(
                 name='import',
-                file='Icons/import-file.png'),
+                file=parent_dir / 'Icons/import-file.png'),
             ttk.PhotoImage(
                 name='import-dark',
-                file='Icons/import-file-dark.png'),
+                file=parent_dir / 'Icons/import-file-dark.png'),
             ttk.PhotoImage(
                 name='themeToggleDark',
-                file='Icons/darkIcon.png'),
+                file=parent_dir / 'Icons/darkIcon.png'),
             ttk.PhotoImage(
                 name='themeToggleLight',
-                file='Icons/whiteIcon.png'),
+                file=parent_dir / 'Icons/whiteIcon.png'),
             ttk.PhotoImage(
                 name='play',
-                file='Icons/play-button.png'),
+                file=parent_dir / 'Icons/play-button.png'),
             ttk.PhotoImage(
                 name='stop',
-                file='Icons/stop-button.png'),
+                file=parent_dir / 'Icons/stop-button.png'),
             ttk.PhotoImage(
                 name='convolution',
-                file='Icons/conv-button.png'),
+                file=parent_dir / 'Icons/conv-button.png'),
             ttk.PhotoImage(
                 name='convolution-dark',
-                file='Icons/conv-button-dark.png'),
+                file=parent_dir / 'Icons/conv-button-dark.png'),
             ttk.PhotoImage(
                 name='tts',
-                file='Icons/message-button.png'),
+                file=parent_dir / 'Icons/message-button.png'),
             ttk.PhotoImage(
                 name='tts-dark',
-                file='Icons/message-button-dark.png'),
+                file=parent_dir / 'Icons/message-button-dark.png'),
             ttk.PhotoImage(
                 name='history',
-                file='Icons/history-button.png'),
+                file=parent_dir / 'Icons/history-button.png'),
             ttk.PhotoImage(
                 name='history-dark',
-                file='Icons/history-button-dark.png'),
+                file=parent_dir / 'Icons/history-button-dark.png'),
             ttk.PhotoImage(
                 name='apply',
-                file='Icons/apply-button.png'),
+                file=parent_dir / 'Icons/apply-button.png'),
             ttk.PhotoImage(
                 name='convert',
-                file='Icons/convert-button.png'),
+                file=parent_dir / 'Icons/convert-button.png'),
             ttk.PhotoImage(
                 name='convert-dark',
-                file='Icons/convert-button-dark.png'),
+                file=parent_dir / 'Icons/convert-button-dark.png'),
         ]
 
         hdr_frame = ttk.Frame(self, padding=(20, 10))
@@ -808,6 +812,6 @@ class HistoryWindow:
 if __name__ == '__main__':
     window_width = 1200
     window_height = 700
-    app = MainGUI(title='AudioHaze', iconphoto='Icons/favIcon.png', size=[window_width, window_height])
+    app = MainGUI(title='AudioHaze', iconphoto=parent_dir / 'Icons/favIcon.png', size=[window_width, window_height])
     app.place_window_center()
     app.mainloop()

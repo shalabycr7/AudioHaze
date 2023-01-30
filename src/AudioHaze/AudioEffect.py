@@ -1,4 +1,4 @@
-from . import AudioProcessing
+from src.AudioHaze import AudioProcessing
 
 
 def echo(input_path, output_path):

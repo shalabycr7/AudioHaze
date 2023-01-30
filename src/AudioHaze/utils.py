@@ -4,6 +4,7 @@ from tkinter.constants import END, NW
 import winsound
 from PIL import Image, ImageTk
 
+
 def delete_entries(wid):
     wid.delete(0, END)
 
