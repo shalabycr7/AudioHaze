@@ -1,12 +1,16 @@
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+[tool.hatch.build]
+include = [
+    "signals.db",
+]
 [project]
 name = "AudioHaze"
 version = "0.2.2"
 authors = [
-  {name = "Abdulrahman Shalaby", email = "abdoshalaby.dev@gmail.com"},
-  {name = "Abdulrahman El Sharabasy", email = "abdomake@gmail.com"},
+    { name = "Abdulrahman Shalaby", email = "abdoshalaby.dev@gmail.com" },
+    { name = "Abdulrahman El Sharabasy", email = "abdomake@gmail.com" },
 ]
 description = "This Is A Simple GUI Application To Manipulate Audio Files By Modifying The Audio Wave Form And Display It Using Python"
 readme = "README.md"
