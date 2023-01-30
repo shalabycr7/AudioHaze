@@ -5,15 +5,20 @@ build-backend = "hatchling.build"
 name = "AudioHaze"
 version = "0.2.1"
 authors = [
-    { name = "Abdulrahman Shalaby", email = "abdoshalaby.dev@gmail.com" },
+  {name = "Abdulrahman Shalaby", email = "abdoshalaby.dev@gmail.com"},
+  {name = "Abdulrahman El Sharabasy", email = "tzu-ping@example.com"},
 ]
-description = "Simple GUI Application To Manipulate Audio Files By Modifying The Audio Wave Form And Display It Using Python"
+description = "This Is A Simple GUI Application To Manipulate Audio Files By Modifying The Audio Wave Form And Display It Using Python"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 dependencies = ["numpy==1.24.1", "scipy==1.10.0", "matplotlib==3.6.3", "pyttsx3==2.90", "ttkbootstrap==1.10.1",
     "Pillow==9.4.0", "pydub==0.25.1"]
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Multimedia :: Sound/Audio :: Analysis",
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: Microsoft :: Windows",
@@ -21,4 +26,6 @@ classifiers = [
 keywords = ["gui", "audio", "app"]
 
 [project.urls]
-"Homepage" = "https://github.com/shalabycr7/AudioHaze"
+homepage = "https://github.com/shalabycr7/AudioHaze"
+repository = "https://github.com/shalabycr7/AudioHaze"
+changelog = "https://github.com/shalabycr7/AudioHaze/blob/MainDist/CHANGELOG.md"
