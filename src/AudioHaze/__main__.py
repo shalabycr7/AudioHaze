@@ -1,6 +1,5 @@
 import datetime
-import os
-import pathlib
+from pathlib import Path
 import sqlite3
 import struct
 import wave
@@ -26,16 +25,16 @@ from ttkbootstrap.tooltip import ToolTip
 from src.AudioHaze import AudioEffect
 from src.AudioHaze import utils
 
-parent_dir = pathlib.Path(__file__).parents[2]
+parent_dir = Path(__file__).parents[2]
 database_dir = parent_dir / 'signals.db'
 
 
 class MainGUI(ttk.Window):
     # initial parameters for audio file name and location
     file_directory = ''
-    directory_name = 'Audio Output'
+    directory_name = parent_dir / 'Audio Output'
     dark_mode_state = False
-    output_file = directory_name + '/Modified.wav'
+    output_file = str(directory_name / 'Modified.wav')
 
     # initial parameters for audio file data
     original_file_data = {}
@@ -143,21 +142,16 @@ class MainGUI(ttk.Window):
                                                   filetypes=(('Wav', '*wav'), ('Mp3', '*mp3')))
             self.file_directory = filename
 
-            # using splitext() to find file extension
-            file_extension = os.path.splitext(self.file_directory)[1]
+            file_extension = Path(filename).suffix
             if self.file_directory == '':
                 messagebox.showerror('Error', 'No File Was Selected')
                 return
             else:
-                # checks if the output file is there and delete it
-                if os.path.isfile(self.output_file):
-                    os.remove(self.output_file)
-
                 # convert mp3 file to wav, so it can be read
                 if file_extension == '.mp3':
                     mp3_file = AudioSegment.from_mp3(file=self.file_directory)
-                    mp3_file.export(self.directory_name + '/Mp3converted.wav', format='wav')
-                    self.file_directory = self.directory_name + '/Mp3converted.wav'
+                    mp3_file.export(self.directory_name / 'Mp3converted.wav', format='wav')
+                    self.file_directory = self.directory_name / 'Mp3converted.wav'
 
                 wav_original = AudioSegment.from_file(file=self.file_directory)
                 self.original_file_data = read_file(wav_original, 'original')
@@ -185,9 +179,9 @@ class MainGUI(ttk.Window):
             if self.file_directory != '':
                 # toggle between playing the original file or the modified version
                 if indication == 'OG':
-                    audio_file = self.file_directory
+                    audio_file = str(self.file_directory)
                 else:
-                    if os.path.isfile(self.output_file):
+                    if Path(self.output_file).is_file():
                         audio_file = self.output_file
                     else:
                         messagebox.showinfo('Info', 'Apply Modification To The Audio File Then Play It')
@@ -264,7 +258,7 @@ class MainGUI(ttk.Window):
             date = datetime.datetime.now()
             self.db.execute(
                 'INSERT INTO modsignal(org_id,name,date,amp,shift,speed,reverse,echo) VALUES (?,?,?,?,?,?,?,?)',
-                (self.original_id, self.plot_img_title, date, amp_amount, shift_amount, speed_amount,
+                (self.original_id, str(self.plot_img_title), date, amp_amount, shift_amount, speed_amount,
                  bool(reverse_state),
                  bool(echo_state)))
             self.connection.commit()
@@ -536,12 +530,8 @@ class MainGUI(ttk.Window):
         set_theme()
 
     def make_output_directory(self):
-        try:
-            os.mkdir(self.directory_name)
-            os.mkdir('History')
-        except FileExistsError:
-            return
-        return
+        Path(parent_dir / 'History').mkdir(exist_ok=True)
+        Path(self.directory_name).mkdir(exist_ok=True)
 
     def plotting(self, targeted_signal, time, raw, place, title):
         matplotlib.style.use('dark_background') if not self.dark_mode_state else matplotlib.style.use('default')
@@ -551,7 +541,7 @@ class MainGUI(ttk.Window):
         figure_subplot.grid(alpha=0.4)
         figure_subplot.set_title(title)
 
-        self.plot_img_title = "History/img" + str(self.img_count) + ".png"
+        self.plot_img_title = parent_dir / 'History' / ("img" + str(self.img_count) + ".png")
         if targeted_signal is not None:
             figure_subplot.plot(targeted_signal, color='blue')
         else:
@@ -560,7 +550,7 @@ class MainGUI(ttk.Window):
             self.img_count += 1
 
             if title == 'Original Audio':
-                text = [self.plot_img_title]
+                text = [str(self.plot_img_title)]
                 self.db.execute('INSERT INTO org(name) VALUES (?)', text)
                 self.connection.commit()
                 org_id_db = self.db.execute("SELECT id FROM org WHERE name = ?", text)
@@ -590,7 +580,7 @@ class MainGUI(ttk.Window):
             # say method on the engine that passing input text to be spoken
             engine.say(speach)
             # Saving Voice to a file
-            engine.save_to_file(speach, self.directory_name + '/Transcript.mp3')
+            engine.save_to_file(speach, self.directory_name / '/Transcript.mp3')
             # run and wait method, it processes the voice commands.
             engine.runAndWait()
             engine.stop()
@@ -812,6 +802,7 @@ class HistoryWindow:
 if __name__ == '__main__':
     window_width = 1200
     window_height = 700
+
     app = MainGUI(title='AudioHaze', iconphoto=parent_dir / 'Icons/favIcon.png', size=[window_width, window_height])
     app.place_window_center()
     app.mainloop()
