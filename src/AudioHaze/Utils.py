@@ -4,6 +4,8 @@ from tkinter.constants import END, NW
 import winsound
 from PIL import Image, ImageTk
 
+from src.AudioHaze.__main__ import HistoryWindow
+
 
 def delete_entries(wid):
     wid.delete(0, END)
@@ -38,6 +40,10 @@ def output_duration(length):
 
 def stop_audio():
     winsound.PlaySound(None, winsound.SND_FILENAME)
+
+
+def open_history_window():
+    HistoryWindow()
 
 
 def add_img(name, row, column, frame):

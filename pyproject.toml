@@ -2,9 +2,10 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 [tool.hatch.build]
-include = [
-    "signals.db",
+artifacts = [
+  "*.db",
 ]
+
 [project]
 name = "AudioHaze"
 version = "0.2.2"
