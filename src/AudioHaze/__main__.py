@@ -23,7 +23,6 @@ from src.AudioHaze import MainInterface, AudioEffect
 from src.AudioHaze import Utils
 
 parent_dir = Path(__file__).parents[2]
-database_dir = parent_dir / 'signals.db'
 
 
 class MainApp(ttk.Frame):
@@ -44,7 +43,7 @@ class MainApp(ttk.Frame):
     plot_img_title = ''
 
     # connect to database
-    connection = sqlite3.connect(database_dir)
+    connection = sqlite3.connect(parent_dir / 'signals.db')
     db = connection.cursor()
 
     # start the image counter at an appropriate number.

@@ -4,7 +4,6 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Stable]
 
-
 ## V 0.2.1
 
 ### Changed
@@ -94,6 +93,12 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Beta / Unreleased]
 
+## V 0.2.3
+
+### Changed
+
+* Updated Database Path :heavy_check_mark:
+* Updated Project Build Metadata :heavy_check_mark:
 
 ## V 0.2.2
 

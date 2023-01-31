@@ -3,13 +3,18 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 [tool.hatch.build]
 artifacts = [
-  "*.db",
+    "signals.db",
 ]
 
+[tool.hatch.version]
 [project]
 name = "AudioHaze"
-version = "0.2.2"
+version = "0.2.3"
 authors = [
+    { name = "Abdulrahman Shalaby", email = "abdoshalaby.dev@gmail.com" },
+    { name = "Abdulrahman El Sharabasy", email = "abdomake@gmail.com" },
+]
+maintainers = [
     { name = "Abdulrahman Shalaby", email = "abdoshalaby.dev@gmail.com" },
     { name = "Abdulrahman El Sharabasy", email = "abdomake@gmail.com" },
 ]
@@ -17,8 +22,16 @@ description = "This Is A Simple GUI Application To Manipulate Audio Files By Mod
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
-dependencies = ["numpy>=1.24.1", "scipy>=1.10.0", "matplotlib>=3.6.3", "pyttsx3>=2.90", "ttkbootstrap>=1.10.1",
-    "Pillow>=9.4.0", "pydub>=0.25.1"]
+dependencies = [
+    "numpy",
+    "scipy",
+    "matplotlib",
+    "pyttsx3",
+    "ttkbootstrap",
+    "Pillow",
+    "pydub",
+    "setuptools",
+]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Win32 (MS Windows)",
@@ -29,6 +42,7 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
 ]
 keywords = ["GUI", "Tkinter", "Audio", "App", "Audio Editing", "Audio Processing"]
+dynamic = ["version"]
 
 [project.urls]
 homepage = "https://github.com/shalabycr7/AudioHaze"
