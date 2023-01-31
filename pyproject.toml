@@ -3,13 +3,15 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 [tool.hatch.build]
 artifacts = [
-    "signals.db",
+    "./signals.db",
 ]
 
 [tool.hatch.version]
+path = "src/AudioHaze/__about__.py"
+
 [project]
 name = "AudioHaze"
-version = "0.2.3"
+dynamic = ["version"]
 authors = [
     { name = "Abdulrahman Shalaby", email = "abdoshalaby.dev@gmail.com" },
     { name = "Abdulrahman El Sharabasy", email = "abdomake@gmail.com" },
@@ -42,8 +44,6 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
 ]
 keywords = ["GUI", "Tkinter", "Audio", "App", "Audio Editing", "Audio Processing"]
-dynamic = ["version"]
-
 [project.urls]
 homepage = "https://github.com/shalabycr7/AudioHaze"
 repository = "https://github.com/shalabycr7/AudioHaze"
