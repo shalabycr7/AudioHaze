@@ -4,16 +4,6 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Stable]
 
-## V 0.2.2
-
-### Changed
-
-* Updated File Structure To Support Packaging Format :heavy_check_mark:
-* Split The Main Functions Into Sub-Module Files :heavy_check_mark:
-
-### Fixed
-
-* Fixed Some Issues Regarding File Paths :heavy_check_mark:
 
 ## V 0.2.1
 
@@ -103,6 +93,18 @@ All Notable Changes To This Project Will Be Documented In This File.
 * Fixed Some Minor Bugs :heavy_check_mark:
 
 ## [Beta / Unreleased]
+
+
+## V 0.2.2
+
+### Changed
+
+* Updated File Structure To Support Packaging Format :heavy_check_mark:
+* Split The Main Functions Into Sub-Module Files :heavy_check_mark:
+
+### Fixed
+
+* Fixed Some Issues Regarding File Paths :heavy_check_mark:
 
 ## V 0.1.0
 
