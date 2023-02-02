@@ -14,8 +14,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from pydub import AudioSegment
 from scipy import signal
-from ttkbootstrap import Toplevel
-from ttkbootstrap.constants import *
+from ttkbootstrap import Toplevel, PRIMARY, OUTLINE, LINK, BOTH, TOP, RIGHT, YES, HORIZONTAL, W, EW, LEFT, X
 from ttkbootstrap.scrolled import ScrolledFrame
 from ttkbootstrap.toast import ToastNotification
 

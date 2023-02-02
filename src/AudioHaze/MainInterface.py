@@ -1,5 +1,5 @@
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
+from ttkbootstrap import LINK, BOTH, TOP, RIGHT, W, LEFT, X, PRIMARY, VERTICAL, Y, E, SE, SW
 from ttkbootstrap.tooltip import ToolTip
 
 from src.AudioHaze import Utils
