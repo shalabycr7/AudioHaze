@@ -25,14 +25,13 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 dependencies = [
-    "numpy",
-    "scipy",
-    "matplotlib",
-    "pyttsx3",
-    "ttkbootstrap",
-    "Pillow",
-    "pydub",
-    "setuptools",
+    "numpy>=1.24.1",
+    "scipy>=1.10.0",
+    "matplotlib>=3.6.3",
+    "pyttsx3>=2.90",
+    "ttkbootstrap>=1.10.1",
+    "Pillow>=9.4.0",
+    "pydub>=0.25.1",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
