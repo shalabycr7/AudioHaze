@@ -2,7 +2,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap import LINK, BOTH, TOP, RIGHT, W, LEFT, X, PRIMARY, VERTICAL, Y, E, SE, SW
 from ttkbootstrap.tooltip import ToolTip
 
-from src.AudioHaze import Utils
+from src.AudioHaze import utility
 from src.AudioHaze.__main__ import parent_dir
 
 
@@ -67,7 +67,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
             name='convert-dark',
             file=parent_dir / 'Icons/convert-button-dark.png'),
     ]
-    user_validation = master.register(Utils.validation_callback)
+    user_validation = master.register(utility.validation_callback)
     # app variables
     echo_state = ttk.StringVar()
     rev_state = ttk.StringVar()
@@ -150,7 +150,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
         image='history',
         compound=LEFT,
         bootstyle=LINK,
-        command=Utils.open_history_window
+        command=utility.open_history_window
     )
     open_history_btn.pack(side=RIGHT)
 
@@ -168,7 +168,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
         image='stop',
         compound=LEFT,
         bootstyle=LINK,
-        command=Utils.stop_audio
+        command=utility.stop_audio
     )
     stop_btn.pack(side=RIGHT)
     ttk.Separator(file_action_frame, orient=VERTICAL).pack(side=RIGHT, padx=20)

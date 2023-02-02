@@ -18,8 +18,8 @@ from ttkbootstrap import Toplevel, PRIMARY, OUTLINE, LINK, BOTH, TOP, RIGHT, YES
 from ttkbootstrap.scrolled import ScrolledFrame
 from ttkbootstrap.toast import ToastNotification
 
-from src.AudioHaze import MainInterface, AudioEffect
-from src.AudioHaze import Utils
+from src.AudioHaze import main_interface, audio_effect
+from src.AudioHaze import utility
 
 parent_dir = Path(__file__).parents[2]
 
@@ -56,9 +56,9 @@ class MainApp(ttk.Frame):
         self.current_style = ttk.Style()
         self.make_output_directory()
         # load user created themes
-        self.ui_elements = MainInterface.create_main_ui(self, self.import_file,
-                                                        self.set_theme, self.apply_operations, self.play_audio,
-                                                        self.open_tts_window, self.open_conv_window)
+        self.ui_elements = main_interface.create_main_ui(self, self.import_file,
+                                                         self.set_theme, self.apply_operations, self.play_audio,
+                                                         self.open_tts_window, self.open_conv_window)
         self.set_theme()
 
     def make_output_directory(self):
@@ -66,8 +66,8 @@ class MainApp(ttk.Frame):
         Path(self.directory_name).mkdir(exist_ok=True)
 
     def set_theme(self):
-        Utils.update_frame(self.ui_elements['original_wave_frame'])
-        Utils.update_frame(self.ui_elements['modified_wave_frame'])
+        utility.update_frame(self.ui_elements['original_wave_frame'])
+        utility.update_frame(self.ui_elements['modified_wave_frame'])
         # toggle between dark and light mode
         if self.dark_mode_state:
             self.current_style.theme_use('midnight')
@@ -110,20 +110,20 @@ class MainApp(ttk.Frame):
         if indicator == 'original':
             # get the duration of the audio file
             duration = data_dict.get(3) / float(data_dict.get(2))
-            hours, minutes, seconds = Utils.output_duration(int(duration))
+            hours, minutes, seconds = utility.output_duration(int(duration))
             total_time = f'{hours}:{minutes}:{seconds}'
             # display the duration
             self.ui_elements['length_lb'].config(text=total_time)
         return data_dict
 
     def import_file(self):
-        Utils.update_frame(self.ui_elements['original_wave_frame'])
-        Utils.update_frame(self.ui_elements['modified_wave_frame'])
+        utility.update_frame(self.ui_elements['original_wave_frame'])
+        utility.update_frame(self.ui_elements['modified_wave_frame'])
 
         # # hide the plotting frames every time we import
         self.original_plot_state = False
         self.modified_plot_state = False
-        Utils.stop_audio()
+        utility.stop_audio()
         # open window to select file to get the path then save in variable directory
         filename = filedialog.askopenfilename(initialdir=self.file_directory, title="Select Audio File",
                                               filetypes=(('Wav', '*wav'), ('Mp3', '*mp3')))
@@ -184,7 +184,7 @@ class MainApp(ttk.Frame):
         canvas.get_tk_widget().pack()
 
     def operations(self, amp_amount, shift_amount, speed_amount, reverse_state, echo_state):
-        Utils.update_frame(self.ui_elements['modified_wave_frame'])
+        utility.update_frame(self.ui_elements['modified_wave_frame'])
 
         # create a new output WAV file to write the new modified audio data
         audio_obj = wave.open(self.output_file, 'wb')
@@ -238,13 +238,14 @@ class MainApp(ttk.Frame):
 
         # set the echo based on button state
         if echo_state:
-            AudioEffect.echo(self.output_file, self.output_file)
+            audio_effect.echo(self.output_file, self.output_file)
 
         # show a message when done modifying the file
         toast = ToastNotification(
             title="Output File Saved",
             message="Modified.wav Was Saved To Audio Output Folder",
             duration=3000,
+            alert=True,
         )
         toast.show_toast()
 
@@ -258,7 +259,7 @@ class MainApp(ttk.Frame):
         self.connection.commit()
 
     def apply_operations(self):
-        Utils.stop_audio()
+        utility.stop_audio()
         amp_value = self.ui_elements['amp_entry'].get()
         speed_value = self.ui_elements['speed_entry'].get()
         shift_value = self.ui_elements['shift_entry'].get()
@@ -301,7 +302,7 @@ class MainApp(ttk.Frame):
                 else:
                     messagebox.showinfo('Info', 'Apply Modification To The Audio File Then Play It')
                     return
-            Utils.winsound.PlaySound(audio_file, Utils.winsound.SND_FILENAME | Utils.winsound.SND_ASYNC)
+            utility.winsound.PlaySound(audio_file, utility.winsound.SND_FILENAME | utility.winsound.SND_ASYNC)
         else:
             messagebox.showwarning('Warning', 'Please Import Audio File First')
 
@@ -353,14 +354,14 @@ class HistoryWindow:
             mod_signal_info_list = org_signal_list_db.fetchall()
             for mod_signal_info in mod_signal_info_list:
                 # add the information of the  manipulation operation.
-                Utils.add_info_label(row, hist_fr, mod_signal_info[1], mod_signal_info[2], mod_signal_info[3],
-                                     mod_signal_info[4],
-                                     mod_signal_info[5], mod_signal_info[6])
+                utility.add_info_label(row, hist_fr, mod_signal_info[1], mod_signal_info[2], mod_signal_info[3],
+                                       mod_signal_info[4],
+                                       mod_signal_info[5], mod_signal_info[6])
                 # add the original signal in the row
-                Utils.add_img(org_signal[1], row, clm, hist_fr)
+                utility.add_img(org_signal[1], row, clm, hist_fr)
                 clm += 1
                 # add the modified signal
-                Utils.add_img(mod_signal_info[0], row, clm, hist_fr)
+                utility.add_img(mod_signal_info[0], row, clm, hist_fr)
                 row += 1
                 clm -= 1
 
@@ -465,22 +466,22 @@ class ConvolutionWindow:
                 self.tr_func_value_lb2.insert(0, str(p_rounded) + "  ")
 
     def apply_convolution(self, conv_val):
-        Utils.update_frame(self.mod_signal_frame)
-        Utils.update_frame(self.conv_signal_frame)
+        utility.update_frame(self.mod_signal_frame)
+        utility.update_frame(self.conv_signal_frame)
 
         # get the value of the option radiobutton
         option_val = str(self.zp_to_hs_text.get())
         if option_val == '1':
             # update the values each time the button is pressed
-            Utils.delete_entries(self.zeros_val_lb)
-            Utils.delete_entries(self.poles_val_lb)
+            utility.delete_entries(self.zeros_val_lb)
+            utility.delete_entries(self.poles_val_lb)
             self.zeros_val_lb.config(state="normal")
             self.poles_val_lb.config(state="normal")
             if self.trFuncValueLB.get() != "" and self.tr_func_value_lb2.get() != "":
                 self.lti_sys(1)
         if option_val == '2':
-            Utils.delete_entries(self.trFuncValueLB)
-            Utils.delete_entries(self.tr_func_value_lb2)
+            utility.delete_entries(self.trFuncValueLB)
+            utility.delete_entries(self.tr_func_value_lb2)
             self.trFuncValueLB.config(state="normal")
             self.tr_func_value_lb2.config(state="normal")
             if self.zeros_val_lb.get() != "" and self.poles_val_lb.get() != "":
@@ -501,10 +502,10 @@ class ConvolutionWindow:
         return
 
     def disable_box(self, num):
-        Utils.delete_entries(self.zeros_val_lb)
-        Utils.delete_entries(self.poles_val_lb)
-        Utils.delete_entries(self.trFuncValueLB)
-        Utils.delete_entries(self.tr_func_value_lb2)
+        utility.delete_entries(self.zeros_val_lb)
+        utility.delete_entries(self.poles_val_lb)
+        utility.delete_entries(self.trFuncValueLB)
+        utility.delete_entries(self.tr_func_value_lb2)
         if num == 1:
             self.zeros_val_lb.config(state="readonly")
             self.poles_val_lb.config(state="readonly")
