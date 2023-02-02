@@ -2,7 +2,7 @@
 /Audio Output
 /History
 
-# database files
+# Database files
 signals.db
 
 # Byte-compiled / optimized / DLL files
@@ -40,7 +40,6 @@ var/
 venv/
 ENV/
 
-### VirtualEnv template
 # Virtualenv
 [Bb]in
 [Ii]nclude
@@ -52,6 +51,7 @@ pyvenv.cfg
 .venv
 pip-selfcheck.json
 
+# Pycharm Idea Folder
 .idea/
 
 #ignore test files
