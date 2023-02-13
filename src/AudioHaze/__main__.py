@@ -27,7 +27,7 @@ parent_dir = Path(__file__).parent
 class MainApp(ttk.Frame):
     # initial parameters for audio file name and location
     file_directory = ''
-    directory_name = parent_dir / 'Audio Output'
+    directory_name = parent_dir.parents[1] / 'Audio Output'
     dark_mode_state = False
     output_file = str(directory_name / 'Modified.wav')
 
