@@ -21,7 +21,7 @@ from ttkbootstrap.toast import ToastNotification
 from src.AudioHaze import main_interface, audio_effect
 from src.AudioHaze import utility
 
-parent_dir = Path(__file__).parents[2]
+parent_dir = Path(__file__).parent
 
 
 class MainApp(ttk.Frame):

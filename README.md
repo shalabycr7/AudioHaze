@@ -15,6 +15,8 @@
 
     * You Need To Install `FFmpeg` From This
       Guide [Install FFmpeg on Windows](<https://www.wikihow.com/Install-FFmpeg-on-Windows>)
+    * Install [Visual C++ Redistributable for Visual Studio 2015
+      ](<https://www.microsoft.com/en-us/download/details.aspx?id=48145>)
 
 * ##### Required Packages
 
@@ -76,7 +78,6 @@
 - [x] Add Support For Stereo Files
 - [x] Remove Deprecated Audio Libraries/Functions
 - [x] Added Support For User Created Themes
-
 
 ### Supported Versions
 

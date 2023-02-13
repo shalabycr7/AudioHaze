@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 [tool.hatch.build]
 artifacts = [
-    "signals.db",
+    "src/AudioHaze/signals.db",
 ]
 
 [tool.hatch.version]
