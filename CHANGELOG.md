@@ -93,6 +93,17 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Beta / Unreleased]
 
+## V 0.2.4
+
+### Changed
+
+* Changed Files Paths :heavy_check_mark:
+
+### Fixed
+
+* Fixed Minor Issues :heavy_check_mark:
+* Fixed Not Able To Play Audio While Changing Theme :heavy_check_mark:
+
 ## V 0.2.3
 
 ### Changed
