@@ -123,7 +123,6 @@ class MainApp(ttk.Frame):
         # # hide the plotting frames every time we import
         self.original_plot_state = False
         self.modified_plot_state = False
-        utility.stop_audio()
         # open window to select file to get the path then save in variable directory
         filename = filedialog.askopenfilename(initialdir=self.file_directory, title="Select Audio File",
                                               filetypes=(('Wav', '*wav'), ('Mp3', '*mp3')))
@@ -287,7 +286,7 @@ class MainApp(ttk.Frame):
                 return
             self.operations(amp_amount, shift_amount, speed_amount, reverse_st, echo_st)
         else:
-            messagebox.showinfo('Warning', 'Please Import Audio File First And Set Valid Values')
+            messagebox.showinfo('Info', 'Please Import Audio File First And Set Valid Values')
             return
 
     def play_audio(self, indication):
