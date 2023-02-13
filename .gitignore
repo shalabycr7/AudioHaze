@@ -1,5 +1,6 @@
 # Output directory
-src/AudioHaze//Audio Output/History
+src/AudioHaze/Audio Output
+src/AudioHaze/History
 
 # Database files
 src/AudioHaze/signals.db
