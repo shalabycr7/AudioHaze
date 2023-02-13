@@ -18,9 +18,14 @@
     * Install [Visual C++ Redistributable for Visual Studio 2015
       ](<https://www.microsoft.com/en-us/download/details.aspx?id=48145>)
 
-* ##### Required Packages
 
-    * In Project Directory Open The Terminal And Type `pip install -r requirements.txt`
+### Running Locally Via [Github](https://github.com/shalabycr7/AudioHaze)
+You can Run This App Locally By Following These Steps:
+1. Clone/Download The [Repo](https://github.com/shalabycr7/AudioHaze)
+2. Open Cmd/Terminal And `cd` Into The Project Root Directory
+3. Execute ```pip install -e .```
+
+Now To Run The Application, Execute ```python -m AudioHaze```
 
 ### Core Features
 
