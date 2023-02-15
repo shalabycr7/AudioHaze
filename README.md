@@ -2,8 +2,6 @@
 
 # AudioHaze (An Audio Wave Processing App)
 
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/shalabycr7/Audio-Signal-Processing-App-GUI-in-Python)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/shalabycr7/Audio-Signal-Processing-App-GUI-in-Python)
 > This Is A Simple GUI Application To Manipulate Audio Files By Modifying The Audio Wave Form And Display It Using
 > Python
 
