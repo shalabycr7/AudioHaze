@@ -1,8 +1,9 @@
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from tkinter.constants import END, NW
 
-import winsound
+import pyttsx3
 from PIL import Image, ImageTk
+from pygame import mixer
 
 from src.AudioHaze.__main__ import HistoryWindow
 
@@ -39,7 +40,8 @@ def output_duration(length):
 
 
 def stop_audio():
-    winsound.PlaySound(None, winsound.SND_FILENAME)
+    mixer.init()
+    mixer.music.stop()
 
 
 def open_history_window():
@@ -80,3 +82,15 @@ def add_info_label(row, frame, date, amp, shift, speed, reverse, echo):
     shift_lib.pack(side="top", anchor=NW)
     speed_lib.pack(side="top", anchor=NW)
     reverse_lib.pack(side="top", anchor=NW)
+
+
+def tts(speach):
+    if speach == '':
+        messagebox.showinfo("Info", "Enter Some Text")
+        return
+    else:
+        engine = pyttsx3.init()
+        rate = engine.getProperty('rate')
+        engine.setProperty('rate', rate - 50)
+        engine.say(speach)
+        engine.runAndWait()

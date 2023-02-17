@@ -3,11 +3,11 @@ import sqlite3
 import struct
 import wave
 from pathlib import Path
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
+from pygame import mixer
 
 import matplotlib
 import numpy as np
-import pyttsx3
 import ttkbootstrap as ttk
 from matplotlib import style
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -127,11 +127,11 @@ class MainApp(ttk.Frame):
         filename = filedialog.askopenfilename(initialdir=self.file_directory, title="Select Audio File",
                                               filetypes=(('Wav', '*wav'), ('Mp3', '*mp3')))
         self.file_directory = filename
-        file_extension = Path(filename).suffix
-        if self.file_directory == '':
-            messagebox.showerror('Error', 'No File Was Selected')
+        if not len(self.file_directory):
+            utility.messagebox.showerror('Error', 'No File Was Selected')
             return
         else:
+            file_extension = Path(filename).suffix
             # convert mp3 file to wav, so it can be read
             if file_extension == '.mp3':
                 mp3_file = AudioSegment.from_mp3(file=self.file_directory)
@@ -279,14 +279,14 @@ class MainApp(ttk.Frame):
 
             # Validate input
             if speed_amount > 2 or speed_amount < 0.25:
-                messagebox.showinfo('Info', 'Speed Value Must Be Between 0.25 And 2')
+                utility.messagebox.showinfo('Info', 'Speed Value Must Be Between 0.25 And 2')
                 return
             if shift_amount < 0:
-                messagebox.showinfo('Info', 'Shift Value Must Be Positive')
+                utility.messagebox.showinfo('Info', 'Shift Value Must Be Positive')
                 return
             self.operations(amp_amount, shift_amount, speed_amount, reverse_st, echo_st)
         else:
-            messagebox.showinfo('Info', 'Please Import Audio File First And Set Valid Values')
+            utility.messagebox.showinfo('Info', 'Please Import Audio File First And Set Valid Values')
             return
 
     def play_audio(self, indication):
@@ -299,35 +299,16 @@ class MainApp(ttk.Frame):
                 if Path(self.output_file).is_file():
                     audio_file = self.output_file
                 else:
-                    messagebox.showinfo('Info', 'Apply Modification To The Audio File Then Play It')
+                    utility.messagebox.showinfo('Info', 'Apply Modification To The Audio File Then Play It')
                     return
-            utility.winsound.PlaySound(audio_file, utility.winsound.SND_FILENAME | utility.winsound.SND_ASYNC)
+            mixer.init()
+            mixer.music.load(audio_file)
+            mixer.music.play()
         else:
-            messagebox.showwarning('Warning', 'Please Import Audio File First')
-
-    def tts(self, speach):
-        if speach == '':
-            messagebox.showinfo("Info", "Enter Some Text")
-            return
-        else:
-            engine = pyttsx3.init()
-            engine.setProperty('rate', 150)  # setting up new voice rate
-            # say method on the engine that passing input text to be spoken
-            engine.say(speach)
-            # Saving Voice to a file
-            engine.save_to_file(speach, self.directory_name / 'Transcript.mp3')
-            toast = ToastNotification(
-                title="Output File Saved",
-                message="Transcript.mp3 Was Saved To Audio Output Folder",
-                duration=3000,
-            )
-            toast.show_toast()
-            # run and wait method, it processes the voice commands.
-            engine.runAndWait()
-            engine.stop()
+            utility.messagebox.showwarning('Warning', 'Please Import Audio File First')
 
     def open_tts_window(self):
-        TTSWindow(self.tts, self.dark_mode_state)
+        TTSWindow(utility.tts, self.dark_mode_state)
 
     def open_conv_window(self):
         ConvolutionWindow(self.plotting)

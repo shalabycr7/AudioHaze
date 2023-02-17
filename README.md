@@ -7,16 +7,21 @@
 
 ### Requirements
 
-* ##### Install FFmpeg
+### On Windows
 
-    * You Need To Install `FFmpeg` From This
-      Guide [Install FFmpeg on Windows](<https://www.wikihow.com/Install-FFmpeg-on-Windows>)
-    * Install [Visual C++ Redistributable for Visual Studio 2015
-      ](<https://www.microsoft.com/en-us/download/details.aspx?id=48145>)
+* You Need To Install `FFmpeg` From This
+  Guide [Install FFmpeg on Windows](<https://www.wikihow.com/Install-FFmpeg-on-Windows>)
+* Install [Visual C++ Redistributable for Visual Studio 2015
+  ](<https://www.microsoft.com/en-us/download/details.aspx?id=48145>)
 
+### On Linux
+
+* Make Sure `espeak` Is Installed On Your System By Executing `sudo apt-get install espeak`
 
 ### Running Locally Via [Github](https://github.com/shalabycr7/AudioHaze)
+
 You can Run This App Locally By Following These Steps:
+
 1. Clone/Download The [Repo](https://github.com/shalabycr7/AudioHaze)
 2. Open Cmd/Terminal And `cd` Into The Project Root Directory
 3. Execute ```pip install -e .```

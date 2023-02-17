@@ -104,6 +104,22 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Beta / Unreleased]
 
+## V 0.2.5
+
+### Added
+
+* Added Initial Support For Playing Async Audio On Linux Using `Pygame` :heavy_check_mark:
+    * > Only Fedora 37 Tested For Now
+
+### Fixed
+
+* Fixed An Issue Regarding Offline TTS  :heavy_check_mark:
+    * > Somthing Broke The New `pyttsx3` Library Update
+
+### Changed
+
+* Removed The Ability To Save TTS Transcript File Due To `espeak` Engine Unhandled Exception :heavy_check_mark:
+
 ## V 0.2.3
 
 ### Changed
