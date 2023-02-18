@@ -4,7 +4,6 @@ import struct
 import wave
 from pathlib import Path
 from tkinter import filedialog
-from pygame import mixer
 
 import matplotlib
 import numpy as np
@@ -54,6 +53,7 @@ class MainApp(ttk.Frame):
         super().__init__(master, **kwargs)
         self.pack(fill=BOTH, expand=YES)
         self.current_style = ttk.Style()
+        utility.mixer.init()
         self.make_output_directory()
         # load user created themes
         self.ui_elements = main_interface.create_main_ui(self, self.import_file,
@@ -301,9 +301,8 @@ class MainApp(ttk.Frame):
                 else:
                     utility.messagebox.showinfo('Info', 'Apply Modification To The Audio File Then Play It')
                     return
-            mixer.init()
-            mixer.music.load(audio_file)
-            mixer.music.play()
+            utility.mixer.music.load(audio_file)
+            utility.mixer.music.play()
         else:
             utility.messagebox.showwarning('Warning', 'Please Import Audio File First')
 

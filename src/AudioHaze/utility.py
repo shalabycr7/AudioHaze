@@ -40,7 +40,6 @@ def output_duration(length):
 
 
 def stop_audio():
-    mixer.init()
     mixer.music.stop()
 
 
