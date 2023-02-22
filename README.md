@@ -91,9 +91,10 @@ Now To Run The Application, Execute ```python -m AudioHaze```
 
 ### Supported Versions
 
-The App Was Tested On `Windows 11` And `Fedora 37` With The Following Version Of Python
+The App Was Tested With The Following Version Of Python
 
-| Version | Supported          |
-|---------|--------------------|
-| 3.10    | :white_check_mark: |
+| Version | Windows | Linux | MacOS |
+|---------|--------------------|--------------------|--------------------|
+| 3.11    | :white_check_mark: |:white_check_mark: |:white_check_mark: |
+| 3.10    | :white_check_mark: |:white_check_mark: |:white_check_mark: |
 
