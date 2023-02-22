@@ -5,6 +5,10 @@
 > This Is A Simple GUI Application To Manipulate Audio Files By Modifying The Audio Wave Form And Display It Using
 > Python
 
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/shalabycr7/AudioHaze)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/shalabycr7/AudioHaze)
+![GitHub forks](https://img.shields.io/github/forks/shalabycr7/AudioHaze?style=social)
+
 ### Requirements
 
 ### On Windows
