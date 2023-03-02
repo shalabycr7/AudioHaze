@@ -14,11 +14,11 @@ name = "AudioHaze"
 dynamic = ["version"]
 authors = [
     { name = "Abdulrahman Shalaby", email = "abdoshalaby.dev@gmail.com" },
-    { name = "Abdulrahman El Sharabasy", email = "abdomake@gmail.com" },
+    { name = "Abdulrahman El Sharabasy", email = "abdo.make73@gmail.com" },
 ]
 maintainers = [
     { name = "Abdulrahman Shalaby", email = "abdoshalaby.dev@gmail.com" },
-    { name = "Abdulrahman El Sharabasy", email = "abdomake@gmail.com" },
+    { name = "Abdulrahman El Sharabasy", email = "abdo.make73@gmail.com" },
 ]
 description = "This Is A Simple GUI Application To Manipulate Audio Files By Modifying The Audio Wave Form And Display It Using Python"
 readme = "README.md"
