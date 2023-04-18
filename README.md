@@ -22,7 +22,7 @@
 
 * Make Sure `espeak` Is Installed On Your System By Executing `sudo apt-get install espeak`
 
-### Running Locally Via [Github](https://github.com/shalabycr7/AudioHaze)
+### Running Locally Via [GitHub](https://github.com/shalabycr7/AudioHaze)
 
 You can Run This App Locally By Following These Steps:
 
@@ -93,8 +93,8 @@ Now To Run The Application, Execute ```python -m AudioHaze```
 
 The App Was Tested With The Following Version Of Python
 
-| Version | Windows | Linux | MacOS |
+| Version | Windows            | Linux              | MacOS              |
 |---------|--------------------|--------------------|--------------------|
-| 3.11    | :white_check_mark: |:white_check_mark: |:white_check_mark: |
-| 3.10    | :white_check_mark: |:white_check_mark: |:white_check_mark: |
+| 3.11    | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| 3.10    | :white_check_mark: | :white_check_mark: | :white_check_mark: |
 
