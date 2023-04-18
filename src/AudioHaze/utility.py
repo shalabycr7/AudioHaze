@@ -41,6 +41,7 @@ def output_duration(length):
 
 def stop_audio():
     mixer.music.stop()
+    mixer.music.unload()
 
 
 def open_history_window():
@@ -84,12 +85,11 @@ def add_info_label(row, frame, date, amp, shift, speed, reverse, echo):
 
 
 def tts(speach):
-    if speach == '':
+    if not speach:
         messagebox.showinfo("Info", "Enter Some Text")
         return
     else:
         engine = pyttsx3.init()
-        rate = engine.getProperty('rate')
-        engine.setProperty('rate', rate - 50)
+        engine.setProperty('rate', 100)
         engine.say(speach)
         engine.runAndWait()

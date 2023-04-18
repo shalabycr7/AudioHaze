@@ -4,6 +4,14 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Stable]
 
+## V 0.2.6
+
+### Fixed
+
+* Fixed An Issue Playing Audio File Async :heavy_check_mark:
+* Fixed Minor Bugs :heavy_check_mark:
+* Fixed Using Relative Paths :heavy_check_mark:
+
 ## V 0.2.5
 
 ### Added
@@ -19,7 +27,6 @@ All Notable Changes To This Project Will Be Documented In This File.
 ### Changed
 
 * Removed The Ability To Save TTS Transcript File Due To `espeak` Engine Unhandled Exception :heavy_check_mark:
-
 
 ## V 0.2.4
 

@@ -1,71 +1,73 @@
+from pathlib import Path
+
 import ttkbootstrap as ttk
 from ttkbootstrap import LINK, BOTH, TOP, RIGHT, W, LEFT, X, PRIMARY, VERTICAL, Y, E, SE, SW
 from ttkbootstrap.tooltip import ToolTip
 
 from src.AudioHaze import utility
-from src.AudioHaze.__main__ import parent_dir
 
 
 def create_main_ui(master, import_file=None, set_theme=None, apply_operations=None,
                    play_audio=None, open_tts_window=None, open_conv_window=None):
+    icons_folder = Path('Icons').resolve()
     master.images = [
         ttk.PhotoImage(
             name='openfile',
-            file=parent_dir / 'Icons/open-file-icon.png'),
+            file=icons_folder / 'open-file-icon.png'),
         ttk.PhotoImage(
             name='channels',
-            file=parent_dir / 'Icons/channels-icon.png'),
+            file=icons_folder / 'channels-icon.png'),
         ttk.PhotoImage(
             name='frameRate',
-            file=parent_dir / 'Icons/framerate-icon.png'),
+            file=icons_folder / 'framerate-icon.png'),
         ttk.PhotoImage(
             name='maxAmp',
-            file=parent_dir / 'Icons/max-amp-icon.png'),
+            file=icons_folder / 'max-amp-icon.png'),
         ttk.PhotoImage(
             name='import',
-            file=parent_dir / 'Icons/import-file.png'),
+            file=icons_folder / 'import-file.png'),
         ttk.PhotoImage(
             name='import-dark',
-            file=parent_dir / 'Icons/import-file-dark.png'),
+            file=icons_folder / 'import-file-dark.png'),
         ttk.PhotoImage(
             name='themeToggleDark',
-            file=parent_dir / 'Icons/darkIcon.png'),
+            file=icons_folder / 'darkIcon.png'),
         ttk.PhotoImage(
             name='themeToggleLight',
-            file=parent_dir / 'Icons/whiteIcon.png'),
+            file=icons_folder / 'whiteIcon.png'),
         ttk.PhotoImage(
             name='play',
-            file=parent_dir / 'Icons/play-button.png'),
+            file=icons_folder / 'play-button.png'),
         ttk.PhotoImage(
             name='stop',
-            file=parent_dir / 'Icons/stop-button.png'),
+            file=icons_folder / 'stop-button.png'),
         ttk.PhotoImage(
             name='convolution',
-            file=parent_dir / 'Icons/conv-button.png'),
+            file=icons_folder / 'conv-button.png'),
         ttk.PhotoImage(
             name='convolution-dark',
-            file=parent_dir / 'Icons/conv-button-dark.png'),
+            file=icons_folder / 'conv-button-dark.png'),
         ttk.PhotoImage(
             name='tts',
-            file=parent_dir / 'Icons/message-button.png'),
+            file=icons_folder / 'message-button.png'),
         ttk.PhotoImage(
             name='tts-dark',
-            file=parent_dir / 'Icons/message-button-dark.png'),
+            file=icons_folder / 'message-button-dark.png'),
         ttk.PhotoImage(
             name='history',
-            file=parent_dir / 'Icons/history-button.png'),
+            file=icons_folder / 'history-button.png'),
         ttk.PhotoImage(
             name='history-dark',
-            file=parent_dir / 'Icons/history-button-dark.png'),
+            file=icons_folder / 'history-button-dark.png'),
         ttk.PhotoImage(
             name='apply',
-            file=parent_dir / 'Icons/apply-button.png'),
+            file=icons_folder / 'apply-button.png'),
         ttk.PhotoImage(
             name='convert',
-            file=parent_dir / 'Icons/convert-button.png'),
+            file=icons_folder / 'convert-button.png'),
         ttk.PhotoImage(
             name='convert-dark',
-            file=parent_dir / 'Icons/convert-button-dark.png'),
+            file=icons_folder / 'convert-button-dark.png'),
     ]
     user_validation = master.register(utility.validation_callback)
     # app variables
@@ -239,7 +241,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
         image='play',
         compound=LEFT,
         bootstyle=LINK,
-        command=lambda: play_audio('mod'))
+        command=lambda: play_audio('MOD'))
     mod_play_btn.grid(row=4, column=1, sticky=SW, pady=100, padx=20)
     ToolTip(mod_play_btn, delay=1500, text="Play Modified Audio", bootstyle=PRIMARY)
     required_elements = {'original_wave_frame': original_wave_frame, 'modified_wave_frame': modified_wave_frame,

@@ -20,15 +20,13 @@ from ttkbootstrap.toast import ToastNotification
 from src.AudioHaze import main_interface, audio_effect
 from src.AudioHaze import utility
 
-parent_dir = Path(__file__).parent
-
 
 class MainApp(ttk.Frame):
     # initial parameters for audio file name and location
     file_directory = ''
-    directory_name = parent_dir.parents[1] / 'Audio Output'
+    output_directory_name = Path('Audio Output').resolve()
     dark_mode_state = False
-    output_file = str(directory_name / 'Modified.wav')
+    output_file = str(output_directory_name / 'Modified.wav')
 
     # initial parameters for audio file data
     original_file_data = {}
@@ -41,7 +39,7 @@ class MainApp(ttk.Frame):
     plot_img_title = ''
 
     # connect to database
-    connection = sqlite3.connect(parent_dir / 'signals.db')
+    connection = sqlite3.connect(Path('signals.db').resolve())
     db = connection.cursor()
 
     # start the image counter at an appropriate number.
@@ -53,21 +51,26 @@ class MainApp(ttk.Frame):
         super().__init__(master, **kwargs)
         self.pack(fill=BOTH, expand=YES)
         self.current_style = ttk.Style()
+
+        # start the pygame engine to play sound files
         utility.mixer.init()
+
+        # create 'Audio Output' & 'History'
         self.make_output_directory()
-        # load user created themes
+
         self.ui_elements = main_interface.create_main_ui(self, self.import_file,
                                                          self.set_theme, self.apply_operations, self.play_audio,
                                                          self.open_tts_window, self.open_conv_window)
         self.set_theme()
 
     def make_output_directory(self):
-        Path(parent_dir / 'History').mkdir(exist_ok=True)
-        Path(self.directory_name).mkdir(exist_ok=True)
+        Path('History').resolve().mkdir(exist_ok=True)
+        Path(self.output_directory_name).mkdir(exist_ok=True)
 
     def set_theme(self):
         utility.update_frame(self.ui_elements['original_wave_frame'])
         utility.update_frame(self.ui_elements['modified_wave_frame'])
+
         # toggle between dark and light mode
         if self.dark_mode_state:
             self.current_style.theme_use('midnight')
@@ -85,11 +88,13 @@ class MainApp(ttk.Frame):
             self.ui_elements['theme_btn'].config(image='themeToggleDark')
             self.ui_elements['tts_btn'].config(image='tts')
             self.dark_mode_state = True
+
         # set global font size for widgets
         self.current_style.configure('TLabel', font='-family Barlow -size 10')
         self.current_style.configure('TButton', font='-family Barlow -size 11')
         self.current_style.configure('TMenubutton', font='-family Barlow -size 10')
         self.current_style.configure('TNotebook.Tab', font='-family Barlow -size 10')
+
         # re-plot the data upon theme changing
         if self.original_plot_state:
             self.plotting(None, self.original_file_data[5], self.original_file_data[4],
@@ -103,7 +108,7 @@ class MainApp(ttk.Frame):
     def read_file(self, file, indicator):
         # create a dictionary to hold file data
         data_dict = {1: file.channels, 2: file.frame_rate, 3: file.frame_count(),
-                     4: np.frombuffer(file.raw_data, 'int16')}
+                     4: np.frombuffer(file.raw_data, 'int16'), 6: file.sample_width}
         time = np.linspace(0, len(data_dict.get(4)) / data_dict.get(2),
                            num=len(data_dict.get(4)))
         data_dict.update({5: time})
@@ -112,6 +117,7 @@ class MainApp(ttk.Frame):
             duration = data_dict.get(3) / float(data_dict.get(2))
             hours, minutes, seconds = utility.output_duration(int(duration))
             total_time = f'{hours}:{minutes}:{seconds}'
+
             # display the duration
             self.ui_elements['length_lb'].config(text=total_time)
         return data_dict
@@ -123,32 +129,38 @@ class MainApp(ttk.Frame):
         # # hide the plotting frames every time we import
         self.original_plot_state = False
         self.modified_plot_state = False
+
         # open window to select file to get the path then save in variable directory
-        filename = filedialog.askopenfilename(initialdir=self.file_directory, title="Select Audio File",
-                                              filetypes=(('Wav', '*wav'), ('Mp3', '*mp3')))
-        self.file_directory = filename
+        self.file_directory = filedialog.askopenfilename(initialdir=self.file_directory, title="Select Audio File",
+                                                         filetypes=(('Wav', '*wav'), ('Mp3', '*mp3')))
         if not len(self.file_directory):
             utility.messagebox.showerror('Error', 'No File Was Selected')
             return
         else:
-            file_extension = Path(filename).suffix
+            file_extension = Path(self.file_directory).suffix
+
             # convert mp3 file to wav, so it can be read
             if file_extension == '.mp3':
                 mp3_file = AudioSegment.from_mp3(file=self.file_directory)
-                mp3_file.export(self.directory_name / 'Mp3converted.wav', format='wav')
-                self.file_directory = self.directory_name / 'Mp3converted.wav'
+                mp3_file.export(self.output_directory_name / 'Mp3converted.wav', format='wav')
+                self.file_directory = str(self.output_directory_name / 'Mp3converted.wav')
+
+            # read the imported file
             wav_original = AudioSegment.from_file(file=self.file_directory)
             self.original_file_data = self.read_file(wav_original, 'original')
+
             # update displayed File info
             self.ui_elements['file_type_val'].config(text=file_extension)
             self.ui_elements['file_channels_val'].config(text=self.original_file_data.get(1))
             self.ui_elements['file_frames_val'].config(text=self.original_file_data.get(2))
             self.ui_elements['file_max_amp_val'].config(text=wav_original.max)
+
             # start plotting
             self.plotting(None, self.original_file_data.get(5), self.original_file_data.get(4),
                           self.ui_elements['original_wave_frame'],
                           'Original Audio')
             self.original_plot_state = True
+
             # Set echo options on if the file is stereo
             if self.original_file_data.get(1) == 2:
                 self.ui_elements['echo_toggle'].config(state='!selected')
@@ -163,7 +175,7 @@ class MainApp(ttk.Frame):
         figure_subplot.grid(alpha=0.4)
         figure_subplot.set_title(title)
 
-        self.plot_img_title = parent_dir / 'History' / ("img" + str(self.img_count) + ".png")
+        self.plot_img_title = Path('History').resolve() / ("img" + str(self.img_count) + ".png")
         if targeted_signal is not None:
             figure_subplot.plot(targeted_signal, color='blue')
         else:
@@ -188,7 +200,7 @@ class MainApp(ttk.Frame):
         # create a new output WAV file to write the new modified audio data
         audio_obj = wave.open(self.output_file, 'wb')
         audio_obj.setnchannels(self.original_file_data.get(1))
-        audio_obj.setsampwidth(2)
+        audio_obj.setsampwidth(self.original_file_data.get(6))
 
         # changing audio speed
         speed = self.original_file_data.get(2) * speed_amount
@@ -197,12 +209,10 @@ class MainApp(ttk.Frame):
         # Shifting audio process
         for i in range(int(self.original_file_data.get(2) * shift_amount)):
             zero_in_byte = struct.pack('<h', 0)
-            audio_obj.writeframesraw(zero_in_byte)
+            audio_obj.writeframes(zero_in_byte)
 
-        # Amplification process
+        # Amplification & Reverse process
         n = len(self.original_file_data.get(4))
-
-        # Reverse process
         if reverse_state:
             for i in range(self.original_file_data.get(4).__len__()):
                 two_byte_sample = self.original_file_data.get(4)[n - 1 - i] * amp_amount
@@ -211,7 +221,7 @@ class MainApp(ttk.Frame):
                 if two_byte_sample < -32760:
                     two_byte_sample = -32760
                 sample = struct.pack('<h', int(two_byte_sample))
-                audio_obj.writeframesraw(sample)
+                audio_obj.writeframes(sample)
         else:
             for i in range(self.original_file_data.get(4).__len__()):
                 if self.original_file_data.get(4)[i] * amp_amount > 32760:
@@ -221,9 +231,9 @@ class MainApp(ttk.Frame):
                 else:
                     two_byte_sampler = self.original_file_data.get(4)[i] * amp_amount
                 sample = struct.pack('<h', int(two_byte_sampler))
-                audio_obj.writeframesraw(sample)
+                audio_obj.writeframes(sample)
 
-        # close and save the modified output file
+        # close the stream of the modified output file
         audio_obj.close()
 
         audio_file = AudioSegment.from_file(file=self.output_file, format="wav")
@@ -262,49 +272,46 @@ class MainApp(ttk.Frame):
         amp_value = self.ui_elements['amp_entry'].get()
         speed_value = self.ui_elements['speed_entry'].get()
         shift_value = self.ui_elements['shift_entry'].get()
-        # check if the user had entered values or not, if so process them, if not show an error message
-        if self.file_directory != '' and amp_value != '' and speed_value != '' and shift_value != '':
-            # get the values from entry box
-            amp_amount = float(amp_value)
-            shift_amount = float(shift_value)
-            speed_amount = float(speed_value)
-            if self.ui_elements['rev_state'].get() == 'revOn':
-                reverse_st = True
-            else:
-                reverse_st = False
-            if self.ui_elements['echo_state'].get() == 'echoOn' and self.original_file_data.get(1) == 2:
-                echo_st = True
-            else:
-                echo_st = False
 
-            # Validate input
-            if speed_amount > 2 or speed_amount < 0.25:
-                utility.messagebox.showinfo('Info', 'Speed Value Must Be Between 0.25 And 2')
-                return
-            if shift_amount < 0:
-                utility.messagebox.showinfo('Info', 'Shift Value Must Be Positive')
-                return
-            self.operations(amp_amount, shift_amount, speed_amount, reverse_st, echo_st)
-        else:
+        # check if the user had entered values or not, if so process them, if not show an error message
+        if not len(self.file_directory) or not len(amp_value) or not len(speed_value) or not len(shift_value):
             utility.messagebox.showinfo('Info', 'Please Import Audio File First And Set Valid Values')
             return
 
+        # get the values from entry box
+        amp_amount = float(amp_value)
+        shift_amount = float(shift_value)
+        speed_amount = float(speed_value)
+        if self.ui_elements['rev_state'].get() == 'revOn':
+            reverse_st = True
+        else:
+            reverse_st = False
+        if self.ui_elements['echo_state'].get() == 'echoOn' and self.original_file_data.get(1) == 2:
+            echo_st = True
+        else:
+            echo_st = False
+
+        # check for audio speed input
+        if speed_amount > 2 or speed_amount < 0.25:
+            utility.messagebox.showinfo('Info', 'Speed Value Is Advised To Be Between 0.25 And 2')
+
+        self.operations(amp_amount, shift_amount, speed_amount, reverse_st, echo_st)
+
     def play_audio(self, indication):
         # check if a file has been imported then play it, if not show an error message
-        if self.file_directory != '':
-            # toggle between playing the original file or the modified version
-            if indication == 'OG':
-                audio_file = str(self.file_directory)
-            else:
-                if Path(self.output_file).is_file():
-                    audio_file = self.output_file
-                else:
-                    utility.messagebox.showinfo('Info', 'Apply Modification To The Audio File Then Play It')
-                    return
-            utility.mixer.music.load(audio_file)
-            utility.mixer.music.play()
-        else:
+        if not len(self.file_directory):
             utility.messagebox.showwarning('Warning', 'Please Import Audio File First')
+            return
+        else:
+            if indication == "OG":
+                audio_file = str(self.file_directory)
+            elif indication == "MOD" and Path(self.output_file).is_file() and self.modified_plot_state:
+                audio_file = str(self.output_file)
+            else:
+                utility.messagebox.showinfo('Info', 'Apply Modification To The Audio File Then Play It')
+                return
+        utility.mixer.music.load(audio_file)
+        utility.mixer.music.play()
 
     def open_tts_window(self):
         TTSWindow(utility.tts, self.dark_mode_state)
@@ -321,6 +328,7 @@ class HistoryWindow:
         # creat a main frame.
         hist_fr = ScrolledFrame(new_conv_window, autohide=True)
         hist_fr.pack(side=TOP, expand=True, fill=BOTH)
+
         # fetch the data from the database
         org_signal_list_db = MainApp.db.execute("SELECT id, name FROM org")
         org_signal_list = org_signal_list_db.fetchall()
@@ -395,15 +403,19 @@ class ConvolutionWindow:
         notebook.add(transfer_func_frame, text='Transfer Function')
 
         ttk.Label(select_wave_frame, text='Select Impulse Response').pack(side=TOP)
+
         # menu selection
         self.select_wave_menu = ttk.Menubutton(select_wave_frame, text='Select Wave', bootstyle=(PRIMARY, OUTLINE))
         self.select_wave_menu.pack(side=TOP, pady=20)
+
         # create menu
         menu = ttk.Menu(self.select_wave_menu)
+
         # add options
         option_var = ttk.StringVar()
         for option in ['Sine Wave', 'Rec Wave']:
             menu.add_radiobutton(label=option, value=option, variable=option_var)
+
         # associate menu with menubutton
         self.select_wave_menu['menu'] = menu
 
@@ -423,8 +435,10 @@ class ConvolutionWindow:
             # get the values of the textbox as an array
             num = list(map(float, self.trFuncValueLB.get().strip().split()))
             den = list(map(float, self.tr_func_value_lb2.get().strip().split()))
+
             # represent the lti_system as transfer function
             lti_system = signal.lti(num, den)
+
             # display the values in the textbox after rounding
             for z in lti_system.zeros:
                 z_rounded = np.round(z, 2)
@@ -435,6 +449,7 @@ class ConvolutionWindow:
         else:
             zeros = list(map(int, self.zeros_val_lb.get().strip().split()))
             poles = list(map(int, self.poles_val_lb.get().strip().split()))
+
             # get the num and den from the z and p
             hs_rep = signal.zpk2tf(zeros, poles, k=1)
             for z in hs_rep[0]:
@@ -458,7 +473,7 @@ class ConvolutionWindow:
             self.poles_val_lb.config(state="normal")
             if self.trFuncValueLB.get() != "" and self.tr_func_value_lb2.get() != "":
                 self.lti_sys(1)
-        if option_val == '2':
+        elif option_val == '2':
             utility.delete_entries(self.trFuncValueLB)
             utility.delete_entries(self.tr_func_value_lb2)
             self.trFuncValueLB.config(state="normal")
@@ -502,6 +517,7 @@ class TTSWindow:
         new_window = Toplevel(title='Text To Speach', size=[400, 200], resizable=[False, False])
         self.speach_func = speach_func
         new_window.place_window_center()
+
         # A Label widget to show in toplevel
         ttk.Label(new_window, text="Please Write The Transcript").pack(pady=10)
         tts_value_lb = ttk.Entry(new_window, justify="center", font='-family Barlow -size 10')
@@ -523,9 +539,12 @@ class TTSWindow:
 if __name__ == '__main__':
     window_width = 1200
     window_height = 700
-    app = ttk.Window(title='AudioHaze', iconphoto=str(parent_dir / 'Icons/favIcon.png'),
+    app = ttk.Window(title='AudioHaze', iconphoto=str(Path('Icons/favIcon.png').resolve()),
                      size=[window_width, window_height])
     app.place_window_center()
-    app.style.load_user_themes(parent_dir / 'user.json')
+
+    # load user created themes
+    app.style.load_user_themes(Path('user.json').resolve())
+
     MainApp(app)
     app.mainloop()
