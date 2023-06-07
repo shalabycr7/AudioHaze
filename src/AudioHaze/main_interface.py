@@ -9,64 +9,15 @@ from . import utility
 def create_main_ui(master, import_file=None, set_theme=None, apply_operations=None,
                    play_audio=None, open_tts_window=None, open_conv_window=None, stop_audio=None):
     icons_folder = Path('Icons')
+    icon_names = [
+        'open-file', 'channels', 'frame-rate', 'max-amp', 'import-file', 'import-file-dark',
+        'theme-toggle-dark', 'theme-toggle', 'play-button', 'stop-button', 'conv-button',
+        'conv-button-dark', 'tts', 'tts-dark', 'history-button', 'history-button-dark', 'apply-button',
+        'convert-button', 'convert-button-dark'
+    ]
     master.images = [
-        ttk.PhotoImage(
-            name='openfile',
-            file=icons_folder / 'open-file-icon.png'),
-        ttk.PhotoImage(
-            name='channels',
-            file=icons_folder / 'channels-icon.png'),
-        ttk.PhotoImage(
-            name='frameRate',
-            file=icons_folder / 'frame-rate-icon.png'),
-        ttk.PhotoImage(
-            name='maxAmp',
-            file=icons_folder / 'max-amp-icon.png'),
-        ttk.PhotoImage(
-            name='import',
-            file=icons_folder / 'import-file.png'),
-        ttk.PhotoImage(
-            name='import-dark',
-            file=icons_folder / 'import-file-dark.png'),
-        ttk.PhotoImage(
-            name='themeToggleDark',
-            file=icons_folder / 'darkIcon.png'),
-        ttk.PhotoImage(
-            name='themeToggleLight',
-            file=icons_folder / 'whiteIcon.png'),
-        ttk.PhotoImage(
-            name='play',
-            file=icons_folder / 'play-button.png'),
-        ttk.PhotoImage(
-            name='stop',
-            file=icons_folder / 'stop-button.png'),
-        ttk.PhotoImage(
-            name='convolution',
-            file=icons_folder / 'conv-button.png'),
-        ttk.PhotoImage(
-            name='convolution-dark',
-            file=icons_folder / 'conv-button-dark.png'),
-        ttk.PhotoImage(
-            name='tts',
-            file=icons_folder / 'message-button.png'),
-        ttk.PhotoImage(
-            name='tts-dark',
-            file=icons_folder / 'message-button-dark.png'),
-        ttk.PhotoImage(
-            name='history',
-            file=icons_folder / 'history-button.png'),
-        ttk.PhotoImage(
-            name='history-dark',
-            file=icons_folder / 'history-button-dark.png'),
-        ttk.PhotoImage(
-            name='apply',
-            file=icons_folder / 'apply-button.png'),
-        ttk.PhotoImage(
-            name='convert',
-            file=icons_folder / 'convert-button.png'),
-        ttk.PhotoImage(
-            name='convert-dark',
-            file=icons_folder / 'convert-button-dark.png'),
+        ttk.PhotoImage(name=name, file=icons_folder.joinpath(f'{name}-icon.png'))
+        for name in icon_names
     ]
     user_validation = master.register(utility.validation_callback)
     # app variables
@@ -82,7 +33,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
     ttk.Label(hdr_btn_frame, text='Audio File Overview', font="-family Barlow -size 13").pack(side='left')
     import_btn = ttk.Button(
         master=hdr_btn_frame,
-        image='import',
+        image='import-file',
         compound='left',
         bootstyle='link',
         command=import_file
@@ -91,7 +42,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
 
     theme_btn = ttk.Button(
         master=hdr_btn_frame,
-        image='themeToggleDark',
+        image='theme-toggle-dark',
         bootstyle='link',
         command=set_theme
     )
@@ -102,7 +53,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
     file_overview_frame.pack(fill='x', padx=5)
     file_name_frame = ttk.Frame(file_overview_frame)
     file_name_frame.pack(side='left', padx=(0, 20))
-    file_name_icon = ttk.Label(master=file_name_frame, image='openfile')
+    file_name_icon = ttk.Label(master=file_name_frame, image='open-file')
     file_name_icon.grid(row=0, column=0, rowspan=2)
     file_type_val = ttk.Label(file_name_frame, text='Unknown')
     file_type_val.grid(row=0, column=1, sticky='w', padx=5)
@@ -117,7 +68,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
 
     file_frames_frame = ttk.Frame(file_overview_frame, )
     file_frames_frame.pack(side='left', padx=20)
-    file_frames_icon = ttk.Label(master=file_frames_frame, image='frameRate')
+    file_frames_icon = ttk.Label(master=file_frames_frame, image='frame-rate')
     file_frames_icon.grid(row=0, column=0, rowspan=2)
     file_frames_val = ttk.Label(file_frames_frame, text='0')
     file_frames_val.grid(row=0, column=1, sticky='w', padx=5)
@@ -125,7 +76,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
 
     file_max_amp_frame = ttk.Frame(file_overview_frame, )
     file_max_amp_frame.pack(side='left', padx=20)
-    file_max_amp_icon = ttk.Label(master=file_max_amp_frame, image='maxAmp')
+    file_max_amp_icon = ttk.Label(master=file_max_amp_frame, image='max-amp')
     file_max_amp_icon.grid(row=0, column=0, rowspan=2)
     file_max_amp_val = ttk.Label(file_max_amp_frame, text='0')
     file_max_amp_val.grid(row=0, column=1, sticky='w', padx=5)
@@ -138,7 +89,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
     open_conv_btn = ttk.Button(
         master=file_action_frame,
         text=' Convolution',
-        image='convolution',
+        image='conv-button',
         compound='left',
         bootstyle='link',
         command=open_conv_window
@@ -148,7 +99,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
     open_history_btn = ttk.Button(
         master=file_action_frame,
         text=' History',
-        image='history',
+        image='history-button',
         compound='left',
         bootstyle='link',
         command=utility.open_history_window
@@ -157,7 +108,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
 
     og_play_btn = ttk.Button(
         master=file_action_frame,
-        image='play',
+        image='play-button',
         compound='left',
         bootstyle='link',
         command=lambda: play_audio('OG')
@@ -166,7 +117,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
     og_play_btn.pack(side='right', padx=20)
     stop_btn = ttk.Button(
         master=file_action_frame,
-        image='stop',
+        image='stop-button',
         compound='left',
         bootstyle='link',
         command=stop_audio
@@ -227,7 +178,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
     apply_operations_btn = ttk.Button(
         master=operations_frame,
         text=' Apply',
-        image='apply',
+        image='apply-button',
         compound='left',
         bootstyle='link',
         command=apply_operations
@@ -237,7 +188,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
     mod_play_btn = ttk.Button(
         master=operations_frame,
         text=' Play',
-        image='play',
+        image='play-button',
         compound='left',
         bootstyle='link',
         command=lambda: play_audio('MOD'))

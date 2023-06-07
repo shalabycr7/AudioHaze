@@ -35,7 +35,6 @@ class AudioPlayer:
 
         while self.playing and sd.get_stream().active:
             pass
-
         sd.stop()
 
     def stop(self):
@@ -70,6 +69,8 @@ class MainApp(ttk.Frame):
 
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
+        self.thread = None
+        self.audio_player = None
         self.pack(fill='both', expand=1)
         self.current_style = ttk.Style()
 
@@ -89,59 +90,95 @@ class MainApp(ttk.Frame):
         Path(self.output_directory_name).mkdir(exist_ok=True)
 
     def set_theme(self):
-        utility.update_frame(self.ui_elements['original_wave_frame'])
-        utility.update_frame(self.ui_elements['modified_wave_frame'])
+        font_size = 10
+        theme_name = 'midnight' if self.dark_mode_state else 'litera'
+        theme_images = {
+            True: {
+                'toggle': 'theme-toggle-dark',
+                'import': 'import-file-dark',
+                'conv': 'conv-button-dark',
+                'history': 'history-button-dark',
+                'tts': 'tts-dark',
+            },
+            False: {
+                'toggle': 'theme-toggle',
+                'import': 'import-file',
+                'conv': 'conv-button',
+                'history': 'history-button',
+                'tts': 'tts',
+            },
+        }
+        current_images = theme_images[self.dark_mode_state]
 
-        # toggle between dark and light mode
-        if self.dark_mode_state:
-            self.current_style.theme_use('midnight')
-            self.ui_elements['theme_btn'].config(image='themeToggleLight')
-            self.ui_elements['import_btn'].config(image='import-dark')
-            self.ui_elements['open_conv_btn'].config(image='convolution-dark')
-            self.ui_elements['open_history_btn'].config(image='history-dark')
-            self.ui_elements['tts_btn'].config(image='tts-dark')
-            self.dark_mode_state = False
-        else:
-            self.current_style.theme_use('litera')
-            self.ui_elements['import_btn'].config(image='import')
-            self.ui_elements['open_conv_btn'].config(image='convolution')
-            self.ui_elements['open_history_btn'].config(image='history')
-            self.ui_elements['theme_btn'].config(image='themeToggleDark')
-            self.ui_elements['tts_btn'].config(image='tts')
-            self.dark_mode_state = True
+        for frame in (self.ui_elements['original_wave_frame'], self.ui_elements['modified_wave_frame']):
+            utility.update_frame(frame)
 
-        # set global font size for widgets
-        self.current_style.configure('TLabel', font='-family Barlow -size 10')
-        self.current_style.configure('TButton', font='-family Barlow -size 11')
-        self.current_style.configure('TMenubutton', font='-family Barlow -size 10')
-        self.current_style.configure('TNotebook.Tab', font='-family Barlow -size 10')
+        self.current_style.theme_use(theme_name)
+        self.ui_elements['theme_btn'].config(image=current_images['toggle'])
+        self.ui_elements['import_btn'].config(image=current_images['import'])
+        self.ui_elements['open_conv_btn'].config(image=current_images['conv'])
+        self.ui_elements['open_history_btn'].config(image=current_images['history'])
+        self.ui_elements['tts_btn'].config(image=current_images['tts'])
+        self.dark_mode_state = not self.dark_mode_state
 
-        # re-plot the data upon theme changing
-        if self.original_plot_state:
-            self.plotting(None, self.original_file_data[5], self.original_file_data[4],
-                          self.ui_elements['original_wave_frame'],
-                          'Original Audio')
-        if self.modified_plot_state:
-            self.plotting(None, self.modified_file_data.get(5), self.modified_file_data.get(4),
-                          self.ui_elements['modified_wave_frame'],
-                          'Modified Audio')
+        font_configurations = [
+            ('TLabel', f'-family Barlow -size {font_size}'),
+            ('TButton', f'-family Barlow -size {font_size + 1}'),
+            ('TMenubutton', f'-family Barlow -size {font_size}'),
+            ('TNotebook.Tab', f'-family Barlow -size {font_size}'),
+        ]
+        for widget_type, font_config in font_configurations:
+            self.current_style.configure(widget_type, font=font_config)
+
+        plots = [
+            {
+                'plot_state': self.original_plot_state,
+                'file_data': self.original_file_data,
+                'frame': self.ui_elements['original_wave_frame'],
+                'title': 'Original Audio',
+            },
+            {
+                'plot_state': self.modified_plot_state,
+                'file_data': self.modified_file_data,
+                'frame': self.ui_elements['modified_wave_frame'],
+                'title': 'Modified Audio',
+            },
+        ]
+        for plot in plots:
+            if plot['plot_state']:
+                self.plotting(
+                    None,
+                    plot['file_data'].get(5),
+                    plot['file_data'].get(4),
+                    plot['frame'],
+                    plot['title']
+                )
 
     def read_file(self, file, indicator):
         # create a dictionary to hold file data
-        data_dict = {1: file.channels, 2: file.frame_rate, 3: file.frame_count(),
-                     4: np.frombuffer(file.raw_data, 'int16'), 6: file.sample_width}
-        time = np.linspace(0, len(data_dict.get(4)) / data_dict.get(2),
-                           num=len(data_dict.get(4)))
-        data_dict.update({5: time})
-        if indicator == 'original':
-            # get the duration of the audio file
-            duration = data_dict.get(3) / float(data_dict.get(2))
-            hours, minutes, seconds = utility.output_duration(int(duration))
-            total_time = f'{hours}:{minutes}:{seconds}'
+        data_dict = {
+            1: file.channels,
+            2: file.frame_rate,
+            3: file.frame_count(),
+            4: np.frombuffer(file.raw_data, 'int16'),
+            6: file.sample_width,
+        }
+        time = np.linspace(0, len(data_dict[4]) / data_dict[2], num=len(data_dict[4]))
+        data_dict[5] = time
 
-            # display the duration
-            self.ui_elements['length_lb'].config(text=total_time)
+        if indicator == 'original':
+            self.display_audio_duration(data_dict)
+
         return data_dict
+
+    def display_audio_duration(self, data_dict):
+        # get the duration of the audio file
+        duration = data_dict[3] / float(data_dict[2])
+        hours, minutes, seconds = utility.output_duration(int(duration))
+        total_time = f'{hours}:{minutes}:{seconds}'
+
+        # display the duration
+        self.ui_elements['length_lb'].config(text=total_time)
 
     def import_file(self):
         utility.update_frame(self.ui_elements['original_wave_frame'])
@@ -289,7 +326,8 @@ class MainApp(ttk.Frame):
         self.connection.commit()
 
     def apply_operations(self):
-        self.stop_playback()
+        if self.audio_player:
+            self.stop_playback()
         amp_value = self.ui_elements['amp_entry'].get()
         speed_value = self.ui_elements['speed_entry'].get()
         shift_value = self.ui_elements['shift_entry'].get()
@@ -357,11 +395,6 @@ class MainApp(ttk.Frame):
     def stop_playback(self):
         self.audio_player.stop()
 
-    def bb(self, file_path):
-        data, fs = sf.read(file_path, dtype='float32')
-        sd.play(data, fs)
-        status = sd.wait()
-
     def open_tts_window(self):
         TTSWindow(utility.tts, self.dark_mode_state)
 
@@ -374,7 +407,7 @@ class HistoryWindow:
         new_conv_window = Toplevel(title='History', size=[1200, 740])
         new_conv_window.place_window_center()
 
-        # creat a main frame.
+        # create a main frame.
         hist_fr = ScrolledFrame(new_conv_window, autohide=True)
         hist_fr.pack(side='top', expand=True, fill='both')
 
@@ -589,12 +622,12 @@ class TTSWindow:
 if __name__ == '__main__':
     window_width = 1200
     window_height = 700
-    app = ttk.Window(title='AudioHaze', iconphoto=str(Path('Icons/favIcon.png').resolve()),
+    app = ttk.Window(title='AudioHaze', iconphoto=str(Path('./Icons/favIcon.png')),
                      size=[window_width, window_height])
     app.place_window_center()
 
     # load user created themes
-    app.style.load_user_themes(Path('user.json').resolve())
+    app.style.load_user_themes(Path('./user.json'))
 
     MainApp(app)
     app.mainloop()
