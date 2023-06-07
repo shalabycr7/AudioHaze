@@ -85,3 +85,6 @@ def tts(speech: str):
     engine.say(speech)
     engine.runAndWait()
     engine.stop()
+
+def update_menu_text(menu_button, selected_option):
+    menu_button.configure(text=selected_option)

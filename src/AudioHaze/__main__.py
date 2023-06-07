@@ -6,10 +6,13 @@ import wave
 from pathlib import Path
 from tkinter import filedialog
 
+# from ttkbootstrap.toast import ToastNotification
+import matplotlib.pyplot as plt
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
 import ttkbootstrap as ttk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from pydub import AudioSegment
 from scipy import signal
 from ttkbootstrap import Toplevel
@@ -17,9 +20,6 @@ from ttkbootstrap.scrolled import ScrolledFrame
 from ttkbootstrap.toast import ToastNotification
 
 from AudioHaze import main_interface, audio_effect, utility
-
-
-# from ttkbootstrap.toast import ToastNotification
 
 
 class AudioPlayer:
@@ -30,7 +30,7 @@ class AudioPlayer:
     def play(self):
         if not self.playing:
             self.playing = True
-            self.thread = threading.Thread(target=self._play)
+            self.thread = threading.Thread(target=self._play, daemon=True)
             self.thread.start()
 
     def _play(self):
@@ -222,7 +222,6 @@ class MainApp(ttk.Frame):
         self.ui_elements['echo_toggle'].config(state='!selected' if self.original_file_data.get(1) == 2 else 'disabled')
 
     def plotting(self, targeted_signal, time, raw, place, title):
-        import matplotlib.pyplot as plt
 
         # Set the plot style based on the dark mode state
         plt.style.use('dark_background' if not self.dark_mode_state else 'default')
@@ -239,7 +238,7 @@ class MainApp(ttk.Frame):
         else:
             # Otherwise, plot the raw data
             ax.plot(time, raw, color='blue')
-            plt.close()
+
             # Save the figure to disk and update the image count
             self.plot_img_title = Path('History') / ("img" + str(self.img_count) + ".png")
             fig.savefig(self.plot_img_title)
@@ -253,8 +252,8 @@ class MainApp(ttk.Frame):
                 org_id_db = self.db.execute("SELECT id FROM org WHERE name = ?", text)
                 self.original_id = org_id_db.fetchone()[0]
 
+        plt.close()
         # Create a canvas to display the plot in the UI frame
-        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
         canvas = FigureCanvasTkAgg(fig, master=place)
         canvas.draw()
         canvas.get_tk_widget().pack()
@@ -341,27 +340,32 @@ class MainApp(ttk.Frame):
             utility.messagebox.showinfo('Info', 'Please Import Audio File First And Set Valid Values')
             return
 
-        # Convert values to the appropriate data types
-        amp_amount = float(amp_value)
-        shift_amount = float(shift_value)
-        speed_amount = float(speed_value)
-        reverse_st = self.ui_elements['rev_state'].get() == 'revOn'
-        echo_st = self.ui_elements['echo_state'].get() == 'echoOn' and self.original_file_data.get(1) == 2
+        try:
+            # Convert values to the appropriate data types
+            amp_amount = float(amp_value)
+            shift_amount = float(shift_value)
+            speed_amount = float(speed_value)
 
-        # Check if speed input is within the recommended range
-        if speed_amount > 2 or speed_amount < 0.25:
-            utility.messagebox.showinfo('Info', 'Speed Value Is Advised To Be Between 0.25 And 2')
+            # Check if speed input is within the recommended range
+            if speed_amount > 2 or speed_amount < 0.25:
+                utility.messagebox.showinfo('Info', 'Speed Value Is Advised To Be Between 0.25 And 2')
+                return
 
-        # Apply operations
-        self.operations(amp_amount, shift_amount, speed_amount, reverse_st, echo_st)
+            reverse_st = self.ui_elements['rev_state'].get() == 'revOn'
+            echo_st = self.ui_elements['echo_state'].get() == 'echoOn' and self.original_file_data.get(1) == 2
+
+            # Apply operations
+            self.operations(amp_amount, shift_amount, speed_amount, reverse_st, echo_st)
+        except ValueError:
+            utility.messagebox.showinfo('Info', 'Please Enter Valid Numerical Values')
 
     def play_audio(self, indication):
         # Check if a file has been imported
-        if not len(self.file_directory):
+        if not self.file_directory:
             utility.messagebox.showwarning('Warning', 'Please Import Audio File First')
             return
 
-        # Check if the audio file is available and ready to be played
+        # Determine file to play based on indication
         if indication == "OG":
             audio_file = str(self.file_directory)
         elif indication == "MOD" and Path(self.output_file).is_file() and self.modified_plot_state:
@@ -371,6 +375,8 @@ class MainApp(ttk.Frame):
             return
 
         # Play the audio file
+        if self.audio_player:
+            self.stop_playback()
         self.audio_player = AudioPlayer(audio_file)
         self.start_playback()
 
@@ -381,24 +387,23 @@ class MainApp(ttk.Frame):
         self.ui_elements['stop_btn'].config(state='normal')
 
         # Start audio playback in a separate thread
-        self.thread = threading.Thread(target=self.audio_player.play, daemon=True)
-        self.thread.start()
+        self.audio_player.play()
 
         # Periodically check if audio playback has finished
-        self.master.after(100, self.check_playback)
+        self.check_id = self.master.after(100, self.check_playback)
 
     def check_playback(self):
         # Check if audio playback is still ongoing
         if self.audio_player.playing:
-            self.master.after(100, self.check_playback)
+            self.check_id = self.master.after(100, self.check_playback)
         else:
             # Enable play buttons and disable stop button
             self.ui_elements['og_play_btn'].config(state='normal')
             self.ui_elements['mod_play_btn'].config(state='normal')
             self.ui_elements['stop_btn'].config(state='disabled')
 
-            # Wait for the playback thread to complete
-            self.thread.join()
+            # Cancel the check_id to prevent it from firing again
+            self.master.after_cancel(self.check_id)
 
     def stop_playback(self):
         self.audio_player.stop()
@@ -413,11 +418,11 @@ class MainApp(ttk.Frame):
 class HistoryWindow:
     def __init__(self):
         # Create a new window
-        new_conv_window = Toplevel(title='History', size=[1200, 740])
-        new_conv_window.place_window_center()
+        self.new_conv_window = Toplevel(title='History', size=[1200, 740])
+        self.new_conv_window.place_window_center()
 
         # Create a scrolled frame to hold the history information
-        hist_fr = ScrolledFrame(new_conv_window, autohide=True)
+        hist_fr = ScrolledFrame(self.new_conv_window, autohide=True)
         hist_fr.pack(side='top', expand=True, fill='both')
 
         # Fetch data from the database
@@ -453,18 +458,23 @@ class HistoryWindow:
 
 class ConvolutionWindow:
     def __init__(self, plotting_func):
-        new_conv_window = Toplevel(title='Convolution', size=[1200, 740])
-        new_conv_window.place_window_center()
+        self.new_conv_window = Toplevel(title='Convolution', size=[1200, 740])
+        self.new_conv_window.place_window_center()
+        self.new_conv_window.protocol("WM_DELETE_WINDOW", self.on_close)
         self.plotting_func = plotting_func
         self.zp_to_hs_text = ttk.StringVar()
 
-        tabs_fr = ttk.Frame(new_conv_window)
+        self.create_ui()
+
+    def create_ui(self):
+
+        tabs_fr = ttk.Frame(self.new_conv_window)
         tabs_fr.pack(side='right', fill='both', padx=30)
-        self.og_signal_frame = ttk.Frame(new_conv_window)
+        self.og_signal_frame = ttk.Frame(self.new_conv_window)
         self.og_signal_frame.pack(side='top', pady=10)
-        self.mod_signal_frame = ttk.Frame(new_conv_window)
+        self.mod_signal_frame = ttk.Frame(self.new_conv_window)
         self.mod_signal_frame.pack(side='top', pady=10)
-        self.conv_signal_frame = ttk.Frame(new_conv_window)
+        self.conv_signal_frame = ttk.Frame(self.new_conv_window)
         self.conv_signal_frame.pack(side='top', pady=10)
 
         notebook = ttk.Notebook(tabs_fr)
@@ -513,7 +523,8 @@ class ConvolutionWindow:
         # add options
         option_var = ttk.StringVar()
         for option in ['Sine Wave', 'Rec Wave']:
-            menu.add_radiobutton(label=option, value=option, variable=option_var)
+            menu.add_radiobutton(label=option, value=option, variable=option_var,
+                                 command=lambda option=option: utility.update_menu_text(self.select_wave_menu, option))
 
         # associate menu with menubutton
         self.select_wave_menu['menu'] = menu
@@ -644,21 +655,25 @@ class ConvolutionWindow:
         self.zeros_val_lb.config(state="readonly")
         self.poles_val_lb.config(state="readonly")
 
+    def on_close(self):
+        self.new_conv_window.destroy()
+
 
 class TTSWindow:
     def __init__(self, speech_func, theme_state):
         self.speech_func = speech_func
 
-        new_window = Toplevel(title='Text To Speech', size=[400, 200], resizable=[False, False])
-        new_window.place_window_center()
+        self.new_window = Toplevel(title='Text To Speech', size=[400, 200], resizable=[False, False])
+        self.new_window.place_window_center()
+        self.new_window.protocol("WM_DELETE_WINDOW", self.on_close)
 
         # A Label widget to show in toplevel
-        ttk.Label(new_window, text="Please Write The Transcript").pack(pady=10)
+        ttk.Label(self.new_window, text="Please Write The Transcript").pack(pady=10)
 
-        tts_value_lb = ttk.Entry(new_window, justify="center", font='-family Barlow -size 10')
+        tts_value_lb = ttk.Entry(self.new_window, justify="center", font='-family Barlow -size 10')
         tts_value_lb.pack(fill='x', pady=5, padx=10)
 
-        convert_btn = ttk.Button(new_window, bootstyle='link', command=self.on_convert_button_click)
+        convert_btn = ttk.Button(self.new_window, bootstyle='link', command=self.on_convert_button_click)
         if theme_state:
             convert_btn.config(image='convert-button')
         else:
@@ -667,10 +682,14 @@ class TTSWindow:
         convert_btn.pack(pady=5)
 
         self.tts_value_lb = tts_value_lb
+        self.tts_value_lb.focus()
 
     def on_convert_button_click(self):
         get_result = self.tts_value_lb.get()
         self.speech_func(str(get_result))
+
+    def on_close(self):
+        self.new_window.destroy()
 
 
 if __name__ == '__main__':
