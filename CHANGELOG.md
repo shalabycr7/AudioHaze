@@ -6,18 +6,23 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## V 0.2.7
 
+> This an overhaul new version of the app's under-the-hood functionality
+
 ### Changed
 
-* Replaced `Pygame` module with `sounddevice` :heavy_check_mark:
-* Created a thread to play & stop audio playback :heavy_check_mark:
+* Replaced `pygame` Module With `sounddevice` :heavy_check_mark:
+* Implemented `Multithreading` To Improve Performance :heavy_check_mark:
+* Created A Thread To Play & Stop Audio Playback Async :heavy_check_mark:
 
 ### Fixed
 
-* Changed the data type of output_audio in `set_echo` to `float32` to avoid overflow and to allow for high dynamic range
-  audio signals :heavy_check_mark:
-* Used the `np.max(np.abs(output_audio))` to normalize the output audio signal before casting it as `int16` This ensures
-  that the signal is scaled properly within the range of `-32768` to `32767` :heavy_check_mark:
-* Squashed some bugs :heavy_check_mark:
+* Changed The Data Type Of `output_audio` In `set_echo` To `float32` To Avoid Overflow And To Allow For High Dynamic
+  Range
+  Audio Signals :heavy_check_mark:
+* Used The `np.max(np.abs(output_audio))` To Normalize The Output Audio Signal Before Casting It As `int16` This Ensures
+  That The Signal Is Scaled Properly Within The Range Of `-32768` to `32767` :heavy_check_mark:
+* Improved Plotting Speed :heavy_check_mark:
+* Squashed Some Bugs :heavy_check_mark:
 
 ## V 0.2.6
 
