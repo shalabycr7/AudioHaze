@@ -451,7 +451,6 @@ class HistoryWindow:
 
             # Increment the column counter for the next original signal
             clm += 2
-            row = 1
 
 
 class ConvolutionWindow:
@@ -523,7 +522,7 @@ class ConvolutionWindow:
 
         ttk.Button(
             tabs_fr, text=' Apply',
-            image='apply',
+            image='apply-button',
             compound='left',
             bootstyle='link',
             command=lambda: self.apply_convolution(option_var.get())).pack(side='top')
@@ -534,84 +533,118 @@ class ConvolutionWindow:
 
     def lti_sys(self, widget):
         if widget == 1:
-            # get the values of the textbox as an array
+            # Get the values of the textbox as an array
             num = list(map(float, self.trFuncValueLB.get().strip().split()))
             den = list(map(float, self.tr_func_value_lb2.get().strip().split()))
 
-            # represent the lti_system as transfer function
+            # Represent the LTI system as a transfer function
             lti_system = signal.lti(num, den)
 
-            # display the values in the textbox after rounding
-            for z in lti_system.zeros:
-                z_rounded = np.round(z, 2)
-                self.zeros_val_lb.insert(0, str(z_rounded) + "  ")
-            for p in lti_system.poles:
-                p_rounded = np.round(p, 2)
-                self.poles_val_lb.insert(0, str(p_rounded) + "  ")
+            # Display the values in the textbox after rounding
+            utility.display_rounded_values(lti_system.zeros, self.zeros_val_lb)
+            utility.display_rounded_values(lti_system.poles, self.poles_val_lb)
         else:
             zeros = list(map(int, self.zeros_val_lb.get().strip().split()))
             poles = list(map(int, self.poles_val_lb.get().strip().split()))
 
-            # get the num and den from the z and p
+            # Get the num and den from the zeros and poles
             hs_rep = signal.zpk2tf(zeros, poles, k=1)
-            for z in hs_rep[0]:
-                z_rounded = np.round(z, 2)
-                self.trFuncValueLB.insert(0, str(z_rounded) + "  ")
-            for p in hs_rep[1]:
-                p_rounded = np.round(p, 2)
-                self.tr_func_value_lb2.insert(0, str(p_rounded) + "  ")
+            utility.display_rounded_values(hs_rep[0], self.trFuncValueLB)
+            utility.display_rounded_values(hs_rep[1], self.tr_func_value_lb2)
 
     def apply_convolution(self, conv_val):
         utility.update_frame(self.mod_signal_frame)
         utility.update_frame(self.conv_signal_frame)
 
-        # get the value of the option radiobutton
+        # Get the value of the option radiobutton
         option_val = str(self.zp_to_hs_text.get())
+
+        # Update the values each time the button is pressed
         if option_val == '1':
-            # update the values each time the button is pressed
-            utility.delete_entries(self.zeros_val_lb)
-            utility.delete_entries(self.poles_val_lb)
-            self.zeros_val_lb.config(state="normal")
-            self.poles_val_lb.config(state="normal")
-            if self.trFuncValueLB.get() != "" and self.tr_func_value_lb2.get() != "":
-                self.lti_sys(1)
+            self.update_transfer_function_inputs()
         elif option_val == '2':
-            utility.delete_entries(self.trFuncValueLB)
-            utility.delete_entries(self.tr_func_value_lb2)
-            self.trFuncValueLB.config(state="normal")
-            self.tr_func_value_lb2.config(state="normal")
-            if self.zeros_val_lb.get() != "" and self.poles_val_lb.get() != "":
-                self.lti_sys(2)
+            self.update_zeros_and_poles()
 
         if conv_val == 'Sine Wave':
             win = signal.windows.hann(50)
-            self.plotting_func(win, None, None, self.mod_signal_frame, 'Impulse Response')
-            filtered = signal.convolve(self.sig, win, mode='same') / sum(win)
-            self.plotting_func(filtered, None, None, self.conv_signal_frame, 'Filtered Signal')
+            self.plot_impulse_response(win, 'Impulse Response')
+            self.plot_filtered_signal(win, 'Filtered Signal')
             self.select_wave_menu.config(text="Sine Wave")
-        if conv_val == 'Rec Wave':
+        elif conv_val == 'Rec Wave':
             win = np.repeat([0., 1., 0.], 50)
-            self.plotting_func(win, None, None, self.mod_signal_frame, 'Impulse Response')
-            filtered = signal.convolve(self.sig, win, mode='same') / sum(win)
-            self.plotting_func(filtered, None, None, self.conv_signal_frame, 'Filtered Signal')
+            self.plot_impulse_response(win, 'Impulse Response')
+            self.plot_filtered_signal(win, 'Filtered Signal')
             self.select_wave_menu.config(text="Rec Wave")
-        return
+
+    def update_transfer_function_inputs(self):
+        # Delete the entries in the transfer function input boxes
+        utility.delete_entries(self.zeros_val_lb)
+        utility.delete_entries(self.poles_val_lb)
+
+        # Enable the input boxes
+        self.zeros_val_lb.config(state="normal")
+        self.poles_val_lb.config(state="normal")
+
+        # Update the transfer function inputs if values are available
+        if self.trFuncValueLB.get() != "" and self.tr_func_value_lb2.get() != "":
+            self.lti_sys(1)
+
+    def update_zeros_and_poles(self):
+        # Delete the entries in the zeros and poles input boxes
+        utility.delete_entries(self.trFuncValueLB)
+        utility.delete_entries(self.tr_func_value_lb2)
+
+        # Enable the input boxes
+        self.trFuncValueLB.config(state="normal")
+        self.tr_func_value_lb2.config(state="normal")
+
+        # Update the zeros and poles if values are available
+        if self.zeros_val_lb.get() != "" and self.poles_val_lb.get() != "":
+            self.lti_sys(2)
+
+    def plot_impulse_response(self, window, title):
+        self.plotting_func(window, None, None, self.mod_signal_frame, title)
+
+    def plot_filtered_signal(self, window, title):
+        filtered = signal.convolve(self.sig, window, mode='same') / sum(window)
+        self.plotting_func(filtered, None, None, self.conv_signal_frame, title)
 
     def disable_box(self, num):
+        self.clear_input_boxes()
+
+        if num == 1:
+            self.enable_transfer_function_inputs()
+            self.disable_zeros_and_poles_inputs()
+        else:
+            self.disable_transfer_function_inputs()
+            self.enable_zeros_and_poles_inputs()
+
+    def clear_input_boxes(self):
+        # Delete the entries in all input boxes
         utility.delete_entries(self.zeros_val_lb)
         utility.delete_entries(self.poles_val_lb)
         utility.delete_entries(self.trFuncValueLB)
         utility.delete_entries(self.tr_func_value_lb2)
-        if num == 1:
-            self.zeros_val_lb.config(state="readonly")
-            self.poles_val_lb.config(state="readonly")
-            self.trFuncValueLB.config(state="normal")
-            self.tr_func_value_lb2.config(state="normal")
-        else:
-            self.trFuncValueLB.config(state="readonly")
-            self.tr_func_value_lb2.config(state="readonly")
-            self.zeros_val_lb.config(state="normal")
-            self.poles_val_lb.config(state="normal")
+
+    def enable_transfer_function_inputs(self):
+        # Enable the transfer function input boxes
+        self.trFuncValueLB.config(state="normal")
+        self.tr_func_value_lb2.config(state="normal")
+
+    def disable_transfer_function_inputs(self):
+        # Disable the transfer function input boxes
+        self.trFuncValueLB.config(state="readonly")
+        self.tr_func_value_lb2.config(state="readonly")
+
+    def enable_zeros_and_poles_inputs(self):
+        # Enable the zeros and poles input boxes
+        self.zeros_val_lb.config(state="normal")
+        self.poles_val_lb.config(state="normal")
+
+    def disable_zeros_and_poles_inputs(self):
+        # Disable the zeros and poles input boxes
+        self.zeros_val_lb.config(state="readonly")
+        self.poles_val_lb.config(state="readonly")
 
 
 class TTSWindow:

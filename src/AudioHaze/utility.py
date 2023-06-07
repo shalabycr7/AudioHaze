@@ -4,6 +4,7 @@ import pyttsx3
 from PIL import Image, ImageTk
 
 from .__main__ import HistoryWindow
+from .__main__ import np
 
 
 def delete_entries(wid):
@@ -75,6 +76,13 @@ def add_info_label(row, frame, date, amp, shift, speed, reverse, echo):
     shift_lib.pack(side="top", anchor='nw')
     speed_lib.pack(side="top", anchor='nw')
     reverse_lib.pack(side="top", anchor='nw')
+
+
+def display_rounded_values(values, textbox):
+    # Display the values in the textbox after rounding
+    for v in values:
+        v_rounded = np.round(v, 2)
+        textbox.insert(0, str(v_rounded) + "  ")
 
 
 def tts(speach):
