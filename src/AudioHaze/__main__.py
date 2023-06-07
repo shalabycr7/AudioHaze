@@ -184,63 +184,71 @@ class MainApp(ttk.Frame):
         utility.update_frame(self.ui_elements['original_wave_frame'])
         utility.update_frame(self.ui_elements['modified_wave_frame'])
 
-        # # hide the plotting frames every time we import
+        # Hide the plotting frames every time we import
         self.original_plot_state = False
         self.modified_plot_state = False
 
-        # open window to select file to get the path then save in variable directory
+        # Open window to select file to get the path then save in variable directory
         self.file_directory = filedialog.askopenfilename(initialdir=self.file_directory, title="Select Audio File",
                                                          filetypes=(('Wav', '*wav'), ('Mp3', '*mp3')))
-        if not len(self.file_directory):
+        if not self.file_directory:
             utility.messagebox.showerror('Error', 'No File Was Selected')
             return
-        else:
-            file_extension = Path(self.file_directory).suffix
 
-            # convert mp3 file to wav, so it can be read
-            if file_extension == '.mp3':
-                mp3_file = AudioSegment.from_mp3(file=self.file_directory)
-                mp3_file.export(self.output_directory_name / 'Mp3converted.wav', format='wav')
-                self.file_directory = str(self.output_directory_name / 'Mp3converted.wav')
+        file_extension = Path(self.file_directory).suffix
 
-            # read the imported file
-            wav_original = AudioSegment.from_file(file=self.file_directory)
-            self.original_file_data = self.read_file(wav_original, 'original')
+        # Convert mp3 file to wav, so it can be read
+        if file_extension == '.mp3':
+            mp3_file = AudioSegment.from_mp3(file=self.file_directory)
+            mp3_file.export(self.output_directory_name / 'Mp3converted.wav', format='wav')
+            self.file_directory = str(self.output_directory_name / 'Mp3converted.wav')
 
-            # update displayed File info
-            self.ui_elements['file_type_val'].config(text=file_extension)
-            self.ui_elements['file_channels_val'].config(text=self.original_file_data.get(1))
-            self.ui_elements['file_frames_val'].config(text=self.original_file_data.get(2))
-            self.ui_elements['file_max_amp_val'].config(text=wav_original.max)
+        # Read the imported file
+        wav_original = AudioSegment.from_file(file=self.file_directory)
+        self.original_file_data = self.read_file(wav_original, 'original')
 
-            # start plotting
-            self.plotting(None, self.original_file_data.get(5), self.original_file_data.get(4),
-                          self.ui_elements['original_wave_frame'],
-                          'Original Audio')
-            self.original_plot_state = True
+        # Update displayed file info
+        self.ui_elements['file_type_val'].config(text=file_extension)
+        self.ui_elements['file_channels_val'].config(text=self.original_file_data.get(1))
+        self.ui_elements['file_frames_val'].config(text=self.original_file_data.get(2))
+        self.ui_elements['file_max_amp_val'].config(text=wav_original.max)
 
-            # Set echo options on if the file is stereo
-            if self.original_file_data.get(1) == 2:
-                self.ui_elements['echo_toggle'].config(state='!selected')
-            else:
-                self.ui_elements['echo_toggle'].config(state='disabled')
+        # Start plotting
+        self.plotting(None, self.original_file_data.get(5), self.original_file_data.get(4),
+                      self.ui_elements['original_wave_frame'],
+                      'Original Audio')
+        self.original_plot_state = True
+
+        # Set echo options on if the file is stereo
+        self.ui_elements['echo_toggle'].config(state='!selected' if self.original_file_data.get(1) == 2 else 'disabled')
 
     def plotting(self, targeted_signal, time, raw, place, title):
-        matplotlib.style.use('dark_background') if not self.dark_mode_state else matplotlib.style.use('default')
+        # Set the plot style based on the dark mode state
+        if not self.dark_mode_state:
+            matplotlib.style.use('dark_background')
+        else:
+            matplotlib.style.use('default')
+
+        # Create a new figure and subplot for the plot
         plotting_figure = Figure(figsize=(7, 2), dpi=90)
         figure_subplot = plotting_figure.add_subplot(111)
         figure_subplot.set_ylabel('Amplitude')
         figure_subplot.grid(alpha=0.4)
         figure_subplot.set_title(title)
 
-        self.plot_img_title = Path('History').resolve() / ("img" + str(self.img_count) + ".png")
         if targeted_signal is not None:
+            # If a targeted signal is provided, plot it
             figure_subplot.plot(targeted_signal, color='blue')
         else:
+            # Otherwise, plot the raw data
             figure_subplot.plot(time, raw, color='blue')
+
+            # Save the figure to disk and update the image count
+            self.plot_img_title = Path('History').resolve() / ("img" + str(self.img_count) + ".png")
             plotting_figure.savefig(self.plot_img_title)
             self.img_count += 1
 
+            # If this is the original audio plot, add it to the database
             if title == 'Original Audio':
                 text = [str(self.plot_img_title)]
                 self.db.execute('INSERT INTO org(name) VALUES (?)', text)
@@ -248,66 +256,61 @@ class MainApp(ttk.Frame):
                 org_id_db = self.db.execute("SELECT id FROM org WHERE name = ?", text)
                 self.original_id = org_id_db.fetchone()[0]
 
-        # Creating Canvas to show it in the Frame
+        # Create a canvas to display the plot in the UI frame
         canvas = FigureCanvasTkAgg(plotting_figure, master=place)
+        canvas.draw()
         canvas.get_tk_widget().pack()
 
     def operations(self, amp_amount, shift_amount, speed_amount, reverse_state, echo_state):
+        # Update modified wave frame
         utility.update_frame(self.ui_elements['modified_wave_frame'])
 
-        # create a new output WAV file to write the new modified audio data
+        # Create output WAV file and configure audio object
         audio_obj = wave.open(self.output_file, 'wb')
         audio_obj.setnchannels(self.original_file_data.get(1))
         audio_obj.setsampwidth(self.original_file_data.get(6))
 
-        # changing audio speed
+        # Change audio speed
         speed = self.original_file_data.get(2) * speed_amount
         audio_obj.setframerate(speed)
 
-        # Shifting audio process
-        for i in range(int(self.original_file_data.get(2) * shift_amount)):
-            zero_in_byte = struct.pack('<h', 0)
-            audio_obj.writeframes(zero_in_byte)
+        # Shift audio process
+        shift_frames = int(self.original_file_data.get(2) * shift_amount)
+        zero_in_byte = struct.pack('<h', 0)
+        if reverse_state:
+            for i in range(shift_frames):
+                audio_obj.writeframes(zero_in_byte)
+        else:
+            for i in range(shift_frames):
+                audio_obj.writeframes(zero_in_byte)
 
         # Amplification & Reverse process
-        n = len(self.original_file_data.get(4))
+        amp_frames = [sample * amp_amount for sample in self.original_file_data.get(4)]
         if reverse_state:
-            for i in range(self.original_file_data.get(4).__len__()):
-                two_byte_sample = self.original_file_data.get(4)[n - 1 - i] * amp_amount
-                if two_byte_sample > 32760:
-                    two_byte_sample = 32760
-                if two_byte_sample < -32760:
-                    two_byte_sample = -32760
-                sample = struct.pack('<h', int(two_byte_sample))
-                audio_obj.writeframes(sample)
-        else:
-            for i in range(self.original_file_data.get(4).__len__()):
-                if self.original_file_data.get(4)[i] * amp_amount > 32760:
-                    two_byte_sampler = 32760
-                elif self.original_file_data.get(4)[i] * amp_amount < -32760:
-                    two_byte_sampler = -32760
-                else:
-                    two_byte_sampler = self.original_file_data.get(4)[i] * amp_amount
-                sample = struct.pack('<h', int(two_byte_sampler))
-                audio_obj.writeframes(sample)
+            amp_frames = reversed(amp_frames)
+        for two_byte_sample in amp_frames:
+            if two_byte_sample > 32760:
+                two_byte_sample = 32760
+            if two_byte_sample < -32760:
+                two_byte_sample = -32760
+            sample = struct.pack('<h', int(two_byte_sample))
+            audio_obj.writeframes(sample)
 
-        # close the stream of the modified output file
+        # Close modified output file stream
         audio_obj.close()
 
+        # Read modified audio file and plot the modified data
         audio_file = AudioSegment.from_file(file=self.output_file, format="wav")
         self.modified_file_data = self.read_file(audio_file, 'modified')
-
-        # plot the modified data
         self.plotting(None, self.modified_file_data.get(5), self.modified_file_data.get(4),
-                      self.ui_elements['modified_wave_frame'],
-                      'Modified Audio')
+                      self.ui_elements['modified_wave_frame'], 'Modified Audio')
         self.modified_plot_state = True
 
-        # set the echo based on button state
+        # Apply echo effect if echo_state is True
         if echo_state:
             audio_effect.echo(self.output_file, self.output_file)
 
-        # show a message when done modifying the file
+        # Show a message when done modifying the file
         toast = ToastNotification(
             title="Output File Saved",
             message="Modified.wav Was Saved To Audio Output Folder",
@@ -316,7 +319,7 @@ class MainApp(ttk.Frame):
         )
         toast.show_toast()
 
-        # write the modified signal into the database
+        # Write the modified signal into the database
         date = datetime.datetime.now()
         self.db.execute(
             'INSERT INTO modsignal(org_id,name,date,amp,shift,speed,reverse,echo) VALUES (?,?,?,?,?,?,?,?)',
@@ -326,70 +329,77 @@ class MainApp(ttk.Frame):
         self.connection.commit()
 
     def apply_operations(self):
+        # Stop audio playback if it is currently playing
         if self.audio_player:
             self.stop_playback()
+
+        # Get values from entry boxes
         amp_value = self.ui_elements['amp_entry'].get()
         speed_value = self.ui_elements['speed_entry'].get()
         shift_value = self.ui_elements['shift_entry'].get()
 
-        # check if the user had entered values or not, if so process them, if not show an error message
-        if not len(self.file_directory) or not len(amp_value) or not len(speed_value) or not len(shift_value):
+        # Check if all necessary values are entered, else show an error message
+        if not all([len(self.file_directory), len(amp_value), len(speed_value), len(shift_value)]):
             utility.messagebox.showinfo('Info', 'Please Import Audio File First And Set Valid Values')
             return
 
-        # get the values from entry box
+        # Convert values to the appropriate data types
         amp_amount = float(amp_value)
         shift_amount = float(shift_value)
         speed_amount = float(speed_value)
-        if self.ui_elements['rev_state'].get() == 'revOn':
-            reverse_st = True
-        else:
-            reverse_st = False
-        if self.ui_elements['echo_state'].get() == 'echoOn' and self.original_file_data.get(1) == 2:
-            echo_st = True
-        else:
-            echo_st = False
+        reverse_st = self.ui_elements['rev_state'].get() == 'revOn'
+        echo_st = self.ui_elements['echo_state'].get() == 'echoOn' and self.original_file_data.get(1) == 2
 
-        # check for audio speed input
+        # Check if speed input is within the recommended range
         if speed_amount > 2 or speed_amount < 0.25:
             utility.messagebox.showinfo('Info', 'Speed Value Is Advised To Be Between 0.25 And 2')
 
+        # Apply operations
         self.operations(amp_amount, shift_amount, speed_amount, reverse_st, echo_st)
 
     def play_audio(self, indication):
-        # check if a file has been imported then play it, if not show an error message
+        # Check if a file has been imported
         if not len(self.file_directory):
             utility.messagebox.showwarning('Warning', 'Please Import Audio File First')
             return
+
+        # Check if the audio file is available and ready to be played
+        if indication == "OG":
+            audio_file = str(self.file_directory)
+        elif indication == "MOD" and Path(self.output_file).is_file() and self.modified_plot_state:
+            audio_file = str(self.output_file)
         else:
-            if indication == "OG":
-                audio_file = str(self.file_directory)
-            elif indication == "MOD" and Path(self.output_file).is_file() and self.modified_plot_state:
-                audio_file = str(self.output_file)
-            else:
-                utility.messagebox.showinfo('Info', 'Apply Modification To The Audio File Then Play It')
-                return
+            utility.messagebox.showinfo('Info', 'Apply Modification To The Audio File Then Play It')
+            return
 
+        # Play the audio file
         self.audio_player = AudioPlayer(audio_file)
-
         self.start_playback()
 
     def start_playback(self):
+        # Disable play buttons and enable stop button
         self.ui_elements['og_play_btn'].config(state='disabled')
         self.ui_elements['mod_play_btn'].config(state='disabled')
         self.ui_elements['stop_btn'].config(state='normal')
 
+        # Start audio playback in a separate thread
         self.thread = threading.Thread(target=self.audio_player.play, daemon=True)
         self.thread.start()
+
+        # Periodically check if audio playback has finished
         self.master.after(100, self.check_playback)
 
     def check_playback(self):
+        # Check if audio playback is still ongoing
         if self.audio_player.playing:
             self.master.after(100, self.check_playback)
         else:
+            # Enable play buttons and disable stop button
             self.ui_elements['og_play_btn'].config(state='normal')
             self.ui_elements['mod_play_btn'].config(state='normal')
             self.ui_elements['stop_btn'].config(state='disabled')
+
+            # Wait for the playback thread to complete
             self.thread.join()
 
     def stop_playback(self):
@@ -404,35 +414,44 @@ class MainApp(ttk.Frame):
 
 class HistoryWindow:
     def __init__(self):
+        # Create a new window
         new_conv_window = Toplevel(title='History', size=[1200, 740])
         new_conv_window.place_window_center()
 
-        # create a main frame.
+        # Create a scrolled frame to hold the history information
         hist_fr = ScrolledFrame(new_conv_window, autohide=True)
         hist_fr.pack(side='top', expand=True, fill='both')
 
-        # fetch the data from the database
+        # Fetch data from the database
         org_signal_list_db = MainApp.db.execute("SELECT id, name FROM org")
         org_signal_list = org_signal_list_db.fetchall()
-        row = 1
-        clm = 1
+
+        # Iterate over the original signals and their corresponding modified signals
         for org_signal in org_signal_list:
-            org_signal_list_db = MainApp.db.execute(
+            mod_signal_info_list_db = MainApp.db.execute(
                 "SELECT name,date,amp,shift,speed,reverse,echo FROM modsignal WHERE org_id = (?)",
                 [(org_signal[0])])
-            mod_signal_info_list = org_signal_list_db.fetchall()
+            mod_signal_info_list = mod_signal_info_list_db.fetchall()
+            row = 1
+            clm = 1
+            # Iterate over the modified signals
             for mod_signal_info in mod_signal_info_list:
-                # add the information of the  manipulation operation.
+                # Add information about the manipulation operation
                 utility.add_info_label(row, hist_fr, mod_signal_info[1], mod_signal_info[2], mod_signal_info[3],
-                                       mod_signal_info[4],
-                                       mod_signal_info[5], mod_signal_info[6])
-                # add the original signal in the row
+                                       mod_signal_info[4], mod_signal_info[5], mod_signal_info[6])
+
+                # Add the original signal
                 utility.add_img(org_signal[1], row, clm, hist_fr)
-                clm += 1
-                # add the modified signal
-                utility.add_img(mod_signal_info[0], row, clm, hist_fr)
+
+                # Add the modified signal
+                utility.add_img(mod_signal_info[0], row, clm + 1, hist_fr)
+
+                # Update the row and column counters
                 row += 1
-                clm -= 1
+
+            # Increment the column counter for the next original signal
+            clm += 2
+            row = 1
 
 
 class ConvolutionWindow:
