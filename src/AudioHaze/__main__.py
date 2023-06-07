@@ -1,24 +1,45 @@
 import datetime
 import sqlite3
 import struct
+import threading
 import wave
 from pathlib import Path
 from tkinter import filedialog
 
 import matplotlib
 import numpy as np
+import sounddevice as sd
+import soundfile as sf
 import ttkbootstrap as ttk
 from matplotlib import style
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from pydub import AudioSegment
 from scipy import signal
-from ttkbootstrap import Toplevel, PRIMARY, OUTLINE, LINK, BOTH, TOP, RIGHT, YES, HORIZONTAL, W, EW, LEFT, X
+from ttkbootstrap import Toplevel
 from ttkbootstrap.scrolled import ScrolledFrame
 from ttkbootstrap.toast import ToastNotification
 
-from src.AudioHaze import main_interface, audio_effect
-from src.AudioHaze import utility
+from AudioHaze import main_interface, audio_effect, utility
+
+
+class AudioPlayer:
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.playing = False
+        self.data, self.sample_rate = sf.read(self.file_path)
+
+    def play(self):
+        self.playing = True
+        sd.play(self.data, self.sample_rate)
+
+        while self.playing and sd.get_stream().active:
+            pass
+
+        sd.stop()
+
+    def stop(self):
+        self.playing = False
 
 
 class MainApp(ttk.Frame):
@@ -49,19 +70,19 @@ class MainApp(ttk.Frame):
 
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.pack(fill=BOTH, expand=YES)
+        self.pack(fill='both', expand=1)
         self.current_style = ttk.Style()
-
-        # start the pygame engine to play sound files
-        utility.mixer.init()
 
         # create 'Audio Output' & 'History'
         self.make_output_directory()
 
         self.ui_elements = main_interface.create_main_ui(self, self.import_file,
                                                          self.set_theme, self.apply_operations, self.play_audio,
-                                                         self.open_tts_window, self.open_conv_window)
+                                                         self.open_tts_window, self.open_conv_window,
+                                                         self.stop_playback)
         self.set_theme()
+
+        self.ui_elements['stop_btn'].config(state='disabled')
 
     def make_output_directory(self):
         Path('History').resolve().mkdir(exist_ok=True)
@@ -268,7 +289,7 @@ class MainApp(ttk.Frame):
         self.connection.commit()
 
     def apply_operations(self):
-        utility.stop_audio()
+        self.stop_playback()
         amp_value = self.ui_elements['amp_entry'].get()
         speed_value = self.ui_elements['speed_entry'].get()
         shift_value = self.ui_elements['shift_entry'].get()
@@ -310,8 +331,36 @@ class MainApp(ttk.Frame):
             else:
                 utility.messagebox.showinfo('Info', 'Apply Modification To The Audio File Then Play It')
                 return
-        utility.mixer.music.load(audio_file)
-        utility.mixer.music.play()
+
+        self.audio_player = AudioPlayer(audio_file)
+
+        self.start_playback()
+
+    def start_playback(self):
+        self.ui_elements['og_play_btn'].config(state='disabled')
+        self.ui_elements['mod_play_btn'].config(state='disabled')
+        self.ui_elements['stop_btn'].config(state='normal')
+
+        self.thread = threading.Thread(target=self.audio_player.play, daemon=True)
+        self.thread.start()
+        self.master.after(100, self.check_playback)
+
+    def check_playback(self):
+        if self.audio_player.playing:
+            self.master.after(100, self.check_playback)
+        else:
+            self.ui_elements['og_play_btn'].config(state='normal')
+            self.ui_elements['mod_play_btn'].config(state='normal')
+            self.ui_elements['stop_btn'].config(state='disabled')
+            self.thread.join()
+
+    def stop_playback(self):
+        self.audio_player.stop()
+
+    def bb(self, file_path):
+        data, fs = sf.read(file_path, dtype='float32')
+        sd.play(data, fs)
+        status = sd.wait()
 
     def open_tts_window(self):
         TTSWindow(utility.tts, self.dark_mode_state)
@@ -327,7 +376,7 @@ class HistoryWindow:
 
         # creat a main frame.
         hist_fr = ScrolledFrame(new_conv_window, autohide=True)
-        hist_fr.pack(side=TOP, expand=True, fill=BOTH)
+        hist_fr.pack(side='top', expand=True, fill='both')
 
         # fetch the data from the database
         org_signal_list_db = MainApp.db.execute("SELECT id, name FROM org")
@@ -361,52 +410,53 @@ class ConvolutionWindow:
         self.zp_to_hs_text = ttk.StringVar()
 
         tabs_fr = ttk.Frame(new_conv_window)
-        tabs_fr.pack(side=RIGHT, fill=BOTH, padx=30)
+        tabs_fr.pack(side='right', fill='both', padx=30)
         self.og_signal_frame = ttk.Frame(new_conv_window)
-        self.og_signal_frame.pack(side=TOP, pady=10)
+        self.og_signal_frame.pack(side='top', pady=10)
         self.mod_signal_frame = ttk.Frame(new_conv_window)
-        self.mod_signal_frame.pack(side=TOP, pady=10)
+        self.mod_signal_frame.pack(side='top', pady=10)
         self.conv_signal_frame = ttk.Frame(new_conv_window)
-        self.conv_signal_frame.pack(side=TOP, pady=10)
+        self.conv_signal_frame.pack(side='top', pady=10)
 
         notebook = ttk.Notebook(tabs_fr)
-        notebook.pack(side=TOP, pady=10)
+        notebook.pack(side='top', pady=10)
         select_wave_frame = ttk.Frame(notebook, width=350, height=400, padding=(10, 20))
         transfer_func_frame = ttk.Frame(notebook, width=350, height=400, padding=(10, 20))
-        ttk.Label(transfer_func_frame, text='Numerator').grid(row=0, column=0, sticky=W, padx=10)
+        ttk.Label(transfer_func_frame, text='Numerator').grid(row=0, column=0, sticky='w', padx=10)
         self.trFuncValueLB = ttk.Entry(transfer_func_frame, justify="center", state="disabled")
         self.trFuncValueLB.grid(row=0, column=1, pady=10)
-        ttk.Label(transfer_func_frame, text='Denominator').grid(row=1, column=0, sticky=W, padx=10)
+        ttk.Label(transfer_func_frame, text='Denominator').grid(row=1, column=0, sticky='w', padx=10)
         self.tr_func_value_lb2 = ttk.Entry(transfer_func_frame, justify="center", state="disabled")
         self.tr_func_value_lb2.grid(row=1, column=1, pady=10)
-        ttk.Separator(transfer_func_frame, orient=HORIZONTAL).grid(row=2, column=0, columnspan=2, pady=10, sticky=EW)
-        ttk.Label(transfer_func_frame, text='Zeros').grid(row=3, column=0, sticky=W, padx=10)
+        ttk.Separator(transfer_func_frame, orient='horizontal').grid(row=2, column=0, columnspan=2, pady=10,
+                                                                     sticky='ew')
+        ttk.Label(transfer_func_frame, text='Zeros').grid(row=3, column=0, sticky='w', padx=10)
         self.zeros_val_lb = ttk.Entry(transfer_func_frame, justify="center", state="disabled")
         self.zeros_val_lb.grid(row=3, column=1, pady=10)
-        ttk.Label(transfer_func_frame, text='Poles').grid(row=4, column=0, sticky=W, padx=10)
+        ttk.Label(transfer_func_frame, text='Poles').grid(row=4, column=0, sticky='w', padx=10)
         self.poles_val_lb = ttk.Entry(transfer_func_frame, justify="center", state="disabled")
         self.poles_val_lb.grid(row=4, column=1, pady=10)
-        ttk.Label(transfer_func_frame, text='Option').grid(row=5, column=0, sticky=W, padx=10, pady=15)
+        ttk.Label(transfer_func_frame, text='Option').grid(row=5, column=0, sticky='w', padx=10, pady=15)
 
         zp_to_hs_true_val = ttk.Radiobutton(transfer_func_frame, text="H (s) To Zeros",
                                             command=lambda: self.disable_box(1), variable=self.zp_to_hs_text, value=1)
-        zp_to_hs_true_val.grid(row=5, column=1, sticky=W, padx=10)
+        zp_to_hs_true_val.grid(row=5, column=1, sticky='w', padx=10)
         zp_to_hs_false_val = ttk.Radiobutton(transfer_func_frame, text="Zeros To H (s)",
                                              command=lambda: self.disable_box(2), variable=self.zp_to_hs_text, value=2)
-        zp_to_hs_false_val.grid(row=6, column=1, sticky=W, padx=10)
+        zp_to_hs_false_val.grid(row=6, column=1, sticky='w', padx=10)
 
-        select_wave_frame.pack(fill=BOTH, expand=True)
-        transfer_func_frame.pack(fill=BOTH, expand=True)
+        select_wave_frame.pack(fill='both', expand=True)
+        transfer_func_frame.pack(fill='both', expand=True)
 
         # add frames to notebook
         notebook.add(select_wave_frame, text='Wave')
         notebook.add(transfer_func_frame, text='Transfer Function')
 
-        ttk.Label(select_wave_frame, text='Select Impulse Response').pack(side=TOP)
+        ttk.Label(select_wave_frame, text='Select Impulse Response').pack(side='top')
 
         # menu selection
-        self.select_wave_menu = ttk.Menubutton(select_wave_frame, text='Select Wave', bootstyle=(PRIMARY, OUTLINE))
-        self.select_wave_menu.pack(side=TOP, pady=20)
+        self.select_wave_menu = ttk.Menubutton(select_wave_frame, text='Select Wave', bootstyle=('primary', 'outline'))
+        self.select_wave_menu.pack(side='top', pady=20)
 
         # create menu
         menu = ttk.Menu(self.select_wave_menu)
@@ -422,9 +472,9 @@ class ConvolutionWindow:
         ttk.Button(
             tabs_fr, text=' Apply',
             image='apply',
-            compound=LEFT,
-            bootstyle=LINK,
-            command=lambda: self.apply_convolution(option_var.get())).pack(side=TOP)
+            compound='left',
+            bootstyle='link',
+            command=lambda: self.apply_convolution(option_var.get())).pack(side='top')
 
         # plot the original signal based on the imported Audio Output file
         self.sig = np.repeat([0., 1., 0.], 100)
@@ -521,8 +571,8 @@ class TTSWindow:
         # A Label widget to show in toplevel
         ttk.Label(new_window, text="Please Write The Transcript").pack(pady=10)
         tts_value_lb = ttk.Entry(new_window, justify="center", font='-family Barlow -size 10')
-        tts_value_lb.pack(fill=X, pady=5, padx=10)
-        convert_btn = ttk.Button(new_window, bootstyle=LINK,
+        tts_value_lb.pack(fill='x', pady=5, padx=10)
+        convert_btn = ttk.Button(new_window, bootstyle='link',
                                  command=lambda: self.get_my_input_value(tts_value_lb))
         if theme_state:
             convert_btn.config(image='convert')

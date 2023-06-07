@@ -1,15 +1,13 @@
 from tkinter import ttk, messagebox
-from tkinter.constants import END, NW
 
 import pyttsx3
 from PIL import Image, ImageTk
-from pygame import mixer
 
-from src.AudioHaze.__main__ import HistoryWindow
+from .__main__ import HistoryWindow
 
 
 def delete_entries(wid):
-    wid.delete(0, END)
+    wid.delete(0, 'end')
 
 
 # clear the frame when we add another plot.
@@ -37,11 +35,6 @@ def output_duration(length):
     length %= 60
     seconds = length  # calculate in seconds
     return hours, minutes, seconds
-
-
-def stop_audio():
-    mixer.music.stop()
-    mixer.music.unload()
 
 
 def open_history_window():
@@ -72,16 +65,16 @@ def add_info_label(row, frame, date, amp, shift, speed, reverse, echo):
     label_frame.grid(row=row, column=0, sticky="nsew")
     ttk.Label(label_frame, text="").pack(side="top")
     ttk.Label(label_frame, text="").pack(side="top")
-    ttk.Label(label_frame, text="Date: " + date[5:18]).pack(side="top", anchor=NW)
+    ttk.Label(label_frame, text="Date: " + date[5:18]).pack(side="top", anchor='nw')
     amp_lib = ttk.Label(label_frame, text="Amplitude: " + str(amp))
     shift_lib = ttk.Label(label_frame, text="Shift:         " + str(shift))
     speed_lib = ttk.Label(label_frame, text="Speed:      " + str(speed))
     reverse_lib = ttk.Label(label_frame, text="Reverse:   " + str(bool(reverse)))
-    ttk.Label(label_frame, text="Echo: " + str(bool(echo))).pack(side="top", anchor=NW)
-    amp_lib.pack(side="top", anchor=NW)
-    shift_lib.pack(side="top", anchor=NW)
-    speed_lib.pack(side="top", anchor=NW)
-    reverse_lib.pack(side="top", anchor=NW)
+    ttk.Label(label_frame, text="Echo: " + str(bool(echo))).pack(side="top", anchor='nw')
+    amp_lib.pack(side="top", anchor='nw')
+    shift_lib.pack(side="top", anchor='nw')
+    speed_lib.pack(side="top", anchor='nw')
+    reverse_lib.pack(side="top", anchor='nw')
 
 
 def tts(speach):

@@ -4,6 +4,15 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Stable]
 
+
+## V 0.2.7
+
+### Changed
+
+* Replaced `Pygame` module with `sounddevice` :heavy_check_mark:
+* Created a thread to play & stop audio playback :heavy_check_mark:
+
+
 ## V 0.2.6
 
 ### Fixed
