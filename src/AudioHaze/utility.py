@@ -1,24 +1,25 @@
-from tkinter import ttk, messagebox
+import tkinter.messagebox as messagebox
+from tkinter import ttk
 
+import numpy as np
 import pyttsx3
 from PIL import Image, ImageTk
 
 from .__main__ import HistoryWindow
-from .__main__ import np
 
 
-def delete_entries(wid):
+def delete_entries(wid: ttk.Entry):
     wid.delete(0, 'end')
 
 
 # clear the frame when we add another plot.
-def update_frame(obj):
+def update_frame(obj: ttk.Frame):
     if len(obj.winfo_children()) >= 1:
         obj.winfo_children()[0].destroy()
 
 
 # check for input validation for float numbers only
-def validation_callback(user_val):
+def validation_callback(user_val: str) -> bool:
     try:
         if float(user_val) >= 0:
             return True
@@ -29,12 +30,9 @@ def validation_callback(user_val):
 
 
 # calculate audio file length
-def output_duration(length):
-    hours = length // 3600  # calculate in hours
-    length %= 3600
-    minutes = length // 60  # calculate in minutes
-    length %= 60
-    seconds = length  # calculate in seconds
+def output_duration(length: int) -> tuple:
+    hours, remainder = divmod(length, 3600)
+    minutes, seconds = divmod(remainder, 60)
     return hours, minutes, seconds
 
 
@@ -42,55 +40,48 @@ def open_history_window():
     HistoryWindow()
 
 
-def add_img(name, row, column, frame):
-    load = Image.open(name)
-    width, height = load.size
-    # Setting the points for cropped image
-    left = 0
-    top = 0
-    right = width
-    bottom = height
-    # Cropped image of above dimension (It will not change original image)
-    im1 = load.crop((left, top, right, bottom))
-    new_size = (width - 100, height)
-    im1 = im1.resize(new_size)
-    render = ImageTk.PhotoImage(im1)
-    img = ttk.Label(frame, image=render, width=300)
-    img.image = render
-    img.grid(row=row, column=column)
+def add_img(name: str, row: int, column: int, frame: ttk.Frame):
+    with Image.open(name) as load:
+        width, height = load.size
+        left, top, right, bottom = 0, 0, width, height
+        im1 = load.crop((left, top, right, bottom))
+
+        new_width, new_height = width - 100, height
+        im1 = im1.resize((new_width, new_height))
+        render = ImageTk.PhotoImage(im1)
+
+        img = ttk.Label(frame, image=render, width=300)
+        img.image = render
+        img.grid(row=row, column=column)
 
 
-def add_info_label(row, frame, date, amp, shift, speed, reverse, echo):
+def add_info_label(row: int, frame: ttk.Frame, date: str, amp: float, shift: float, speed: float, reverse: bool,
+                   echo: bool):
     # information label
     label_frame = ttk.Frame(frame)
     label_frame.grid(row=row, column=0, sticky="nsew")
-    ttk.Label(label_frame, text="").pack(side="top")
-    ttk.Label(label_frame, text="").pack(side="top")
-    ttk.Label(label_frame, text="Date: " + date[5:18]).pack(side="top", anchor='nw')
-    amp_lib = ttk.Label(label_frame, text="Amplitude: " + str(amp))
-    shift_lib = ttk.Label(label_frame, text="Shift:         " + str(shift))
-    speed_lib = ttk.Label(label_frame, text="Speed:      " + str(speed))
-    reverse_lib = ttk.Label(label_frame, text="Reverse:   " + str(bool(reverse)))
-    ttk.Label(label_frame, text="Echo: " + str(bool(echo))).pack(side="top", anchor='nw')
-    amp_lib.pack(side="top", anchor='nw')
-    shift_lib.pack(side="top", anchor='nw')
-    speed_lib.pack(side="top", anchor='nw')
-    reverse_lib.pack(side="top", anchor='nw')
+    ttk.Label(label_frame, text="\n\nDate: " + date[5:18] + "\n" +
+                                "Amplitude: " + str(amp) + "\n" +
+                                "Shift:         " + str(shift) + "\n" +
+                                "Speed:      " + str(speed) + "\n" +
+                                "Reverse:   " + str(reverse) + "\n" +
+                                "Echo: " + str(echo),
+              anchor='nw').pack(side="top")
 
 
-def display_rounded_values(values, textbox):
+def display_rounded_values(values: np.ndarray, textbox: ttk.Entry):
     # Display the values in the textbox after rounding
     for v in values:
         v_rounded = np.round(v, 2)
         textbox.insert(0, str(v_rounded) + "  ")
 
 
-def tts(speach):
-    if not speach:
+def tts(speech: str):
+    if speech is None or not speech.strip():
         messagebox.showinfo("Info", "Enter Some Text")
         return
-    else:
-        engine = pyttsx3.init()
-        engine.setProperty('rate', 100)
-        engine.say(speach)
-        engine.runAndWait()
+    engine = pyttsx3.init()
+    engine.setProperty('rate', 100)
+    engine.say(speech)
+    engine.runAndWait()
+    engine.stop()
