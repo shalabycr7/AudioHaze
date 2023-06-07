@@ -648,27 +648,31 @@ class ConvolutionWindow:
 
 
 class TTSWindow:
-    def __init__(self, speach_func, theme_state):
-        new_window = Toplevel(title='Text To Speach', size=[400, 200], resizable=[False, False])
-        self.speach_func = speach_func
+    def __init__(self, speech_func, theme_state):
+        self.speech_func = speech_func
+
+        new_window = Toplevel(title='Text To Speech', size=[400, 200], resizable=[False, False])
         new_window.place_window_center()
 
         # A Label widget to show in toplevel
         ttk.Label(new_window, text="Please Write The Transcript").pack(pady=10)
+
         tts_value_lb = ttk.Entry(new_window, justify="center", font='-family Barlow -size 10')
         tts_value_lb.pack(fill='x', pady=5, padx=10)
-        convert_btn = ttk.Button(new_window, bootstyle='link',
-                                 command=lambda: self.get_my_input_value(tts_value_lb))
-        if theme_state:
-            convert_btn.config(image='convert')
 
+        convert_btn = ttk.Button(new_window, bootstyle='link', command=self.on_convert_button_click)
+        if theme_state:
+            convert_btn.config(image='convert-button')
         else:
-            convert_btn.config(image='convert-dark')
+            convert_btn.config(image='convert-button-dark')
+
         convert_btn.pack(pady=5)
 
-    def get_my_input_value(self, widget):
-        getresult = widget.get()
-        self.speach_func(str(getresult))
+        self.tts_value_lb = tts_value_lb
+
+    def on_convert_button_click(self):
+        get_result = self.tts_value_lb.get()
+        self.speech_func(str(get_result))
 
 
 if __name__ == '__main__':
