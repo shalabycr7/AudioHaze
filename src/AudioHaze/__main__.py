@@ -27,15 +27,22 @@ class AudioPlayer:
     def __init__(self, file_path):
         self.file_path = file_path
         self.playing = False
-        self.data, self.sample_rate = sf.read(self.file_path)
 
     def play(self):
-        self.playing = True
-        sd.play(self.data, self.sample_rate)
+        if not self.playing:
+            self.playing = True
+            self.thread = threading.Thread(target=self._play)
+            self.thread.start()
+
+    def _play(self):
+        data, sample_rate = sf.read(self.file_path)
+        sd.play(data, sample_rate)
 
         while self.playing and sd.get_stream().active:
             pass
+
         sd.stop()
+        self.playing = False
 
     def stop(self):
         self.playing = False
@@ -44,7 +51,7 @@ class AudioPlayer:
 class MainApp(ttk.Frame):
     # initial parameters for audio file name and location
     file_directory = ''
-    output_directory_name = Path('Audio Output').resolve()
+    output_directory_name = Path('./Audio Output')
     dark_mode_state = False
     output_file = str(output_directory_name / 'Modified.wav')
 
