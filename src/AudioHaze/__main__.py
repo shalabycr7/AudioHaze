@@ -6,14 +6,10 @@ import wave
 from pathlib import Path
 from tkinter import filedialog
 
-import matplotlib
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
 import ttkbootstrap as ttk
-from matplotlib import style
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
 from pydub import AudioSegment
 from scipy import signal
 from ttkbootstrap import Toplevel
@@ -21,6 +17,9 @@ from ttkbootstrap.scrolled import ScrolledFrame
 from ttkbootstrap.toast import ToastNotification
 
 from AudioHaze import main_interface, audio_effect, utility
+
+
+# from ttkbootstrap.toast import ToastNotification
 
 
 class AudioPlayer:
@@ -80,26 +79,7 @@ class MainApp(ttk.Frame):
         self.audio_player = None
         self.pack(fill='both', expand=1)
         self.current_style = ttk.Style()
-
-        # create 'Audio Output' & 'History'
-        self.make_output_directory()
-
-        self.ui_elements = main_interface.create_main_ui(self, self.import_file,
-                                                         self.set_theme, self.apply_operations, self.play_audio,
-                                                         self.open_tts_window, self.open_conv_window,
-                                                         self.stop_playback)
-        self.set_theme()
-
-        self.ui_elements['stop_btn'].config(state='disabled')
-
-    def make_output_directory(self):
-        Path('History').resolve().mkdir(exist_ok=True)
-        Path(self.output_directory_name).mkdir(exist_ok=True)
-
-    def set_theme(self):
-        font_size = 10
-        theme_name = 'midnight' if self.dark_mode_state else 'litera'
-        theme_images = {
+        self.theme_images = {
             True: {
                 'toggle': 'theme-toggle-dark',
                 'import': 'import-file-dark',
@@ -115,7 +95,26 @@ class MainApp(ttk.Frame):
                 'tts': 'tts',
             },
         }
-        current_images = theme_images[self.dark_mode_state]
+
+        # create 'Audio Output' & 'History'
+        self.make_output_directory()
+
+        self.ui_elements = main_interface.create_main_ui(self, self.import_file,
+                                                         self.set_theme, self.apply_operations, self.play_audio,
+                                                         self.open_tts_window, self.open_conv_window,
+                                                         self.stop_playback)
+        self.set_theme()
+
+        self.ui_elements['stop_btn'].config(state='disabled')
+
+    def make_output_directory(self):
+        Path('History').mkdir(exist_ok=True)
+        Path(self.output_directory_name).mkdir(exist_ok=True)
+
+    def set_theme(self):
+        font_size = 10
+        theme_name = 'midnight' if self.dark_mode_state else 'litera'
+        current_images = self.theme_images[self.dark_mode_state]
 
         for frame in (self.ui_elements['original_wave_frame'], self.ui_elements['modified_wave_frame']):
             utility.update_frame(frame)
@@ -126,16 +125,13 @@ class MainApp(ttk.Frame):
         self.ui_elements['open_conv_btn'].config(image=current_images['conv'])
         self.ui_elements['open_history_btn'].config(image=current_images['history'])
         self.ui_elements['tts_btn'].config(image=current_images['tts'])
-        self.dark_mode_state = not self.dark_mode_state
 
-        font_configurations = [
-            ('TLabel', f'-family Barlow -size {font_size}'),
-            ('TButton', f'-family Barlow -size {font_size + 1}'),
-            ('TMenubutton', f'-family Barlow -size {font_size}'),
-            ('TNotebook.Tab', f'-family Barlow -size {font_size}'),
-        ]
-        for widget_type, font_config in font_configurations:
-            self.current_style.configure(widget_type, font=font_config)
+        font_config = f'-family Barlow -size {font_size}'
+        self.current_style.configure('TLabel', font=font_config)
+        self.current_style.configure('TButton', font=f'-family Barlow -size {font_size + 1}')
+        self.current_style.configure('TMenubutton', font=font_config)
+        self.current_style.configure('TNotebook.Tab', font=font_config)
+        self.dark_mode_state = not self.dark_mode_state
 
         plots = [
             {
@@ -153,13 +149,7 @@ class MainApp(ttk.Frame):
         ]
         for plot in plots:
             if plot['plot_state']:
-                self.plotting(
-                    None,
-                    plot['file_data'].get(5),
-                    plot['file_data'].get(4),
-                    plot['frame'],
-                    plot['title']
-                )
+                self.plotting(None, plot['file_data'].get(5), plot['file_data'].get(4), plot['frame'], plot['title'])
 
     def read_file(self, file, indicator):
         # create a dictionary to hold file data
@@ -180,9 +170,11 @@ class MainApp(ttk.Frame):
 
     def display_audio_duration(self, data_dict):
         # get the duration of the audio file
-        duration = data_dict[3] / float(data_dict[2])
+        frame_count = data_dict[3]
+        frame_rate = float(data_dict[2])
+        duration = frame_count / frame_rate
         hours, minutes, seconds = utility.output_duration(int(duration))
-        total_time = f'{hours}:{minutes}:{seconds}'
+        total_time = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
         # display the duration
         self.ui_elements['length_lb'].config(text=total_time)
@@ -230,29 +222,27 @@ class MainApp(ttk.Frame):
         self.ui_elements['echo_toggle'].config(state='!selected' if self.original_file_data.get(1) == 2 else 'disabled')
 
     def plotting(self, targeted_signal, time, raw, place, title):
+        import matplotlib.pyplot as plt
+
         # Set the plot style based on the dark mode state
-        if not self.dark_mode_state:
-            matplotlib.style.use('dark_background')
-        else:
-            matplotlib.style.use('default')
+        plt.style.use('dark_background' if not self.dark_mode_state else 'default')
 
         # Create a new figure and subplot for the plot
-        plotting_figure = Figure(figsize=(7, 2), dpi=90)
-        figure_subplot = plotting_figure.add_subplot(111)
-        figure_subplot.set_ylabel('Amplitude')
-        figure_subplot.grid(alpha=0.4)
-        figure_subplot.set_title(title)
+        fig, ax = plt.subplots(figsize=(7, 2), dpi=90)
+        ax.set_ylabel('Amplitude')
+        ax.grid(alpha=0.4)
+        ax.set_title(title)
 
         if targeted_signal is not None:
             # If a targeted signal is provided, plot it
-            figure_subplot.plot(targeted_signal, color='blue')
+            ax.plot(targeted_signal, color='blue')
         else:
             # Otherwise, plot the raw data
-            figure_subplot.plot(time, raw, color='blue')
-
+            ax.plot(time, raw, color='blue')
+            plt.close()
             # Save the figure to disk and update the image count
-            self.plot_img_title = Path('History').resolve() / ("img" + str(self.img_count) + ".png")
-            plotting_figure.savefig(self.plot_img_title)
+            self.plot_img_title = Path('History') / ("img" + str(self.img_count) + ".png")
+            fig.savefig(self.plot_img_title)
             self.img_count += 1
 
             # If this is the original audio plot, add it to the database
@@ -264,7 +254,8 @@ class MainApp(ttk.Frame):
                 self.original_id = org_id_db.fetchone()[0]
 
         # Create a canvas to display the plot in the UI frame
-        canvas = FigureCanvasTkAgg(plotting_figure, master=place)
+        from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+        canvas = FigureCanvasTkAgg(fig, master=place)
         canvas.draw()
         canvas.get_tk_widget().pack()
 
