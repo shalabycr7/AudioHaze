@@ -1,7 +1,6 @@
 import tkinter.messagebox as messagebox
 from tkinter import ttk
 
-import numpy as np
 import pyttsx3
 from PIL import Image, ImageTk
 
@@ -69,13 +68,6 @@ def add_info_label(row: int, frame: ttk.Frame, date: str, amp: float, shift: flo
               anchor='nw').pack(side="top")
 
 
-def display_rounded_values(values: np.ndarray, textbox: ttk.Entry):
-    # Display the values in the textbox after rounding
-    for v in values:
-        v_rounded = np.round(v, 2)
-        textbox.insert(0, str(v_rounded) + "  ")
-
-
 def tts(speech: str):
     if speech is None or not speech.strip():
         messagebox.showinfo("Info", "Enter Some Text")
@@ -86,5 +78,18 @@ def tts(speech: str):
     engine.runAndWait()
     engine.stop()
 
+
 def update_menu_text(menu_button, selected_option):
     menu_button.configure(text=selected_option)
+
+
+def enable_inputs(*inputs):
+    # Enable input boxes
+    for input_box in inputs:
+        input_box.config(state="normal")
+
+
+def disable_inputs(*inputs):
+    # Disable input boxes
+    for input_box in inputs:
+        input_box.config(state="readonly")
