@@ -4,7 +4,6 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Stable]
 
-
 ## V 0.2.7
 
 ### Changed
@@ -12,6 +11,13 @@ All Notable Changes To This Project Will Be Documented In This File.
 * Replaced `Pygame` module with `sounddevice` :heavy_check_mark:
 * Created a thread to play & stop audio playback :heavy_check_mark:
 
+### Fixed
+
+* Changed the data type of output_audio in `set_echo` to `float32` to avoid overflow and to allow for high dynamic range
+  audio signals :heavy_check_mark:
+* Used the `np.max(np.abs(output_audio))` to normalize the output audio signal before casting it as `int16` This ensures
+  that the signal is scaled properly within the range of `-32768` to `32767` :heavy_check_mark:
+* Squashed some bugs :heavy_check_mark:
 
 ## V 0.2.6
 
