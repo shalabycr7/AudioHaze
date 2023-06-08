@@ -170,18 +170,21 @@ class MainApp(ttk.Frame):
                 'frame': self.ax,
                 'title': 'Original Audio',
                 'canvas': self.original_canvas,
-                'figure': self.fig
+                'figure': self.fig,
+                'plot_state': self.ax.has_data()
             },
             {
                 'file_data': self.modified_file_data,
                 'frame': self.ax2,
                 'title': 'Modified Audio',
                 'canvas': self.modified_canvas,
-                'figure': self.fig2
+                'figure': self.fig2,
+                'plot_state': self.ax2.has_data()
+
             },
         ]
         for plot in plots:
-            if plot['file_data']:
+            if plot['plot_state']:
                 self.plotting(None, plot['file_data'].get(5), plot['file_data'].get(4),
                               plot['frame'], plot['title'], plot['canvas'], plot['figure'])
 
