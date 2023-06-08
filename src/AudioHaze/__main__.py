@@ -6,7 +6,6 @@ import wave
 from pathlib import Path
 from tkinter import filedialog
 
-# from ttkbootstrap.toast import ToastNotification
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
@@ -48,6 +47,20 @@ class AudioPlayer:
         self.playing = False
 
 
+def create_wave_plot(master):
+    # create the figure and canvas objects
+    fig = Figure(figsize=(9, 2.4), dpi=90, facecolor='none')
+
+    # create the axes object
+    ax = fig.add_subplot(111, facecolor='none')
+
+    for spine in ax.spines.values():
+        spine.set_color('blue')
+    canvas = FigureCanvasTkAgg(fig, master=master)
+
+    return fig, ax, canvas
+
+
 class MainApp(ttk.Frame):
     # initial parameters for audio file name and location
     file_directory = ''
@@ -66,7 +79,7 @@ class MainApp(ttk.Frame):
     plot_img_title = ''
 
     # connect to database
-    connection = sqlite3.connect(Path('signals.db').resolve())
+    connection = sqlite3.connect(Path('./signals.db'))
     db = connection.cursor()
 
     # start the image counter at an appropriate number.
@@ -105,10 +118,10 @@ class MainApp(ttk.Frame):
                                                          self.open_tts_window, self.open_conv_window,
                                                          self.stop_playback)
         # create the original wave plot
-        self.fig, self.ax, self.original_canvas = self.create_wave_plot(self.ui_elements['original_wave_frame'])
+        self.fig, self.ax, self.original_canvas = create_wave_plot(self.ui_elements['original_wave_frame'])
 
         # create the modified wave plot
-        self.fig2, self.ax2, self.modified_canvas = self.create_wave_plot(self.ui_elements['modified_wave_frame'])
+        self.fig2, self.ax2, self.modified_canvas = create_wave_plot(self.ui_elements['modified_wave_frame'])
         self.original_canvas.get_tk_widget().pack()
         self.modified_canvas.get_tk_widget().pack()
 
@@ -117,18 +130,8 @@ class MainApp(ttk.Frame):
         self.ui_elements['stop_btn'].config(state='disabled')
 
     def make_output_directory(self):
-        Path('History').mkdir(exist_ok=True)
+        Path('./History').mkdir(exist_ok=True)
         Path(self.output_directory_name).mkdir(exist_ok=True)
-
-    def create_wave_plot(self, master):
-        # create the figure and canvas objects
-        fig = Figure(figsize=(9, 2.4), dpi=90, facecolor='none')
-
-        # create the axes object
-        ax = fig.add_subplot(111, facecolor='none')
-        canvas = FigureCanvasTkAgg(fig, master=master)
-
-        return fig, ax, canvas
 
     def set_theme(self):
         font_size = 10
@@ -136,19 +139,31 @@ class MainApp(ttk.Frame):
         current_images = self.theme_images[self.dark_mode_state]
 
         self.current_style.theme_use(theme_name)
-        self.ui_elements['theme_btn'].config(image=current_images['toggle'])
-        self.ui_elements['import_btn'].config(image=current_images['import'])
-        self.ui_elements['open_conv_btn'].config(image=current_images['conv'])
-        self.ui_elements['open_history_btn'].config(image=current_images['history'])
-        self.ui_elements['tts_btn'].config(image=current_images['tts'])
-
-        font_config = f'-family Barlow -size {font_size}'
-        self.current_style.configure('TLabel', font=font_config)
-        self.current_style.configure('TButton', font=f'-family Barlow -size {font_size + 1}')
-        self.current_style.configure('TMenubutton', font=font_config)
-        self.current_style.configure('TNotebook.Tab', font=font_config)
         self.dark_mode_state = not self.dark_mode_state
 
+        # Configure fonts
+        font_config = f'-family Barlow -size {font_size}'
+        label_font_config = {'font': font_config}
+        button_font_config = {'font': f'-family Barlow -size {font_size + 1}'}
+        menu_font_config = {'font': font_config}
+        tab_font_config = {'font': font_config}
+        self.current_style.configure('TLabel', **label_font_config)
+        self.current_style.configure('TButton', **button_font_config)
+        self.current_style.configure('TMenubutton', **menu_font_config)
+        self.current_style.configure('TNotebook.Tab', **tab_font_config)
+
+        # Update widget images
+        widget_images = {
+            'theme_btn': current_images['toggle'],
+            'import_btn': current_images['import'],
+            'open_conv_btn': current_images['conv'],
+            'open_history_btn': current_images['history'],
+            'tts_btn': current_images['tts']
+        }
+        for widget_name, image in widget_images.items():
+            self.ui_elements[widget_name].config(image=image)
+
+        # Plot data
         plots = [
             {
                 'plot_state': self.original_plot_state,
@@ -163,13 +178,12 @@ class MainApp(ttk.Frame):
                 'frame': self.ax2,
                 'title': 'Modified Audio',
                 'canvas': self.modified_canvas
-
             },
         ]
         for plot in plots:
             if plot['plot_state']:
-                self.plotting(None, plot['file_data'].get(5), plot['file_data'].get(4), plot['frame'], plot['title'],
-                              plot['canvas'])
+                self.plotting(None, plot['file_data'].get(5), plot['file_data'].get(4),
+                              plot['frame'], plot['title'], plot['canvas'])
 
     def read_file(self, file, indicator):
         # create a dictionary to hold file data
@@ -203,6 +217,10 @@ class MainApp(ttk.Frame):
         # Hide the plotting frames every time we import
         self.original_plot_state = False
         self.modified_plot_state = False
+        self.ax.clear()
+        self.ax2.clear()
+        self.original_canvas.draw()
+        self.modified_canvas.draw()
 
         # Open window to select file to get the path then save in variable directory
         self.file_directory = filedialog.askopenfilename(initialdir=self.file_directory, title="Select Audio File",
@@ -420,7 +438,7 @@ class MainApp(ttk.Frame):
         TTSWindow(utility.tts, self.dark_mode_state)
 
     def open_conv_window(self):
-        ConvolutionWindow(self.plotting, self.create_wave_plot)
+        ConvolutionWindow(self.plotting, create_wave_plot)
 
 
 class HistoryWindow:
