@@ -122,7 +122,7 @@ class MainApp(ttk.Frame):
 
     def create_wave_plot(self, master):
         # create the figure and canvas objects
-        fig = Figure(figsize=(7, 2), dpi=90, facecolor='none')
+        fig = Figure(figsize=(9, 2.4), dpi=90, facecolor='none')
 
         # create the axes object
         ax = fig.add_subplot(111, facecolor='none')
@@ -247,7 +247,7 @@ class MainApp(ttk.Frame):
         place.set_ylabel('Amplitude')
         place.grid(alpha=0.4)
         place.set_title(title)
-        print(place)
+        print(place.get_title)
 
         if targeted_signal is not None:
             # If a targeted signal is provided, plot it
@@ -273,7 +273,6 @@ class MainApp(ttk.Frame):
 
     def operations(self, amp_amount, shift_amount, speed_amount, reverse_state, echo_state):
         # Update modified wave frame
-        utility.update_frame(self.ui_elements['modified_wave_frame'])
 
         # Create output WAV file and configure audio object
         audio_obj = wave.open(self.output_file, 'wb')
@@ -431,7 +430,7 @@ class MainApp(ttk.Frame):
 class HistoryWindow:
     def __init__(self):
         # Create a new window
-        self.new_conv_window = Toplevel(title='History', size=[1200, 740])
+        self.new_conv_window = Toplevel(title='History', size=[1500, 750])
         self.new_conv_window.place_window_center()
 
         # Create a scrolled frame to hold the history information
@@ -688,7 +687,7 @@ class TTSWindow:
 
 
 if __name__ == '__main__':
-    window_width = 1200
+    window_width = 1300
     window_height = 800
     app = ttk.Window(title='AudioHaze', iconphoto=str(Path('./Icons/favIcon.png')),
                      size=[window_width, window_height])

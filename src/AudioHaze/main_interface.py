@@ -128,16 +128,16 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
     length_lb.pack(side='right', padx=20)
 
     # tasks frame
-    tasks_frame = ttk.Frame(master, padding=5,bootstyle='danger')
-    tasks_frame.pack(side='right', fill='y', pady=5, padx=25)
+    tasks_frame = ttk.Frame(master, padding=5)
+    tasks_frame.pack(side='right', fill='both', pady=5, padx=25)
 
-    original_wave_frame = ttk.Frame(master,bootstyle='info',padding=10)
+    original_wave_frame = ttk.Frame(master, padding=5)
     original_wave_frame.pack(expand=1)
-    modified_wave_frame = ttk.Frame(master,bootstyle='success',padding=10)
-    modified_wave_frame.pack( pady=5,expand=1)
+    modified_wave_frame = ttk.Frame(master, padding=5)
+    modified_wave_frame.pack(pady=5, expand=1)
 
     tasks_hdr_frame = ttk.Frame(tasks_frame)
-    tasks_hdr_frame.pack(side='top', fill='x')
+    tasks_hdr_frame.pack(fill='both')
     ttk.Label(tasks_hdr_frame, text='Tasks', font='-family Barlow -size 13').pack(side='left')
 
     tts_btn = ttk.Button(
