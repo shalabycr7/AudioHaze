@@ -11,12 +11,6 @@ def delete_entries(wid: ttk.Entry):
     wid.delete(0, 'end')
 
 
-# clear the frame when we add another plot.
-def update_frame(obj: ttk.Frame):
-    if len(obj.winfo_children()) >= 1:
-        obj.winfo_children()[0].destroy()
-
-
 # check for input validation for float numbers only
 def validation_callback(user_val: str) -> bool:
     try:

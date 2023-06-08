@@ -135,9 +135,6 @@ class MainApp(ttk.Frame):
         theme_name = 'midnight' if self.dark_mode_state else 'litera'
         current_images = self.theme_images[self.dark_mode_state]
 
-        # for frame in (self.ui_elements['original_wave_frame'], self.ui_elements['modified_wave_frame']):
-        #     utility.update_frame(frame)
-
         self.current_style.theme_use(theme_name)
         self.ui_elements['theme_btn'].config(image=current_images['toggle'])
         self.ui_elements['import_btn'].config(image=current_images['import'])
@@ -247,7 +244,6 @@ class MainApp(ttk.Frame):
         place.set_ylabel('Amplitude')
         place.grid(alpha=0.4)
         place.set_title(title)
-        print(place.get_title)
 
         if targeted_signal is not None:
             # If a targeted signal is provided, plot it
@@ -424,7 +420,7 @@ class MainApp(ttk.Frame):
         TTSWindow(utility.tts, self.dark_mode_state)
 
     def open_conv_window(self):
-        ConvolutionWindow(self.plotting)
+        ConvolutionWindow(self.plotting, self.create_wave_plot)
 
 
 class HistoryWindow:
@@ -469,12 +465,15 @@ class HistoryWindow:
 
 
 class ConvolutionWindow:
-    def __init__(self, plotting_func):
-        self.new_conv_window = Toplevel(title='Convolution', size=[1200, 740])
+    def __init__(self, plotting_func, create_plots_figures):
+        self.og_signal_frame = None
+        self.new_conv_window = Toplevel(title='Convolution', size=[1200, 850])
         self.new_conv_window.place_window_center()
         self.new_conv_window.protocol("WM_DELETE_WINDOW", self.on_close)
         self.plotting_func = plotting_func
+
         self.zp_to_hs_text = ttk.StringVar()
+        self.m = create_plots_figures
 
         self.create_ui()
 
@@ -482,7 +481,7 @@ class ConvolutionWindow:
 
         tabs_fr = ttk.Frame(self.new_conv_window)
         tabs_fr.pack(side='right', fill='both', padx=30)
-        self.og_signal_frame = ttk.Frame(self.new_conv_window)
+        self.og_signal_frame = ttk.Frame(self.new_conv_window, bootstyle='info')
         self.og_signal_frame.pack(side='top', pady=10)
         self.mod_signal_frame = ttk.Frame(self.new_conv_window)
         self.mod_signal_frame.pack(side='top', pady=10)
@@ -547,10 +546,17 @@ class ConvolutionWindow:
             compound='left',
             bootstyle='link',
             command=lambda: self.apply_convolution(option_var.get())).pack(side='top')
+        self.original_figure, self.original_plot, self.original_canvas = self.m(self.og_signal_frame)
+        self.conv_figure, self.conv_plot, self.conv_canvas = self.m(self.conv_signal_frame)
+        self.mod_figure, self.mod_plot, self.mod_canvas = self.m(self.mod_signal_frame)
+
+        self.original_canvas.get_tk_widget().pack()
+        self.mod_canvas.get_tk_widget().pack()
+        self.conv_canvas.get_tk_widget().pack()
 
         # plot the original signal based on the imported Audio Output file
         self.sig = np.repeat([0., 1., 0.], 100)
-        self.plotting_func(self.sig, None, None, self.og_signal_frame, 'Original Signal')
+        self.plotting_func(self.sig, None, None, self.original_plot, 'Original Signal', self.original_canvas)
 
     def lti_sys(self, widget):
         if widget == 1:
@@ -578,9 +584,6 @@ class ConvolutionWindow:
             self.tr_func_value_lb2.insert(0, ', '.join(['{:.2f}'.format(d) for d in hs_rep[1]]))
 
     def apply_convolution(self, conv_val):
-        utility.update_frame(self.mod_signal_frame)
-        utility.update_frame(self.conv_signal_frame)
-
         # Get the value of the option radiobutton
         option_val = str(self.zp_to_hs_text.get())
 
@@ -628,11 +631,11 @@ class ConvolutionWindow:
             self.lti_sys(2)
 
     def plot_impulse_response(self, window, title):
-        self.plotting_func(window, None, None, self.mod_signal_frame, title)
+        self.plotting_func(window, None, None, self.mod_plot, title, self.mod_canvas)
 
     def plot_filtered_signal(self, window, title):
         filtered = signal.convolve(self.sig, window, mode='same') / sum(window)
-        self.plotting_func(filtered, None, None, self.conv_signal_frame, title)
+        self.plotting_func(filtered, None, None, self.conv_plot, title, self.conv_canvas)
 
     def disable_box(self, num):
         self.clear_input_boxes()
