@@ -7,12 +7,13 @@ from pathlib import Path
 from tkinter import filedialog
 
 # from ttkbootstrap.toast import ToastNotification
-import matplotlib.pyplot as plt
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
 import ttkbootstrap as ttk
+from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 from pydub import AudioSegment
 from scipy import signal
 from ttkbootstrap import Toplevel
@@ -103,6 +104,14 @@ class MainApp(ttk.Frame):
                                                          self.set_theme, self.apply_operations, self.play_audio,
                                                          self.open_tts_window, self.open_conv_window,
                                                          self.stop_playback)
+        # create the original wave plot
+        self.fig, self.ax, self.original_canvas = self.create_wave_plot(self.ui_elements['original_wave_frame'])
+
+        # create the modified wave plot
+        self.fig2, self.ax2, self.modified_canvas = self.create_wave_plot(self.ui_elements['modified_wave_frame'])
+        self.original_canvas.get_tk_widget().pack()
+        self.modified_canvas.get_tk_widget().pack()
+
         self.set_theme()
 
         self.ui_elements['stop_btn'].config(state='disabled')
@@ -111,13 +120,23 @@ class MainApp(ttk.Frame):
         Path('History').mkdir(exist_ok=True)
         Path(self.output_directory_name).mkdir(exist_ok=True)
 
+    def create_wave_plot(self, master):
+        # create the figure and canvas objects
+        fig = Figure(figsize=(7, 2), dpi=90, facecolor='none')
+
+        # create the axes object
+        ax = fig.add_subplot(111, facecolor='none')
+        canvas = FigureCanvasTkAgg(fig, master=master)
+
+        return fig, ax, canvas
+
     def set_theme(self):
         font_size = 10
         theme_name = 'midnight' if self.dark_mode_state else 'litera'
         current_images = self.theme_images[self.dark_mode_state]
 
-        for frame in (self.ui_elements['original_wave_frame'], self.ui_elements['modified_wave_frame']):
-            utility.update_frame(frame)
+        # for frame in (self.ui_elements['original_wave_frame'], self.ui_elements['modified_wave_frame']):
+        #     utility.update_frame(frame)
 
         self.current_style.theme_use(theme_name)
         self.ui_elements['theme_btn'].config(image=current_images['toggle'])
@@ -137,19 +156,23 @@ class MainApp(ttk.Frame):
             {
                 'plot_state': self.original_plot_state,
                 'file_data': self.original_file_data,
-                'frame': self.ui_elements['original_wave_frame'],
+                'frame': self.ax,
                 'title': 'Original Audio',
+                'canvas': self.original_canvas
             },
             {
                 'plot_state': self.modified_plot_state,
                 'file_data': self.modified_file_data,
-                'frame': self.ui_elements['modified_wave_frame'],
+                'frame': self.ax2,
                 'title': 'Modified Audio',
+                'canvas': self.modified_canvas
+
             },
         ]
         for plot in plots:
             if plot['plot_state']:
-                self.plotting(None, plot['file_data'].get(5), plot['file_data'].get(4), plot['frame'], plot['title'])
+                self.plotting(None, plot['file_data'].get(5), plot['file_data'].get(4), plot['frame'], plot['title'],
+                              plot['canvas'])
 
     def read_file(self, file, indicator):
         # create a dictionary to hold file data
@@ -180,9 +203,6 @@ class MainApp(ttk.Frame):
         self.ui_elements['length_lb'].config(text=total_time)
 
     def import_file(self):
-        utility.update_frame(self.ui_elements['original_wave_frame'])
-        utility.update_frame(self.ui_elements['modified_wave_frame'])
-
         # Hide the plotting frames every time we import
         self.original_plot_state = False
         self.modified_plot_state = False
@@ -213,35 +233,32 @@ class MainApp(ttk.Frame):
         self.ui_elements['file_max_amp_val'].config(text=wav_original.max)
 
         # Start plotting
-        self.plotting(None, self.original_file_data.get(5), self.original_file_data.get(4),
-                      self.ui_elements['original_wave_frame'],
-                      'Original Audio')
+        self.plotting(None, self.original_file_data.get(5), self.original_file_data.get(4), self.ax,
+                      'Original Audio', self.original_canvas)
         self.original_plot_state = True
 
         # Set echo options on if the file is stereo
         self.ui_elements['echo_toggle'].config(state='!selected' if self.original_file_data.get(1) == 2 else 'disabled')
 
-    def plotting(self, targeted_signal, time, raw, place, title):
-
-        # Set the plot style based on the dark mode state
+    def plotting(self, targeted_signal, time, raw, place, title, canv):
         plt.style.use('dark_background' if not self.dark_mode_state else 'default')
-
-        # Create a new figure and subplot for the plot
-        fig, ax = plt.subplots(figsize=(7, 2), dpi=90)
-        ax.set_ylabel('Amplitude')
-        ax.grid(alpha=0.4)
-        ax.set_title(title)
+        # clear the previous plot
+        place.clear()
+        place.set_ylabel('Amplitude')
+        place.grid(alpha=0.4)
+        place.set_title(title)
+        print(place)
 
         if targeted_signal is not None:
             # If a targeted signal is provided, plot it
-            ax.plot(targeted_signal, color='blue')
+            place.plot(targeted_signal, color='blue')
         else:
             # Otherwise, plot the raw data
-            ax.plot(time, raw, color='blue')
+            place.plot(time, raw, color='blue')
 
             # Save the figure to disk and update the image count
             self.plot_img_title = Path('History') / ("img" + str(self.img_count) + ".png")
-            fig.savefig(self.plot_img_title)
+            self.fig.savefig(self.plot_img_title)
             self.img_count += 1
 
             # If this is the original audio plot, add it to the database
@@ -252,11 +269,7 @@ class MainApp(ttk.Frame):
                 org_id_db = self.db.execute("SELECT id FROM org WHERE name = ?", text)
                 self.original_id = org_id_db.fetchone()[0]
 
-        plt.close()
-        # Create a canvas to display the plot in the UI frame
-        canvas = FigureCanvasTkAgg(fig, master=place)
-        canvas.draw()
-        canvas.get_tk_widget().pack()
+        canv.draw()
 
     def operations(self, amp_amount, shift_amount, speed_amount, reverse_state, echo_state):
         # Update modified wave frame
@@ -300,7 +313,7 @@ class MainApp(ttk.Frame):
         audio_file = AudioSegment.from_file(file=self.output_file, format="wav")
         self.modified_file_data = self.read_file(audio_file, 'modified')
         self.plotting(None, self.modified_file_data.get(5), self.modified_file_data.get(4),
-                      self.ui_elements['modified_wave_frame'], 'Modified Audio')
+                      self.ax2, 'Modified Audio', self.modified_canvas)
         self.modified_plot_state = True
 
         # Apply echo effect if echo_state is True
@@ -676,7 +689,7 @@ class TTSWindow:
 
 if __name__ == '__main__':
     window_width = 1200
-    window_height = 700
+    window_height = 800
     app = ttk.Window(title='AudioHaze', iconphoto=str(Path('./Icons/favIcon.png')),
                      size=[window_width, window_height])
     app.place_window_center()
