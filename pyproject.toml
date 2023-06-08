@@ -24,15 +24,15 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
 ]
 dependencies = [
-    "numpy~ = 1.24.2",
-    "scipy~ = 1.10.0",
-    "matplotlib~ = 3.7.0",
-    "pyttsx3~ = 2.90",
-    "ttkbootstrap~ = 1.10.1",
-    "Pillow~ = 9.5.0",
-    "pydub~ = 0.25.1",
-    "sounddevice~ = 0.4.6",
-    "soundfile~ = 0.12.1",
+    "numpy~=1.24.2",
+    "scipy~=1.10.0",
+    "matplotlib~=3.7.0",
+    "pyttsx3~=2.90",
+    "ttkbootstrap~=1.10.1",
+    "Pillow~=9.5.0",
+    "pydub~=0.25.1",
+    "sounddevice~=0.4.6",
+    "soundfile~=0.12.1",
 ]
 
 [project.urls]
