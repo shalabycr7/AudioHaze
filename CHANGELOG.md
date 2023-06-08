@@ -16,9 +16,9 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ### Fixed
 
+* Interface Lagging When Plotting Or Changing Theme :heavy_check_mark:
 * Changed The Data Type Of `output_audio` In `set_echo` To `float32` To Avoid Overflow And To Allow For High Dynamic
-  Range
-  Audio Signals :heavy_check_mark:
+  Range Audio Signals :heavy_check_mark:
 * Used The `np.max(np.abs(output_audio))` To Normalize The Output Audio Signal Before Casting It As `int16` This Ensures
   That The Signal Is Scaled Properly Within The Range Of `-32768` to `32767` :heavy_check_mark:
 * Improved Plotting Speed :heavy_check_mark:
