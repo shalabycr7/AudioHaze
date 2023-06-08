@@ -1,4 +1,6 @@
 import datetime
+import importlib
+import os
 import sqlite3
 import struct
 import threading
@@ -702,6 +704,12 @@ class TTSWindow:
 
 
 if __name__ == '__main__':
+    # load a splash screen
+    if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
+        import pyi_splash
+
+        pyi_splash.close()
+
     window_width = 1300
     window_height = 800
     app = ttk.Window(title='AudioHaze', iconphoto=str(Path('./Icons/favIcon.png')),
