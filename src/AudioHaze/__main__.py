@@ -73,8 +73,6 @@ class MainApp(ttk.Frame):
     modified_file_data = {}
 
     # initial parameters for data plotting frames on the UI
-    original_plot_state = False
-    modified_plot_state = False
     original_id = 0
     plot_img_title = ''
 
@@ -166,14 +164,12 @@ class MainApp(ttk.Frame):
         # Plot data
         plots = [
             {
-                'plot_state': self.original_plot_state,
                 'file_data': self.original_file_data,
                 'frame': self.ax,
                 'title': 'Original Audio',
                 'canvas': self.original_canvas
             },
             {
-                'plot_state': self.modified_plot_state,
                 'file_data': self.modified_file_data,
                 'frame': self.ax2,
                 'title': 'Modified Audio',
@@ -181,7 +177,7 @@ class MainApp(ttk.Frame):
             },
         ]
         for plot in plots:
-            if plot['plot_state']:
+            if plot['file_data']:
                 self.plotting(None, plot['file_data'].get(5), plot['file_data'].get(4),
                               plot['frame'], plot['title'], plot['canvas'])
 
@@ -215,8 +211,6 @@ class MainApp(ttk.Frame):
 
     def import_file(self):
         # Hide the plotting frames every time we import
-        self.original_plot_state = False
-        self.modified_plot_state = False
         self.ax.clear()
         self.ax2.clear()
         self.original_canvas.draw()
@@ -250,7 +244,6 @@ class MainApp(ttk.Frame):
         # Start plotting
         self.plotting(None, self.original_file_data.get(5), self.original_file_data.get(4), self.ax,
                       'Original Audio', self.original_canvas)
-        self.original_plot_state = True
 
         # Set echo options on if the file is stereo
         self.ui_elements['echo_toggle'].config(state='!selected' if self.original_file_data.get(1) == 2 else 'disabled')
@@ -327,7 +320,6 @@ class MainApp(ttk.Frame):
         self.modified_file_data = self.read_file(audio_file, 'modified')
         self.plotting(None, self.modified_file_data.get(5), self.modified_file_data.get(4),
                       self.ax2, 'Modified Audio', self.modified_canvas)
-        self.modified_plot_state = True
 
         # Apply echo effect if echo_state is True
         if echo_state:
