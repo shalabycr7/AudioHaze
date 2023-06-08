@@ -167,19 +167,21 @@ class MainApp(ttk.Frame):
                 'file_data': self.original_file_data,
                 'frame': self.ax,
                 'title': 'Original Audio',
-                'canvas': self.original_canvas
+                'canvas': self.original_canvas,
+                'figure': self.fig
             },
             {
                 'file_data': self.modified_file_data,
                 'frame': self.ax2,
                 'title': 'Modified Audio',
-                'canvas': self.modified_canvas
+                'canvas': self.modified_canvas,
+                'figure': self.fig2
             },
         ]
         for plot in plots:
             if plot['file_data']:
                 self.plotting(None, plot['file_data'].get(5), plot['file_data'].get(4),
-                              plot['frame'], plot['title'], plot['canvas'])
+                              plot['frame'], plot['title'], plot['canvas'], plot['figure'])
 
     def read_file(self, file, indicator):
         # create a dictionary to hold file data
@@ -243,12 +245,12 @@ class MainApp(ttk.Frame):
 
         # Start plotting
         self.plotting(None, self.original_file_data.get(5), self.original_file_data.get(4), self.ax,
-                      'Original Audio', self.original_canvas)
+                      'Original Audio', self.original_canvas, self.fig)
 
         # Set echo options on if the file is stereo
         self.ui_elements['echo_toggle'].config(state='!selected' if self.original_file_data.get(1) == 2 else 'disabled')
 
-    def plotting(self, targeted_signal, time, raw, place, title, canv):
+    def plotting(self, targeted_signal, time, raw, place, title, canv, figure):
         plt.style.use('dark_background' if not self.dark_mode_state else 'default')
         # clear the previous plot
         place.clear()
@@ -265,7 +267,7 @@ class MainApp(ttk.Frame):
 
             # Save the figure to disk and update the image count
             self.plot_img_title = Path('History') / ("img" + str(self.img_count) + ".png")
-            self.fig.savefig(self.plot_img_title)
+            figure.savefig(self.plot_img_title)
             self.img_count += 1
 
             # If this is the original audio plot, add it to the database
@@ -319,7 +321,7 @@ class MainApp(ttk.Frame):
         audio_file = AudioSegment.from_file(file=self.output_file, format="wav")
         self.modified_file_data = self.read_file(audio_file, 'modified')
         self.plotting(None, self.modified_file_data.get(5), self.modified_file_data.get(4),
-                      self.ax2, 'Modified Audio', self.modified_canvas)
+                      self.ax2, 'Modified Audio', self.modified_canvas, self.fig2)
 
         # Apply echo effect if echo_state is True
         if echo_state:
@@ -386,7 +388,7 @@ class MainApp(ttk.Frame):
         # Determine file to play based on indication
         if indication == "OG":
             audio_file = str(self.file_directory)
-        elif indication == "MOD" and Path(self.output_file).is_file() and self.modified_plot_state:
+        elif indication == "MOD" and Path(self.output_file).is_file() and self.ax2.has_data():
             audio_file = str(self.output_file)
         else:
             utility.messagebox.showinfo('Info', 'Apply Modification To The Audio File Then Play It')
@@ -566,7 +568,7 @@ class ConvolutionWindow:
 
         # plot the original signal based on the imported Audio Output file
         self.sig = np.repeat([0., 1., 0.], 100)
-        self.plotting_func(self.sig, None, None, self.original_plot, 'Original Signal', self.original_canvas)
+        self.plotting_func(self.sig, None, None, self.original_plot, 'Original Signal', self.original_canvas, None)
 
     def lti_sys(self, widget):
         if widget == 1:
@@ -641,11 +643,11 @@ class ConvolutionWindow:
             self.lti_sys(2)
 
     def plot_impulse_response(self, window, title):
-        self.plotting_func(window, None, None, self.mod_plot, title, self.mod_canvas)
+        self.plotting_func(window, None, None, self.mod_plot, title, self.mod_canvas, None)
 
     def plot_filtered_signal(self, window, title):
         filtered = signal.convolve(self.sig, window, mode='same') / sum(window)
-        self.plotting_func(filtered, None, None, self.conv_plot, title, self.conv_canvas)
+        self.plotting_func(filtered, None, None, self.conv_plot, title, self.conv_canvas, None)
 
     def disable_box(self, num):
         self.clear_input_boxes()
