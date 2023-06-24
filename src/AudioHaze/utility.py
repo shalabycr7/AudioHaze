@@ -4,7 +4,7 @@ from tkinter import ttk
 import pyttsx3
 from PIL import Image, ImageTk
 
-from .__main__ import HistoryWindow
+from AudioHaze.__main__ import HistoryWindow
 
 
 def delete_entries(wid: ttk.Entry):

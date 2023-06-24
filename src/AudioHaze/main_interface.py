@@ -3,12 +3,12 @@ from pathlib import Path
 import ttkbootstrap as ttk
 from ttkbootstrap.tooltip import ToolTip
 
-from . import utility
+from AudioHaze import utility
 
 
 def create_main_ui(master, import_file=None, set_theme=None, apply_operations=None,
                    play_audio=None, open_tts_window=None, open_conv_window=None, stop_audio=None):
-    icons_folder = Path('Icons')
+    icons_folder = Path('Data')
     icon_names = [
         'open-file', 'channels', 'frame-rate', 'max-amp', 'import-file', 'import-file-dark',
         'theme-toggle-dark', 'theme-toggle', 'play-button', 'stop-button', 'conv-button',

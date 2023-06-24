@@ -1,10 +1,10 @@
 # Output directory
 Sample Data/
-Audio Output/
-src/AudioHaze/History
+src/AudioHaze/Audio Output/
+src/AudioHaze/History/
 
 # Database files
-src/AudioHaze/signals.db
+src/AudioHaze/Data/signals.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

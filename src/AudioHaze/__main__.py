@@ -3,6 +3,7 @@ import importlib
 import os
 import sqlite3
 import struct
+import sys
 import threading
 import wave
 from pathlib import Path
@@ -21,7 +22,32 @@ from ttkbootstrap import Toplevel
 from ttkbootstrap.scrolled import ScrolledFrame
 from ttkbootstrap.toast import ToastNotification
 
-from AudioHaze import main_interface, audio_effect, utility
+from AudioHaze import main_interface, audio_effect, utility, DATADIR
+
+
+def create_wave_plot(master):
+    # create the figure and canvas objects
+    fig = Figure(figsize=(9, 2.4), dpi=90, facecolor='none')
+
+    # create the axes object
+    ax = fig.add_subplot(111, facecolor='none')
+
+    for spine in ax.spines.values():
+        spine.set_color('blue')
+    canvas = FigureCanvasTkAgg(fig, master=master)
+
+    return fig, ax, canvas
+
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    if getattr(sys, 'frozen', False):
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    else:
+        base_path = DATADIR
+
+    return os.path.join(base_path, relative_path)
 
 
 class AudioPlayer:
@@ -49,20 +75,6 @@ class AudioPlayer:
         self.playing = False
 
 
-def create_wave_plot(master):
-    # create the figure and canvas objects
-    fig = Figure(figsize=(9, 2.4), dpi=90, facecolor='none')
-
-    # create the axes object
-    ax = fig.add_subplot(111, facecolor='none')
-
-    for spine in ax.spines.values():
-        spine.set_color('blue')
-    canvas = FigureCanvasTkAgg(fig, master=master)
-
-    return fig, ax, canvas
-
-
 class MainApp(ttk.Frame):
     # initial parameters for audio file name and location
     file_directory = ''
@@ -79,7 +91,7 @@ class MainApp(ttk.Frame):
     plot_img_title = ''
 
     # connect to database
-    connection = sqlite3.connect(Path('./signals.db'))
+    connection = sqlite3.connect(resource_path("signals.db"))
     db = connection.cursor()
 
     # start the image counter at an appropriate number.
@@ -715,12 +727,12 @@ if __name__ == '__main__':
 
     window_width = 1300
     window_height = 800
-    app = ttk.Window(title='AudioHaze', iconphoto=str(Path('./Icons/favIcon.png')),
+    app = ttk.Window(title='AudioHaze', iconphoto=resource_path("favIcon.png"),
                      size=[window_width, window_height])
     app.place_window_center()
 
     # load user created themes
-    app.style.load_user_themes(Path('./user.json'))
+    app.style.load_user_themes(resource_path('user.json'))
 
     MainApp(app)
     app.mainloop()
