@@ -9,20 +9,29 @@
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/shalabycr7/AudioHaze)
 ![GitHub forks](https://img.shields.io/github/forks/shalabycr7/AudioHaze?style=social)
 
-### Requirements
+> App Binaries Are Available In The Releases
 
-### On Windows
+### Running Via `pip`
+
+You can Install The App Locally By Following These Steps:
+
+1. Run ```pip install AudioHaze```
+2. Now In The Terminal Run```AudioHaze```
+
+### Running Locally Via [GitHub](https://github.com/shalabycr7/AudioHaze)
+
+#### Requirements
+
+#### On Windows
 
 * You Need To Install `FFmpeg` From This
   Guide [Install FFmpeg on Windows](<https://www.wikihow.com/Install-FFmpeg-on-Windows>)
 * Install [Visual C++ Redistributable for Visual Studio 2015
   ](<https://www.microsoft.com/en-us/download/details.aspx?id=48145>)
 
-### On Linux
+#### On Linux
 
 * Make Sure `espeak` Is Installed On Your System By Executing `sudo apt-get install espeak`
-
-### Running Locally Via [GitHub](https://github.com/shalabycr7/AudioHaze)
 
 You can Run This App Locally By Following These Steps:
 

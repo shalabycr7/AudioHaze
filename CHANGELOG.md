@@ -4,6 +4,19 @@ All Notable Changes To This Project Will Be Documented In This File.
 
 ## [Stable]
 
+## V 0.3.0
+
+> App Binary Are New Available In The Releases
+
+### Changed
+
+* Created A New Package & Build The App Binaries For Windows :heavy_check_mark:
+
+### Fixed
+
+* Data Files Paths :heavy_check_mark:
+* The App Can Now Be Installed As A Regular `pip` Package :heavy_check_mark:
+
 ## V 0.2.7
 
 > This an overhaul new version of the app's under-the-hood functionality
