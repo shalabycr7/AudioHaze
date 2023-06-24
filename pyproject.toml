@@ -8,7 +8,6 @@ dynamic = ["version"]
 description = 'This Is A Simple GUI Application To Manipulate Audio Files By Modifying The Audio Wave Form And Display It Using Python'
 readme = "README.md"
 requires-python = ">=3.7"
-license = "MIT"
 keywords = ["GUI", "Tkinter", "Audio", "App", "Audio Editing", "Audio Processing"]
 authors = [
     { name = "shalabycr7", email = "abdoshalaby.dev@gmail.com" },
@@ -38,9 +37,9 @@ classifiers = [
 ]
 
 [project.urls]
-Documentation = "https://github.com/shalabycr7/audiohaze#readme"
-Issues = "https://github.com/shalabycr7/audiohaze/issues"
-Source = "https://github.com/shalabycr7/audiohaze"
+"Documentation" = "https://github.com/shalabycr7/audiohaze#readme"
+"Issues" = "https://github.com/shalabycr7/audiohaze/issues"
+"Homepage" = "https://github.com/shalabycr7/audiohaze"
 
 [project.scripts]
 AudioHaze = "AudioHaze.__main__:main"
