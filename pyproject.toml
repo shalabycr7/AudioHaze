@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -42,4 +42,4 @@ classifiers = [
 "Homepage" = "https://github.com/shalabycr7/audiohaze"
 
 [project.scripts]
-AudioHaze = "AudioHaze.__main__:main"
+AudioHaze = "AudioHaze.main:main"

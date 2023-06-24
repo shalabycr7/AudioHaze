@@ -4,8 +4,6 @@ from tkinter import ttk
 import pyttsx3
 from PIL import Image, ImageTk
 
-from AudioHaze.__main__ import HistoryWindow
-
 
 def delete_entries(wid: ttk.Entry):
     wid.delete(0, 'end')
@@ -27,10 +25,6 @@ def output_duration(length: int) -> tuple:
     hours, remainder = divmod(length, 3600)
     minutes, seconds = divmod(remainder, 60)
     return hours, minutes, seconds
-
-
-def open_history_window():
-    HistoryWindow()
 
 
 def add_img(name: str, row: int, column: int, frame: ttk.Frame):

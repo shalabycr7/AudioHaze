@@ -128,7 +128,7 @@ class MainApp(ttk.Frame):
         self.ui_elements = main_interface.create_main_ui(self, self.import_file,
                                                          self.set_theme, self.apply_operations, self.play_audio,
                                                          self.open_tts_window, self.open_conv_window,
-                                                         self.stop_playback)
+                                                         self.stop_playback, self.open_history_window)
         # create the original wave plot
         self.fig, self.ax, self.original_canvas = create_wave_plot(self.ui_elements['original_wave_frame'])
 
@@ -451,6 +451,9 @@ class MainApp(ttk.Frame):
     def open_conv_window(self):
         ConvolutionWindow(self.plotting, create_wave_plot)
 
+    def open_history_window(self):
+        HistoryWindow()
+
 
 class HistoryWindow:
     def __init__(self):
@@ -718,7 +721,7 @@ class TTSWindow:
         self.new_window.destroy()
 
 
-if __name__ == '__main__':
+def main() -> None:
     # load a splash screen
     if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
         import pyi_splash
@@ -736,3 +739,7 @@ if __name__ == '__main__':
 
     MainApp(app)
     app.mainloop()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,14 +1,13 @@
-from pathlib import Path
-
 import ttkbootstrap as ttk
 from ttkbootstrap.tooltip import ToolTip
 
+from AudioHaze import main
 from AudioHaze import utility
 
 
 def create_main_ui(master, import_file=None, set_theme=None, apply_operations=None,
-                   play_audio=None, open_tts_window=None, open_conv_window=None, stop_audio=None):
-    icons_folder = Path('Data')
+                   play_audio=None, open_tts_window=None, open_conv_window=None, stop_audio=None,
+                   open_history_window=None):
     icon_names = [
         'open-file', 'channels', 'frame-rate', 'max-amp', 'import-file', 'import-file-dark',
         'theme-toggle-dark', 'theme-toggle', 'play-button', 'stop-button', 'conv-button',
@@ -16,7 +15,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
         'convert-button', 'convert-button-dark'
     ]
     master.images = [
-        ttk.PhotoImage(name=name, file=icons_folder.joinpath(f'{name}-icon.png'))
+        ttk.PhotoImage(name=name, file=main.resource_path(f'{name}-icon.png'))
         for name in icon_names
     ]
     user_validation = master.register(utility.validation_callback)
@@ -102,7 +101,7 @@ def create_main_ui(master, import_file=None, set_theme=None, apply_operations=No
         image='history-button',
         compound='left',
         bootstyle='link',
-        command=utility.open_history_window
+        command=open_history_window
     )
     open_history_btn.pack(side='right')
 
