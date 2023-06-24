@@ -314,10 +314,10 @@ class MainApp(ttk.Frame):
         zero_in_byte = struct.pack('<h', 0)
         if reverse_state:
             for i in range(shift_frames):
-                audio_obj.writeframes(zero_in_byte)
+                audio_obj.writeframesraw(zero_in_byte)
         else:
             for i in range(shift_frames):
-                audio_obj.writeframes(zero_in_byte)
+                audio_obj.writeframesraw(zero_in_byte)
 
         # Amplification & Reverse process
         amp_frames = [sample * amp_amount for sample in self.original_file_data.get(4)]
@@ -329,7 +329,7 @@ class MainApp(ttk.Frame):
             if two_byte_sample < -32760:
                 two_byte_sample = -32760
             sample = struct.pack('<h', int(two_byte_sample))
-            audio_obj.writeframes(sample)
+            audio_obj.writeframesraw(sample)
 
         # Close modified output file stream
         audio_obj.close()
