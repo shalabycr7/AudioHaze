@@ -13,10 +13,11 @@
 
 ### Running Via `pip`
 
-You can Install The App Locally By Following These Steps:
+You Can Install The App Locally By Following These Steps:
 
-1. Run ```pip install AudioHaze```
-2. Now In The Terminal Run```AudioHaze```
+1. Download The Package File Locally `AudioHaze-0.3.0-py3-none-any.whl`
+2. Run ```pip install AudioHaze-0.3.0-py3-none-any.whl```
+3. Now In The Terminal Run```AudioHaze```
 
 ### Running Locally Via [GitHub](https://github.com/shalabycr7/AudioHaze)
 
